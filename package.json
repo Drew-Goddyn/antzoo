@@ -18,7 +18,7 @@
   "bugs": {
     "url": "https://github.com/Drew-Goddyn/antzoo/issues"
   },
-  "homepage": "https://github.com/Drew-Goddyn/antzoo",
+  "homepage": "https://drew-goddyn.github.io/antzoo/",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
     "typecheck": "tsc --noEmit",
