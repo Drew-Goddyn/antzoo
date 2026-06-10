@@ -1,8 +1,11 @@
 import { type CSSProperties, useEffect, useMemo, useRef, useState } from "react";
-import { applyTool, createWorld, dropCarcass, getCarcassDropCooldown, getColonyStatus, getDigCooldown, getSeasonState, makeHudSnapshot, resizeWorld, stepWorld, stressSpawn } from "./sim";
+import { applyTool as simApplyTool, createWorld, dropCarcass as simDropCarcass, getCarcassDropCooldown, getColonyStatus, getDigCooldown, getSeasonState, makeHudSnapshot, resizeWorld, stepWorld, stressSpawn as simStressSpawn } from "./sim";
 import { CameraState, HudSnapshot, Renderer, Tool, World } from "./types";
 import { createRenderer, destroyRenderer, renderWorld } from "./render";
 import { DEFAULTS, TUNING } from "./tuning";
+import { getDebugEvents } from "./debug/events";
+import { hashWorldState, snapshotWorld, type WorldSnapshot } from "./debug/snapshot";
+import { applyScenarioSetup, applyTuningPatch, createScenarioExecutor, getTuningPath, scenarioFromBase64, type Scenario, type ScenarioExecutor } from "./debug/scenario";
 
 const SPEEDS = [1, 2, 4, 8] as const;
 const CONTROL = TUNING.controls.sliders;
@@ -46,6 +49,35 @@ interface DragState {
   lastWorldY: number;
 }
 
+interface BootState {
+  world: World;
+  scenario: Scenario | null;
+  scenarioExecutor: ScenarioExecutor | null;
+}
+
+interface AntzooBridge {
+  getSnapshot(): WorldSnapshot;
+  getEvents(sinceTick?: number): ReturnType<typeof getDebugEvents>;
+  getHash(): string;
+  pause(): void;
+  resume(): void;
+  setSpeed(speed: number): void;
+  step(ticks: number): void;
+  applyTool(tool: string, x: number, y: number): void;
+  dropCarcass(x: number, y: number): boolean;
+  stressSpawn(count: number): void;
+  getTuning(path: string): unknown;
+  patchTuning(path: string, value: unknown): void;
+  resetWorld(options?: { seed?: number }): void;
+  version: string;
+}
+
+declare global {
+  interface Window {
+    __antzoo?: AntzooBridge;
+  }
+}
+
 const LIVE_TUNING = TUNING as unknown as TuningNumberStore;
 const LIVE_CASTE = TUNING.caste as unknown as Record<CasteRatioKey, number>;
 const DEFAULT_TUNING = DEFAULTS as unknown as TuningNumberStore;
@@ -71,6 +103,27 @@ const SLIDER_SPECS: readonly SliderSpec[] = [
   { section: "spawn", key: "intervalSec", label: "spawn.intervalSec", ...CONTROL.spawnIntervalSec },
   { section: "ants", key: "max", label: "ants.max", ...CONTROL.antsMax },
 ];
+
+function readNumberParam(params: URLSearchParams, name: string): number | undefined {
+  const value = params.get(name);
+  if (value === null || value === "") return undefined;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : undefined;
+}
+
+function createBootState(): BootState {
+  const params = new URLSearchParams(window.location.search);
+  const scenarioParam = params.get("scenario");
+  const scenario = scenarioParam ? scenarioFromBase64(scenarioParam) : null;
+  if (scenario) applyScenarioSetup(scenario);
+  const seed = readNumberParam(params, "seed");
+  if (seed !== undefined) applyTuningPatch("seed.value", seed);
+  const world = createWorld();
+  const speed = readNumberParam(params, "speed");
+  if (speed !== undefined) world.speed = Math.max(0, speed);
+  if (params.get("paused") === "1") world.paused = true;
+  return { world, scenario, scenarioExecutor: scenario ? createScenarioExecutor(scenario) : null };
+}
 
 function getTuningValue(handle: TuningHandle): number {
   return LIVE_TUNING[handle.section][handle.key];
@@ -339,11 +392,14 @@ function GameOverOverlay({ status, onRestart }: { status: ReturnType<typeof getC
 }
 
 export function App() {
+  const bootRef = useRef<BootState | null>(null);
+  if (bootRef.current === null) bootRef.current = createBootState();
   const viewportRef = useRef<HTMLDivElement | null>(null);
   const pixiHostRef = useRef<HTMLDivElement | null>(null);
   const minimapRef = useRef<HTMLCanvasElement | null>(null);
   const rendererRef = useRef<Renderer | null>(null);
-  const worldRef = useRef<World>(createWorld());
+  const worldRef = useRef<World>(bootRef.current.world);
+  const scenarioExecutorRef = useRef<ScenarioExecutor | null>(bootRef.current.scenarioExecutor);
   const accumulatorRef = useRef(0);
   const lastTimeRef = useRef(0);
   const spaceDownRef = useRef(false);
@@ -362,6 +418,30 @@ export function App() {
   const digCooldownRatio = digCooldown / TUNING.tools.digCooldownSec;
   const carcassCooldownRatio = carcassDropCooldown / TUNING.tools.carcassDropCooldownSec;
   const carcassDisabled = carcassDropCooldown > 0 || seasonState.isWinter;
+
+  const replaceWorld = (seed?: number) => {
+    const current = worldRef.current;
+    if (bootRef.current?.scenario) applyScenarioSetup(bootRef.current.scenario);
+    if (seed !== undefined) applyTuningPatch("seed.value", seed);
+    const fresh = createWorld(current.camera.viewW, current.camera.viewH, current.dpr);
+    fresh.activeTool = current.activeTool;
+    fresh.speed = current.speed;
+    fresh.debug = current.debug;
+    fresh.paused = current.paused;
+    centerCamera(fresh);
+    worldRef.current = fresh;
+    scenarioExecutorRef.current = bootRef.current?.scenario ? createScenarioExecutor(bootRef.current.scenario) : null;
+    accumulatorRef.current = 0;
+    lastTimeRef.current = 0;
+    setSnapshot(makeHudSnapshot(fresh));
+    setResetEpoch((value) => value + 1);
+  };
+
+  const runScenarioDue = () => {
+    scenarioExecutorRef.current?.runDue(worldRef.current, (record) => {
+      if (record.type === "scenario_snapshot") setSnapshot(makeHudSnapshot(worldRef.current));
+    });
+  };
 
   useEffect(() => {
     const viewport = pixiHostRef.current;
@@ -438,6 +518,7 @@ export function App() {
         let steps = 0;
         const simStart = performance.now();
         while (accumulatorRef.current >= fixedDt && steps < TUNING.time.maxStepsPerFrame) {
+          runScenarioDue();
           stepWorld(world, fixedDt, fps);
           accumulatorRef.current -= fixedDt;
           steps += 1;
@@ -478,7 +559,7 @@ export function App() {
         return;
       }
       if (event.key === "g" || event.key === "G") {
-        stressSpawn(world);
+        simStressSpawn(world);
         setSnapshot(makeHudSnapshot(world));
         return;
       }
@@ -526,22 +607,72 @@ export function App() {
   };
 
   const reset = () => {
-    const current = worldRef.current;
-    const fresh = createWorld(current.camera.viewW, current.camera.viewH, current.dpr);
-    fresh.activeTool = current.activeTool;
-    fresh.speed = current.speed;
-    fresh.debug = current.debug;
-    centerCamera(fresh);
-    worldRef.current = fresh;
-    accumulatorRef.current = 0;
-    lastTimeRef.current = 0;
-    setSnapshot(makeHudSnapshot(fresh));
-    setResetEpoch((value) => value + 1);
+    replaceWorld();
   };
+
+  useEffect(() => {
+    const bridge: AntzooBridge = {
+      getSnapshot: () => snapshotWorld(worldRef.current),
+      getEvents: (sinceTick?: number) => getDebugEvents(worldRef.current, sinceTick),
+      getHash: () => hashWorldState(worldRef.current),
+      pause: () => {
+        worldRef.current.paused = true;
+        setSnapshot(makeHudSnapshot(worldRef.current));
+      },
+      resume: () => {
+        worldRef.current.paused = false;
+        setSnapshot(makeHudSnapshot(worldRef.current));
+      },
+      setSpeed: (speed: number) => {
+        worldRef.current.speed = speed;
+        setSnapshot(makeHudSnapshot(worldRef.current));
+      },
+      step: (ticks: number) => {
+        const world = worldRef.current;
+        const wasPaused = world.paused;
+        world.paused = false;
+        const count = Math.max(0, Math.floor(ticks));
+        for (let i = 0; i < count; i += 1) {
+          runScenarioDue();
+          stepWorld(world, 1 / TUNING.time.stepHz);
+        }
+        runScenarioDue();
+        world.paused = wasPaused;
+        accumulatorRef.current = 0;
+        setSnapshot(makeHudSnapshot(world));
+      },
+      applyTool: (tool: string, x: number, y: number) => {
+        simApplyTool(worldRef.current, tool as Tool, x, y);
+        setSnapshot(makeHudSnapshot(worldRef.current));
+      },
+      dropCarcass: (x: number, y: number) => {
+        const dropped = simDropCarcass(worldRef.current, x, y);
+        setSnapshot(makeHudSnapshot(worldRef.current));
+        return dropped;
+      },
+      stressSpawn: (count: number) => {
+        simStressSpawn(worldRef.current, Math.max(0, Math.floor(count)));
+        setSnapshot(makeHudSnapshot(worldRef.current));
+      },
+      getTuning: (path: string) => getTuningPath(path),
+      patchTuning: (path: string, value: unknown) => {
+        applyTuningPatch(path, value);
+        refreshTuningPanel();
+      },
+      resetWorld: (options?: { seed?: number }) => {
+        replaceWorld(options?.seed);
+      },
+      version: "debug-surface-stage3",
+    };
+    window.__antzoo = bridge;
+    return () => {
+      if (window.__antzoo === bridge) delete window.__antzoo;
+    };
+  }, [resetEpoch]);
 
   const applyToolStroke = (world: World, tool: Tool, fromX: number, fromY: number, toX: number, toY: number) => {
     if (tool !== TOOL_LURE) {
-      applyTool(world, tool, toX, toY);
+      simApplyTool(world, tool, toX, toY);
       return;
     }
     const dx = toX - fromX;
@@ -550,7 +681,7 @@ export function App() {
     const steps = Math.max(1, Math.ceil(dist / TUNING.tools.lureStrokeSpacing));
     for (let i = 1; i <= steps; i += 1) {
       const t = i / steps;
-      applyTool(world, tool, fromX + dx * t, fromY + dy * t);
+      simApplyTool(world, tool, fromX + dx * t, fromY + dy * t);
     }
   };
 
@@ -558,7 +689,7 @@ export function App() {
     const world = worldRef.current;
     const x = world.cursorActive ? world.cursorX : world.camera.x + world.camera.viewW / world.camera.scale * 0.5;
     const y = world.cursorActive ? world.cursorY : world.camera.y + world.camera.viewH / world.camera.scale * 0.5;
-    if (dropCarcass(world, x, y)) setSnapshot(makeHudSnapshot(world));
+    if (simDropCarcass(world, x, y)) setSnapshot(makeHudSnapshot(world));
   };
 
   const refreshTuningPanel = () => setTuningRevision((value) => value + 1);
@@ -615,7 +746,7 @@ export function App() {
     const tool = toolForEvent(event, world.activeTool);
     dragRef.current = { mode: "tool", tool, lastScreenX: event.clientX, lastScreenY: event.clientY, lastWorldX: point.x, lastWorldY: point.y };
     event.currentTarget.setPointerCapture(event.pointerId);
-    applyTool(world, tool, point.x, point.y);
+    simApplyTool(world, tool, point.x, point.y);
   };
 
   const handlePointerMove = (event: React.PointerEvent<HTMLDivElement>) => {

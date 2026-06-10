@@ -1,0 +1,13 @@
+{
+  "name": "food-distance-probe",
+  "seed": 1337,
+  "ticks": 12000,
+  "timeline": [
+    { "at": 600, "do": "applyTool", "tool": "food", "x": 2300, "y": 1150 },
+    { "at": 600, "do": "snapshot" },
+    { "at": 3600, "do": "applyTool", "tool": "food", "x": 2800, "y": 1150 },
+    { "at": 3600, "do": "snapshot" },
+    { "at": 9000, "do": "applyTool", "tool": "food", "x": 3300, "y": 1150 },
+    { "at": 9000, "do": "snapshot" }
+  ]
+}

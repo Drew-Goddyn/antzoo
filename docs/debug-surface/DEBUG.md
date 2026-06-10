@@ -21,10 +21,11 @@ Options:
 | `--sample-every N` | Emit a complete snapshot every N ticks. |
 | `--hash-every N` | Emit a hash-only record every N ticks. |
 | `--events full` | Retain the unbounded event log during the run and emit `event` records before the final summary. |
+| `--scenario PATH` | Load a JSON scenario, apply its seed/tuning before world creation, and execute timeline actions at their ticks. |
 | `--out PATH` | Write JSONL to a file instead of stdout. |
 | `--stress-ants N` | Before timing, call `stressSpawn` until live ant count reaches N. This is a stimulus/setup action and consumes gameplay RNG. |
 
-Every JSONL record has a `type` field. The runner emits `snapshot`, `hash`, `event`, and final `summary` records. The final summary includes `outcome`, `finalTick`, `finalHash`, `peakPopulation`, and `ticksPerSecond`.
+Every JSONL record has a `type` field. The runner emits `snapshot`, `hash`, `event`, `stimulus`, `scenario_snapshot`, and final `summary` records. The final summary includes `outcome`, `finalTick`, `finalHash`, `peakPopulation`, and `ticksPerSecond`.
 
 ## Snapshot schema
 
@@ -111,6 +112,77 @@ Event records:
 | `victory` | `tick`, winner `faction`, `yearsSurvived`. |
 
 Spawns and deliveries are counters, not event records. Per-ant debug state is copied in `copyAntSlot` and reset in `addAnt`/`removeAnt` so swap-remove compaction does not desynchronize identities.
+
+## Browser bridge
+
+The browser installs `window.__antzoo` in development and production builds. All coordinates are world coordinates.
+
+| Method | Contract |
+| --- | --- |
+| `getSnapshot()` | Return `snapshotWorld(world)`. |
+| `getEvents(sinceTick?)` | Return debug events from the ring buffer, filtered to `tick >= sinceTick` when supplied. |
+| `getHash()` | Return `hashWorldState(world)`. |
+| `pause()` / `resume()` | Toggle `world.paused`. |
+| `setSpeed(n)` | Set browser simulation speed. |
+| `step(nTicks)` | Synchronously step exactly `nTicks` fixed ticks, even while paused; restores the previous paused state afterward. |
+| `applyTool(tool, x, y)` | Apply a tool at world coordinates. Supported strings include `food`, `boulder`, `wash`, `lure`, and `dig`. |
+| `dropCarcass(x, y)` | Drop a carcass at world coordinates, returning whether it landed. |
+| `stressSpawn(n)` | Call `stressSpawn(world, n)`. This is a stimulus and consumes gameplay RNG. |
+| `getTuning(path)` | Read a dotted `TUNING` path. |
+| `patchTuning(path, value)` | Write a dotted `TUNING` path. |
+| `resetWorld({seed})` | Recreate the world, preserving current UI speed/tool/debug/pause state and optionally overriding seed. |
+| `version` | Bridge version string. |
+
+Boot URL params:
+
+| Param | Effect |
+| --- | --- |
+| `seed` | Sets `TUNING.seed.value` before `createWorld()`. |
+| `speed` | Sets initial browser speed. |
+| `paused=1` | Starts paused. |
+| `scenario` | Base64-encoded scenario JSON. Its seed/tuning are applied before `createWorld()`, then its timeline executes as the world advances. |
+
+Playwright gate snippet:
+
+```js
+const result = await page.evaluate(() => {
+  const api = window.__antzoo;
+  if (!api) throw new Error("window.__antzoo missing");
+  api.pause();
+  api.step(5000);
+  const snapshot = api.getSnapshot();
+  return {
+    version: api.version,
+    tick: snapshot.meta.tick,
+    hash: api.getHash(),
+    population: snapshot.factions.player.population.total,
+    hasEventsArray: Array.isArray(api.getEvents()),
+    deathsByCauseIsObject: typeof snapshot.factions.player.deathsByCause === "object" && snapshot.factions.player.deathsByCause !== null,
+    schemaVersion: snapshot.meta.schemaVersion
+  };
+});
+console.log(JSON.stringify(result, null, 2));
+```
+
+## Scenarios
+
+Scenarios are stimulus timelines. They contain no assertions; downstream agents analyze emitted snapshots, events, hashes, and summaries.
+
+```json
+{
+  "name": "food-distance-probe",
+  "seed": 1337,
+  "ticks": 12000,
+  "tuning": { "ants.start": 150 },
+  "timeline": [
+    { "at": 600, "do": "applyTool", "tool": "food", "x": 2300, "y": 1150 },
+    { "at": 600, "do": "snapshot" },
+    { "at": 9000, "do": "applyTool", "tool": "food", "x": 3000, "y": 1150 }
+  ]
+}
+```
+
+Actions execute when `world.stepCount` reaches `at`, before the next simulation step. Supported actions are `applyTool`, `dropCarcass`, `stressSpawn`, `patchTuning`, and `snapshot`. The CLI and browser bridge use the same scenario executor.
 
 ## Caveats
 

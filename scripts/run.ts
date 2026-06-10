@@ -1,8 +1,9 @@
-import { createWriteStream, mkdirSync } from "node:fs";
+import { createWriteStream, mkdirSync, readFileSync } from "node:fs";
 import { dirname } from "node:path";
 import { createWorld, stepWorld, stressSpawn } from "../src/sim";
 import { snapshotWorld, hashWorldState } from "../src/debug/snapshot";
 import { getDebugEvents, setDebugEventCapture } from "../src/debug/events";
+import { applyScenarioSetup, createScenarioExecutor, parseScenario, type Scenario, type ScenarioRecord } from "../src/debug/scenario";
 import { TUNING } from "../src/tuning";
 
 interface RunOptions {
@@ -13,6 +14,9 @@ interface RunOptions {
   out: string | null;
   stressAnts: number;
   events: "none" | "full";
+  scenarioPath: string | null;
+  seedExplicit: boolean;
+  ticksExplicit: boolean;
 }
 
 function readNumber(args: string[], index: number, name: string): number {
@@ -32,14 +36,19 @@ function parseArgs(argv: string[]): RunOptions {
     out: null,
     stressAnts: 0,
     events: "none",
+    scenarioPath: null,
+    seedExplicit: false,
+    ticksExplicit: false,
   };
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i];
     if (arg === "--seed") {
       options.seed = readNumber(argv, i, arg);
+      options.seedExplicit = true;
       i += 1;
     } else if (arg === "--ticks") {
       options.ticks = readNumber(argv, i, arg);
+      options.ticksExplicit = true;
       i += 1;
     } else if (arg === "--sample-every") {
       options.sampleEvery = readNumber(argv, i, arg);
@@ -59,6 +68,11 @@ function parseArgs(argv: string[]): RunOptions {
       const value = argv[i + 1];
       if (value !== "full" && value !== "none") throw new Error("--events must be full or none");
       options.events = value;
+      i += 1;
+    } else if (arg === "--scenario") {
+      const value = argv[i + 1];
+      if (value === undefined) throw new Error("Missing value for --scenario");
+      options.scenarioPath = value;
       i += 1;
     } else if (arg === "--help" || arg === "-h") {
       console.log("Usage: npm run sim -- --seed 1337 --ticks 50000 --sample-every 600 --hash-every 1000 --events full --out runs/x.jsonl --stress-ants 1200");
@@ -88,16 +102,27 @@ function peakPopulation(world: ReturnType<typeof createWorld>): number {
 
 async function main(): Promise<void> {
   const options = parseArgs(process.argv.slice(2));
-  TUNING.seed.value = options.seed;
+  const scenario: Scenario | null = options.scenarioPath ? parseScenario(JSON.parse(readFileSync(options.scenarioPath, "utf8"))) : null;
+  if (scenario) {
+    applyScenarioSetup(scenario);
+    if (!options.ticksExplicit && scenario.ticks !== undefined) options.ticks = scenario.ticks;
+  }
+  if (options.seedExplicit || !scenario?.seed) TUNING.seed.value = options.seed;
   const world = createWorld();
+  const scenarioExecutor = scenario ? createScenarioExecutor(scenario) : null;
   if (options.events === "full") setDebugEventCapture(world, "full");
   if (options.stressAnts > world.ants.count) stressSpawn(world, options.stressAnts - world.ants.count);
   if (options.out !== null) mkdirSync(dirname(options.out), { recursive: true });
   const stream = options.out === null ? process.stdout : createWriteStream(options.out);
   const writeLine = (value: unknown) => stream.write(`${JSON.stringify(value)}\n`);
+  const writeScenarioRecord = (record: ScenarioRecord) => {
+    if (record.type === "scenario_snapshot") writeLine({ ...record, snapshot: snapshotWorld(world) });
+    else writeLine(record);
+  };
   const start = performance.now();
   let peak = world.ants.count;
   for (let tick = 1; tick <= options.ticks && outcomeFor(world) === "running"; tick += 1) {
+    scenarioExecutor?.runDue(world, writeScenarioRecord);
     stepWorld(world, 1 / TUNING.time.stepHz);
     if (world.ants.count > peak) peak = world.ants.count;
     if (options.hashEvery > 0 && world.stepCount % options.hashEvery === 0) {
@@ -108,6 +133,7 @@ async function main(): Promise<void> {
       writeLine({ type: "snapshot", snapshot: snapshotWorld(world, { ticksPerSecond: world.stepCount / Math.max(elapsed, 0.001) }) });
     }
   }
+  scenarioExecutor?.runDue(world, writeScenarioRecord);
   const elapsed = (performance.now() - start) / TUNING.time.msPerSec;
   if (options.events === "full") {
     for (const event of getDebugEvents(world)) writeLine({ type: "event", event });

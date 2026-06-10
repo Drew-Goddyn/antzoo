@@ -1,0 +1,14 @@
+{
+  "name": "winter-reserve-stress",
+  "seed": 1337,
+  "ticks": 33000,
+  "tuning": {
+    "ecology.bushRegrowSec": 9,
+    "spawn.cost": 10
+  },
+  "timeline": [
+    { "at": 0, "do": "patchTuning", "path": "ecology.bushRegrowSec", "value": 9 },
+    { "at": 600, "do": "applyTool", "tool": "food", "x": 2050, "y": 1152 },
+    { "at": 28680, "do": "snapshot" }
+  ]
+}
