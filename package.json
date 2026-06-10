@@ -22,7 +22,8 @@
   "scripts": {
     "dev": "vite --host 127.0.0.1",
     "typecheck": "tsc --noEmit",
-    "build": "tsc --noEmit && vite build"
+    "build": "tsc --noEmit && vite build",
+    "copy:zip": "scripts/copy-source-zip.sh"
   },
   "dependencies": {
     "pixi.js": "^8.19.0",
