@@ -2,7 +2,7 @@ import { createWriteStream, mkdirSync, readFileSync } from "node:fs";
 import { dirname } from "node:path";
 import { createWorld, stepWorld, stressSpawn } from "../src/sim";
 import { snapshotWorld, hashWorldState } from "../src/debug/snapshot";
-import { getDebugEvents, setDebugEventCapture } from "../src/debug/events";
+import { configureDebugTrace, getDebugEvents, getDebugTrace, setDebugEventCapture } from "../src/debug/events";
 import { applyScenarioSetup, createScenarioExecutor, parseScenario, type Scenario, type ScenarioRecord } from "../src/debug/scenario";
 import { TUNING } from "../src/tuning";
 
@@ -15,6 +15,9 @@ interface RunOptions {
   stressAnts: number;
   events: "none" | "full";
   scenarioPath: string | null;
+  traceIds: number[];
+  traceArms: string[];
+  traceWindow: [number, number] | null;
   seedExplicit: boolean;
   ticksExplicit: boolean;
 }
@@ -27,6 +30,26 @@ function readNumber(args: string[], index: number, name: string): number {
   return parsed;
 }
 
+function readNumberList(args: string[], index: number, name: string): number[] {
+  const value = args[index + 1];
+  if (value === undefined) throw new Error(`Missing value for ${name}`);
+  return value
+    .split(",")
+    .map((part) => Number(part.trim()))
+    .filter((part) => Number.isFinite(part) && part > 0)
+    .map((part) => Math.floor(part));
+}
+
+function readTraceWindow(args: string[], index: number): [number, number] {
+  const value = args[index + 1];
+  if (value === undefined) throw new Error("Missing value for --trace-window");
+  const [rawStart, rawEnd] = value.split(":");
+  const start = Number(rawStart);
+  const end = Number(rawEnd);
+  if (!Number.isFinite(start) || !Number.isFinite(end) || start < 0 || end < start) throw new Error(`Invalid --trace-window: ${value}`);
+  return [Math.floor(start), Math.floor(end)];
+}
+
 function parseArgs(argv: string[]): RunOptions {
   const options: RunOptions = {
     seed: TUNING.seed.value,
@@ -37,6 +60,9 @@ function parseArgs(argv: string[]): RunOptions {
     stressAnts: 0,
     events: "none",
     scenarioPath: null,
+    traceIds: [],
+    traceArms: [],
+    traceWindow: null,
     seedExplicit: false,
     ticksExplicit: false,
   };
@@ -74,8 +100,19 @@ function parseArgs(argv: string[]): RunOptions {
       if (value === undefined) throw new Error("Missing value for --scenario");
       options.scenarioPath = value;
       i += 1;
+    } else if (arg === "--trace-ids") {
+      options.traceIds = readNumberList(argv, i, arg);
+      i += 1;
+    } else if (arg === "--trace-arm") {
+      const value = argv[i + 1];
+      if (value === undefined) throw new Error("Missing value for --trace-arm");
+      options.traceArms.push(value);
+      i += 1;
+    } else if (arg === "--trace-window") {
+      options.traceWindow = readTraceWindow(argv, i);
+      i += 1;
     } else if (arg === "--help" || arg === "-h") {
-      console.log("Usage: npm run sim -- --seed 1337 --ticks 50000 --sample-every 600 --hash-every 1000 --events full --out runs/x.jsonl --stress-ants 1200");
+      console.log("Usage: npm run sim -- --seed 1337 --ticks 50000 --sample-every 600 --hash-every 1000 --events full --trace-ids 412,517 --trace-arm beyondR:5 --trace-window 30000:41300 --out runs/x.jsonl --stress-ants 1200");
       process.exit(0);
     } else {
       throw new Error(`Unknown argument: ${arg}`);
@@ -111,6 +148,14 @@ async function main(): Promise<void> {
   const world = createWorld();
   const scenarioExecutor = scenario ? createScenarioExecutor(scenario) : null;
   if (options.events === "full") setDebugEventCapture(world, "full");
+  if (options.traceIds.length > 0 || options.traceArms.length > 0) {
+    configureDebugTrace(world, {
+      ids: options.traceIds,
+      arms: options.traceArms,
+      windowStart: options.traceWindow?.[0],
+      windowEnd: options.traceWindow?.[1],
+    });
+  }
   if (options.stressAnts > world.ants.count) stressSpawn(world, options.stressAnts - world.ants.count);
   if (options.out !== null) mkdirSync(dirname(options.out), { recursive: true });
   const stream = options.out === null ? process.stdout : createWriteStream(options.out);
@@ -138,6 +183,7 @@ async function main(): Promise<void> {
   if (options.events === "full") {
     for (const event of getDebugEvents(world)) writeLine({ type: "event", event });
   }
+  for (const trace of getDebugTrace(world)) writeLine({ type: "trace", trace });
   writeLine({
     type: "summary",
     outcome: outcomeFor(world),

@@ -3,7 +3,7 @@ import { applyTool as simApplyTool, createWorld, dropCarcass as simDropCarcass, 
 import { CameraState, HudSnapshot, Renderer, Tool, World } from "./types";
 import { createRenderer, destroyRenderer, renderWorld } from "./render";
 import { DEFAULTS, TUNING } from "./tuning";
-import { getDebugEvents } from "./debug/events";
+import { clearDebugTrace, configureDebugTrace, getDebugEvents, getDebugTrace, type DebugTraceConfig, type TraceTickRecord } from "./debug/events";
 import { hashWorldState, snapshotWorld, type WorldSnapshot } from "./debug/snapshot";
 import { applyScenarioSetup, applyTuningPatch, createScenarioExecutor, getTuningPath, scenarioFromBase64, type Scenario, type ScenarioExecutor } from "./debug/scenario";
 
@@ -69,6 +69,9 @@ interface AntzooBridge {
   getTuning(path: string): unknown;
   patchTuning(path: string, value: unknown): void;
   resetWorld(options?: { seed?: number }): void;
+  configureTrace(config: DebugTraceConfig): void;
+  clearTrace(): void;
+  getTrace(id: number): TraceTickRecord[];
   version: string;
 }
 
@@ -662,7 +665,14 @@ export function App() {
       resetWorld: (options?: { seed?: number }) => {
         replaceWorld(options?.seed);
       },
-      version: "debug-surface-stage3",
+      configureTrace: (config: DebugTraceConfig) => {
+        configureDebugTrace(worldRef.current, config);
+      },
+      clearTrace: () => {
+        clearDebugTrace(worldRef.current);
+      },
+      getTrace: (id: number) => getDebugTrace(worldRef.current, id),
+      version: "debug-surface-stage4",
     };
     window.__antzoo = bridge;
     return () => {

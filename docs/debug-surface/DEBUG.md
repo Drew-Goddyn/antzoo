@@ -22,10 +22,14 @@ Options:
 | `--hash-every N` | Emit a hash-only record every N ticks. |
 | `--events full` | Retain the unbounded event log during the run and emit `event` records before the final summary. |
 | `--scenario PATH` | Load a JSON scenario, apply its seed/tuning before world creation, and execute timeline actions at their ticks. |
+| `--trace-ids A,B` | Trace the listed stable ant debug ids. |
+| `--trace-arm beyondR:N` | Trace the next N ants that cross beyond one third of the world diagonal from their own nest. May be repeated with other arms. |
+| `--trace-arm nan_respawn` | Trace ants that hit the non-finite respawn path. |
+| `--trace-window START:END` | Capture trace rows only for ticks in the inclusive window. Arming can happen outside the window. |
 | `--out PATH` | Write JSONL to a file instead of stdout. |
 | `--stress-ants N` | Before timing, call `stressSpawn` until live ant count reaches N. This is a stimulus/setup action and consumes gameplay RNG. |
 
-Every JSONL record has a `type` field. The runner emits `snapshot`, `hash`, `event`, `stimulus`, `scenario_snapshot`, and final `summary` records. The final summary includes `outcome`, `finalTick`, `finalHash`, `peakPopulation`, and `ticksPerSecond`.
+Every JSONL record has a `type` field. The runner emits `snapshot`, `hash`, `event`, `trace`, `stimulus`, `scenario_snapshot`, and final `summary` records. The final summary includes `outcome`, `finalTick`, `finalHash`, `peakPopulation`, and `ticksPerSecond`.
 
 ## Snapshot schema
 
@@ -113,6 +117,56 @@ Event records:
 
 Spawns and deliveries are counters, not event records. Per-ant debug state is copied in `copyAntSlot` and reset in `addAnt`/`removeAnt` so swap-remove compaction does not desynchronize identities.
 
+## Decision traces
+
+Decision tracing is opt-in. It is debug-only, excluded from `hashWorldState`, never calls `nextRand`, and does not write gameplay state. When no trace is armed, the ant hot path checks only whether tracing is enabled.
+
+CLI examples:
+
+```sh
+npm run sim -- --scenario scenarios/baseline-1337.json --trace-ids 412,517 --trace-window 30000:41300
+npm run sim -- --seed 1337 --ticks 50000 --trace-arm beyondR:5
+npm run sim -- --seed 1337 --ticks 50000 --trace-arm nan_respawn
+```
+
+Headless trace rows are emitted as JSONL records:
+
+```json
+{
+  "type": "trace",
+  "trace": {
+    "type": "tick",
+    "tick": 30001,
+    "id": 412,
+    "x": 2010.5,
+    "y": 1140.25,
+    "heading": -1.1,
+    "mode": 1,
+    "energy": 42.75,
+    "carrying": 0,
+    "timerA": 0,
+    "timerB": 0,
+    "sensors": [],
+    "transitions": [],
+    "interactions": []
+  }
+}
+```
+
+Trace tick fields:
+
+| Path | Meaning |
+| --- | --- |
+| `tick`, `id` | Simulation tick and stable ant debug id. |
+| `x`, `y`, `heading` | Ant position and heading at the start of the traced tick. |
+| `mode` | Numeric `AntMode`: 0 Wander, 1 Seek, 2 Carry. |
+| `energy`, `carrying`, `timerA`, `timerB` | Ant state at the start of the traced tick. |
+| `sensors[]` | Steering sensor sample for the tick. `field` is `food` or `home`; `center`, `left`, `right` are the primary pheromone field values already read by steering; `threshold` is `TUNING.sim.sensorThreshold`; `*Above` fields compare each value to that threshold. |
+| `transitions[]` | Mode transition records `{from, to, reason}`. Reasons are `saw_trail`, `saw_food`, `timer_expired`, `recruited`, `delivered`, `gave_up`. Timer expiry can have the same `from` and `to` because it records timer state crossing zero. |
+| `interactions[]` | Discrete interactions observed for the ant: `pickup`, `delivery`, `combat`, `spider`, `starvation`, `nan_respawn`. |
+
+`--trace-window START:END` is inclusive. `getTrace(id)` in the browser returns the per-id ring buffer; headless output keeps the full trace stream for the run.
+
 ## Browser bridge
 
 The browser installs `window.__antzoo` in development and production builds. All coordinates are world coordinates.
@@ -131,6 +185,9 @@ The browser installs `window.__antzoo` in development and production builds. All
 | `getTuning(path)` | Read a dotted `TUNING` path. |
 | `patchTuning(path, value)` | Write a dotted `TUNING` path. |
 | `resetWorld({seed})` | Recreate the world, preserving current UI speed/tool/debug/pause state and optionally overriding seed. |
+| `configureTrace(config)` | Arm decision tracing. Accepts `{ids, arms, windowStart, windowEnd, beyondRadius, beyondCount, nanRespawn, clear}`. `arms` accepts `beyondR:N` and `nan_respawn`, matching the CLI. |
+| `clearTrace()` | Clear trace configuration, rings, and active per-ant trace flags. |
+| `getTrace(id)` | Return the browser ring buffer for a traced ant id. |
 | `version` | Bridge version string. |
 
 Boot URL params:

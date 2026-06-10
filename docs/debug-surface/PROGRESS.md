@@ -499,3 +499,331 @@ dist/assets/index-DsKo8wDF.js               610.11 kB │ gzip: 187.79 kB
 - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
 ✓ built in 6.50s
 ```
+
+## Stage 4 — Targeted decision traces
+
+### Ambiguities / conservative calls
+
+- `--trace-arm beyondR:N` is interpreted as "trace the next N ants crossing the default dispersion radius"; the radius is the same one-third world diagonal used by snapshots unless the bridge config supplies `beyondRadius`.
+- The BRIEF says "one JSONL stream per traced ant headless." The CLI keeps the runner's single JSONL output stream and emits one `trace` record per traced ant tick with the stable `id` on every row, so downstream workers can split by id without managing multiple output files.
+- `timer_expired` is included in `transitions[]` even when `from` and `to` are the same mode, because the existing timer expiry does not always cause a mode change.
+- The retrospective target was selected literally as the first starvation death after tick 30000. That ant's final 60 ticks had empty `sensors[]` because it did not execute worker steering in that window; I did not cherry-pick a richer-looking death.
+
+### Gate 1 — Traced-run Parity
+
+Command:
+
+```sh
+tmp_untraced=$(mktemp /tmp/antzoo-untraced-XXXXXX.jsonl); tmp_traced=$(mktemp /tmp/antzoo-traced-XXXXXX.jsonl); npm run sim -- --seed 1337 --ticks 50000 --hash-every 10000 | rg '^\{' > "$tmp_untraced" && npm run sim -- --seed 1337 --ticks 50000 --hash-every 10000 --trace-ids 1 --trace-window 1:5 | rg '^\{' > "$tmp_traced" && node -e 'const fs = require("fs"); const [a,b] = process.argv.slice(1).map((path) => fs.readFileSync(path, "utf8").trim().split(/\n/).map(JSON.parse)); const hashes = (rows) => rows.filter((row) => row.type === "hash").map((row) => [row.tick, row.hash]); const h1 = hashes(a); const h2 = hashes(b); console.log("tick\tuntraced_hash\ttraced_hash\tmatch"); for (let i = 0; i < h1.length; i += 1) console.log(`${h1[i][0]}\t${h1[i][1]}\t${h2[i]?.[1]}\t${h1[i][1] === h2[i]?.[1] ? "yes" : "no"}`); const s1 = a.find((row) => row.type === "summary"); const s2 = b.find((row) => row.type === "summary"); console.log(`trace_rows\t${b.filter((row) => row.type === "trace").length}`); console.log(`final_untraced\t${s1.finalHash}`); console.log(`final_traced\t${s2.finalHash}`); console.log(`final_match\t${s1.finalHash === s2.finalHash ? "yes" : "no"}`);' "$tmp_untraced" "$tmp_traced"; code=$?; rm "$tmp_untraced" "$tmp_traced"; exit $code
+```
+
+Output:
+
+```text
+tick	untraced_hash	traced_hash	match
+10000	206a4c9c844b2de8	206a4c9c844b2de8	yes
+20000	f4812ee284bb3e36	f4812ee284bb3e36	yes
+30000	c3aacd70ee76a780	c3aacd70ee76a780	yes
+trace_rows	5
+final_untraced	23e9d299385713f9
+final_traced	23e9d299385713f9
+final_match	yes
+```
+
+### Gate 2 — Retrospective Targeting Demo
+
+Selection command:
+
+```sh
+tmp=$(mktemp /tmp/antzoo-baseline-events-XXXXXX.jsonl); npm run sim -- --scenario scenarios/baseline-1337.json --events full | rg '^\{' > "$tmp"; echo "rows=$(wc -l < "$tmp")"; node -e 'const fs = require("fs"); const rows = fs.readFileSync(process.argv[1], "utf8").trim().split(/\n/).filter(Boolean).map(JSON.parse); const event = rows.find((row) => row.type === "event" && row.event.type === "death" && row.event.cause === "starvation" && row.event.tick > 30000); if (!event) { console.log("no post-30000 starvation death"); process.exit(2); } console.log(JSON.stringify(event));' "$tmp"; code=$?; rm "$tmp"; exit $code
+```
+
+Output:
+
+```text
+rows=     506
+{"type":"event","event":{"type":"death","tick":31398,"faction":0,"cause":"starvation","id":386,"birthTick":24174,"age":7224,"deliveries":0,"distanceTraveled":5668.51953125,"ticksInMode":[120.41123962402344,0,0],"ticksSinceLastDelivery":120.41123962402344,"ticksSinceFoodPerceived":120.41123962402344}}
+```
+
+Trace command:
+
+```sh
+npm run sim -- --scenario scenarios/baseline-1337.json --trace-ids 386 --trace-window 31339:31398 | rg '^\{' | node -e 'const fs = require("fs"); const rows = fs.readFileSync(0, "utf8").trim().split(/\n/).filter(Boolean).map(JSON.parse); const traces = rows.filter((row) => row.type === "trace").slice(-60); console.log("selected_starvation_death id=386 tick=31398 window=31339:31398"); for (const row of traces) console.log(JSON.stringify(row)); const summary = rows.find((row) => row.type === "summary"); console.log(JSON.stringify({type:"trace_demo_summary", traceRows: traces.length, finalHash: summary.finalHash, finalTick: summary.finalTick, outcome: summary.outcome}));'
+```
+
+Output:
+
+```text
+selected_starvation_death id=386 tick=31398 window=31339:31398
+{"type":"trace","trace":{"type":"tick","tick":31339,"id":386,"x":1986.1141357421875,"y":1227.3671875,"heading":0.6649394631385803,"mode":0,"energy":1.1842942237854004,"carrying":0,"timerA":0,"timerB":0,"sensors":[],"transitions":[],"interactions":[]}}
+{"type":"trace","trace":{"type":"tick","tick":31340,"id":386,"x":1986.826171875,"y":1227.917724609375,"heading":0.6581935286521912,"mode":0,"energy":1.1642942428588867,"carrying":0,"timerA":0,"timerB":0,"sensors":[],"transitions":[],"interactions":[]}}
+{"type":"trace","trace":{"type":"tick","tick":31341,"id":386,"x":1987.4898681640625,"y":1228.525634765625,"heading":0.7415268421173096,"mode":0,"energy":1.144294261932373,"carrying":0,"timerA":0,"timerB":0,"sensors":[],"transitions":[],"interactions":[]}}
+{"type":"trace","trace":{"type":"tick","tick":31342,"id":386,"x":1988.1905517578125,"y":1229.0904541015625,"heading":0.6783939003944397,"mode":0,"energy":1.1242942810058594,"carrying":0,"timerA":0,"timerB":0,"sensors":[],"transitions":[],"interactions":[]}}
+{"type":"trace","trace":{"type":"tick","tick":31343,"id":386,"x":1988.8707275390625,"y":1229.6798095703125,"heading":0.7140030264854431,"mode":0,"energy":1.1042943000793457,"carrying":0,"timerA":0,"timerB":0,"sensors":[],"transitions":[],"interactions":[]}}
+{"type":"trace","trace":{"type":"tick","tick":31344,"id":386,"x":1989.5511474609375,"y":1230.268798828125,"heading":0.7135092616081238,"mode":0,"energy":1.084294319152832,"carrying":0,"timerA":0,"timerB":0,"sensors":[],"transitions":[],"interactions":[]}}
+{"type":"trace","trace":{"type":"tick","tick":31345,"id":386,"x":1990.2783203125,"y":1230.7991943359375,"heading":0.6301759481430054,"mode":0,"energy":1.0642943382263184,"carrying":0,"timerA":0,"timerB":0,"sensors":[],"transitions":[],"interactions":[]}}
+{"type":"trace","trace":{"type":"tick","tick":31346,"id":386,"x":1991.047119140625,"y":1231.2672119140625,"heading":0.546842634677887,"mode":0,"energy":1.0442943572998047,"carrying":0,"timerA":0,"timerB":0,"sensors":[],"transitions":[],"interactions":[]}}
+{"type":"trace","trace":{"type":"tick","tick":31347,"id":386,"x":1991.7742919921875,"y":1231.797607421875,"heading":0.6301759481430054,"mode":0,"energy":1.024294376373291,"carrying":0,"timerA":0,"timerB":0,"sensors":[],"transitions":[],"interactions":[]}}
+{"type":"trace","trace":{"type":"tick","tick":31348,"id":386,"x":1992.5430908203125,"y":1232.265625,"heading":0.546842634677887,"mode":0,"energy":1.0042943954467773,"carrying":0,"timerA":0,"timerB":0,"sensors":[],"transitions":[],"interactions":[]}}
+{"type":"trace","trace":{"type":"tick","tick":31349,"id":386,"x":1993.270263671875,"y":1232.7960205078125,"heading":0.6301759481430054,"mode":0,"energy":0.9842944145202637,"carrying":0,"timerA":0,"timerB":0,"sensors":[],"transitions":[],"interactions":[]}}
+{"type":"trace","trace":{"type":"tick","tick":31350,"id":386,"x":1994.0390625,"y":1233.2640380859375,"heading":0.546842634677887,"mode":0,"energy":0.96429443359375,"carrying":0,"timerA":0,"timerB":0,"sensors":[],"transitions":[],"interactions":[]}}
+{"type":"trace","trace":{"type":"tick","tick":31351,"id":386,"x":1994.835693359375,"y":1233.682861328125,"heading":0.4840053617954254,"mode":0,"energy":0.9442944526672363,"carrying":0,"timerA":0,"timerB":0,"sensors":[],"transitions":[],"interactions":[]}}
+{"type":"trace","trace":{"type":"tick","tick":31352,"id":386,"x":1995.617431640625,"y":1234.1287841796875,"heading":0.51838618516922,"mode":0,"energy":0.9242944717407227,"carrying":0,"timerA":0,"timerB":0,"sensors":[],"transitions":[],"interactions":[]}}
+{"type":"trace","trace":{"type":"tick","tick":31353,"id":386,"x":1996.359375,"y":1234.63818359375,"heading":0.6017194986343384,"mode":0,"energy":0.904294490814209,"carrying":0,"timerA":0,"timerB":0,"sensors":[],"transitions":[],"interactions":[]}}
+{"type":"trace","trace":{"type":"tick","tick":31354,"id":386,"x":1997.14111328125,"y":1235.0841064453125,"heading":0.51838618516922,"mode":0,"energy":0.8842945098876953,"carrying":0,"timerA":0,"timerB":0,"sensors":[],"transitions":[],"interactions":[]}}
+{"type":"trace","trace":{"type":"tick","tick":31355,"id":386,"x":1997.916259765625,"y":1235.5413818359375,"heading":0.5329781770706177,"mode":0,"energy":0.8642945289611816,"carrying":0,"timerA":0,"timerB":0,"sensors":[],"transitions":[],"interactions":[]}}
+{"type":"trace","trace":{"type":"tick","tick":31356,"id":386,"x":1998.658203125,"y":1236.05078125,"heading":0.6017099022865295,"mode":0,"energy":0.844294548034668,"carrying":0,"timerA":0,"timerB":0,"sensors":[],"transitions":[],"interactions":[]}}
+{"type":"trace","trace":{"type":"tick","tick":31357,"id":386,"x":1999.4197998046875,"y":1236.5302734375,"heading":0.5618636608123779,"mode":0,"energy":0.8242945671081543,"carrying":0,"timerA":0,"timerB":0,"sensors":[],"transitions":[],"interactions":[]}}
+{"type":"trace","trace":{"type":"tick","tick":31358,"id":386,"x":2000.21875,"y":1236.9447021484375,"heading":0.47853031754493713,"mode":0,"energy":0.8042945861816406,"carrying":0,"timerA":0,"timerB":0,"sensors":[],"transitions":[],"interactions":[]}}
+{"type":"trace","trace":{"type":"tick","tick":31359,"id":386,"x":2000.9803466796875,"y":1237.4241943359375,"heading":0.5618636608123779,"mode":0,"energy":0.784294605255127,"carrying":0,"timerA":0,"timerB":0,"sensors":[],"transitions":[],"interactions":[]}}
+{"type":"trace","trace":{"type":"tick","tick":31360,"id":386,"x":2001.779296875,"y":1237.838623046875,"heading":0.47853031754493713,"mode":0,"energy":0.7642946243286133,"carrying":0,"timerA":0,"timerB":0,"sensors":[],"transitions":[],"interactions":[]}}
+{"type":"trace","trace":{"type":"tick","tick":31361,"id":386,"x":2002.6099853515625,"y":1238.18505859375,"heading":0.39519697427749634,"mode":0,"energy":0.7442946434020996,"carrying":0,"timerA":0,"timerB":0,"sensors":[],"transitions":[],"interactions":[]}}
+{"type":"trace","trace":{"type":"tick","tick":31362,"id":386,"x":2003.43896484375,"y":1238.535400390625,"heading":0.39984753727912903,"mode":0,"energy":0.7242946624755859,"carrying":0,"timerA":0,"timerB":0,"sensors":[],"transitions":[],"interactions":[]}}
+{"type":"trace","trace":{"type":"tick","tick":31363,"id":386,"x":2004.2801513671875,"y":1238.855224609375,"heading":0.36335086822509766,"mode":0,"energy":0.7042946815490723,"carrying":0,"timerA":0,"timerB":0,"sensors":[],"transitions":[],"interactions":[]}}
+{"type":"trace","trace":{"type":"tick","tick":31364,"id":386,"x":2005.091796875,"y":1239.2440185546875,"heading":0.44668421149253845,"mode":0,"energy":0.6842947006225586,"carrying":0,"timerA":0,"timerB":0,"sensors":[],"transitions":[],"interactions":[]}}
+{"type":"trace","trace":{"type":"tick","tick":31365,"id":386,"x":2005.923583984375,"y":1239.587646484375,"heading":0.3918065130710602,"mode":0,"energy":0.6642947196960449,"carrying":0,"timerA":0,"timerB":0,"sensors":[],"transitions":[],"interactions":[]}}
+{"type":"trace","trace":{"type":"tick","tick":31366,"id":386,"x":2006.7734375,"y":1239.8837890625,"heading":0.3352445662021637,"mode":0,"energy":0.6442947387695312,"carrying":0,"timerA":0,"timerB":0,"sensors":[],"transitions":[],"interactions":[]}}
+{"type":"trace","trace":{"type":"tick","tick":31367,"id":386,"x":2007.6314697265625,"y":1240.155517578125,"heading":0.3066392242908478,"mode":0,"energy":0.6242947578430176,"carrying":0,"timerA":0,"timerB":0,"sensors":[],"transitions":[],"interactions":[]}}
+{"type":"trace","trace":{"type":"tick","tick":31368,"id":386,"x":2008.46923828125,"y":1240.4844970703125,"heading":0.37415581941604614,"mode":0,"energy":0.6042947769165039,"carrying":0,"timerA":0,"timerB":0,"sensors":[],"transitions":[],"interactions":[]}}
+{"type":"trace","trace":{"type":"tick","tick":31369,"id":386,"x":2009.3026123046875,"y":1240.8243408203125,"heading":0.38722485303878784,"mode":0,"energy":0.5842947959899902,"carrying":0,"timerA":0,"timerB":0,"sensors":[],"transitions":[],"interactions":[]}}
+{"type":"trace","trace":{"type":"tick","tick":31370,"id":386,"x":2010.135986328125,"y":1241.1641845703125,"heading":0.3872387111186981,"mode":0,"energy":0.5642948150634766,"carrying":0,"timerA":0,"timerB":0,"sensors":[],"transitions":[],"interactions":[]}}
+{"type":"trace","trace":{"type":"tick","tick":31371,"id":386,"x":2010.9381103515625,"y":1241.572265625,"heading":0.4705720543861389,"mode":0,"energy":0.5442948341369629,"carrying":0,"timerA":0,"timerB":0,"sensors":[],"transitions":[],"interactions":[]}}
+{"type":"trace","trace":{"type":"tick","tick":31372,"id":386,"x":2011.7244873046875,"y":1242.010009765625,"heading":0.5078954696655273,"mode":0,"energy":0.5242948532104492,"carrying":0,"timerA":0,"timerB":0,"sensors":[],"transitions":[],"interactions":[]}}
+{"type":"trace","trace":{"type":"tick","tick":31373,"id":386,"x":2012.5445556640625,"y":1242.3807373046875,"heading":0.42456212639808655,"mode":0,"energy":0.5042948722839355,"carrying":0,"timerA":0,"timerB":0,"sensors":[],"transitions":[],"interactions":[]}}
+{"type":"trace","trace":{"type":"tick","tick":31374,"id":386,"x":2013.33447265625,"y":1242.8121337890625,"heading":0.49981415271759033,"mode":0,"energy":0.4842948615550995,"carrying":0,"timerA":0,"timerB":0,"sensors":[],"transitions":[],"interactions":[]}}
+{"type":"trace","trace":{"type":"tick","tick":31375,"id":386,"x":2014.1575927734375,"y":1243.17626953125,"heading":0.41648080945014954,"mode":0,"energy":0.4642948508262634,"carrying":0,"timerA":0,"timerB":0,"sensors":[],"transitions":[],"interactions":[]}}
+{"type":"trace","trace":{"type":"tick","tick":31376,"id":386,"x":2014.9510498046875,"y":1243.60107421875,"heading":0.4914942681789398,"mode":0,"energy":0.44429484009742737,"carrying":0,"timerA":0,"timerB":0,"sensors":[],"transitions":[],"interactions":[]}}
+{"type":"trace","trace":{"type":"tick","tick":31377,"id":386,"x":2015.7657470703125,"y":1243.9833984375,"heading":0.4387858510017395,"mode":0,"energy":0.4242948293685913,"carrying":0,"timerA":0,"timerB":0,"sensors":[],"transitions":[],"interactions":[]}}
+{"type":"trace","trace":{"type":"tick","tick":31378,"id":386,"x":2016.6094970703125,"y":1244.296630859375,"heading":0.3554525077342987,"mode":0,"energy":0.40429481863975525,"carrying":0,"timerA":0,"timerB":0,"sensors":[],"transitions":[],"interactions":[]}}
+{"type":"trace","trace":{"type":"tick","tick":31379,"id":386,"x":2017.4764404296875,"y":1244.53857421875,"heading":0.2721191644668579,"mode":0,"energy":0.3842948079109192,"carrying":0,"timerA":0,"timerB":0,"sensors":[],"transitions":[],"interactions":[]}}
+{"type":"trace","trace":{"type":"tick","tick":31380,"id":386,"x":2018.343017578125,"y":1244.78173828125,"heading":0.2736062705516815,"mode":0,"energy":0.36429479718208313,"carrying":0,"timerA":0,"timerB":0,"sensors":[],"transitions":[],"interactions":[]}}
+{"type":"trace","trace":{"type":"tick","tick":31381,"id":386,"x":2019.2252197265625,"y":1244.9600830078125,"heading":0.19942593574523926,"mode":0,"energy":0.34429478645324707,"carrying":0,"timerA":0,"timerB":0,"sensors":[],"transitions":[],"interactions":[]}}
+{"type":"trace","trace":{"type":"tick","tick":31382,"id":386,"x":2020.0894775390625,"y":1245.211181640625,"heading":0.28275927901268005,"mode":0,"energy":0.324294775724411,"carrying":0,"timerA":0,"timerB":0,"sensors":[],"transitions":[],"interactions":[]}}
+{"type":"trace","trace":{"type":"tick","tick":31383,"id":386,"x":2020.9298095703125,"y":1245.5333251953125,"heading":0.36609262228012085,"mode":0,"energy":0.30429476499557495,"carrying":0,"timerA":0,"timerB":0,"sensors":[],"transitions":[],"interactions":[]}}
+{"type":"trace","trace":{"type":"tick","tick":31384,"id":386,"x":2021.7515869140625,"y":1245.900146484375,"heading":0.4198516011238098,"mode":0,"energy":0.2842947542667389,"carrying":0,"timerA":0,"timerB":0,"sensors":[],"transitions":[],"interactions":[]}}
+{"type":"trace","trace":{"type":"tick","tick":31385,"id":386,"x":2022.60107421875,"y":1246.1973876953125,"heading":0.336518257856369,"mode":0,"energy":0.26429474353790283,"carrying":0,"timerA":0,"timerB":0,"sensors":[],"transitions":[],"interactions":[]}}
+{"type":"trace","trace":{"type":"tick","tick":31386,"id":386,"x":2023.472412109375,"y":1246.4228515625,"heading":0.2531849145889282,"mode":0,"energy":0.24429474771022797,"carrying":0,"timerA":0,"timerB":0,"sensors":[],"transitions":[],"interactions":[]}}
+{"type":"trace","trace":{"type":"tick","tick":31387,"id":386,"x":2024.35107421875,"y":1246.61767578125,"heading":0.21823441982269287,"mode":0,"energy":0.2242947518825531,"carrying":0,"timerA":0,"timerB":0,"sensors":[],"transitions":[],"interactions":[]}}
+{"type":"trace","trace":{"type":"tick","tick":31388,"id":386,"x":2025.21044921875,"y":1246.885009765625,"heading":0.30156776309013367,"mode":0,"energy":0.20429475605487823,"carrying":0,"timerA":0,"timerB":0,"sensors":[],"transitions":[],"interactions":[]}}
+{"type":"trace","trace":{"type":"tick","tick":31389,"id":386,"x":2026.0770263671875,"y":1247.1279296875,"heading":0.2732391059398651,"mode":0,"energy":0.18429476022720337,"carrying":0,"timerA":0,"timerB":0,"sensors":[],"transitions":[],"interactions":[]}}
+{"type":"trace","trace":{"type":"tick","tick":31390,"id":386,"x":2026.9603271484375,"y":1247.3006591796875,"heading":0.19305412471294403,"mode":0,"energy":0.1642947643995285,"carrying":0,"timerA":0,"timerB":0,"sensors":[],"transitions":[],"interactions":[]}}
+{"type":"trace","trace":{"type":"tick","tick":31391,"id":386,"x":2027.8548583984375,"y":1247.399169921875,"heading":0.10972078889608383,"mode":0,"energy":0.14429476857185364,"carrying":0,"timerA":0,"timerB":0,"sensors":[],"transitions":[],"interactions":[]}}
+{"type":"trace","trace":{"type":"tick","tick":31392,"id":386,"x":2028.7381591796875,"y":1247.5718994140625,"heading":0.19305412471294403,"mode":0,"energy":0.12429476529359818,"carrying":0,"timerA":0,"timerB":0,"sensors":[],"transitions":[],"interactions":[]}}
+{"type":"trace","trace":{"type":"tick","tick":31393,"id":386,"x":2029.6297607421875,"y":1247.6947021484375,"heading":0.13682270050048828,"mode":0,"energy":0.10429476201534271,"carrying":0,"timerA":0,"timerB":0,"sensors":[],"transitions":[],"interactions":[]}}
+{"type":"trace","trace":{"type":"tick","tick":31394,"id":386,"x":2030.5198974609375,"y":1247.827880859375,"heading":0.1485474854707718,"mode":0,"energy":0.08429475873708725,"carrying":0,"timerA":0,"timerB":0,"sensors":[],"transitions":[],"interactions":[]}}
+{"type":"trace","trace":{"type":"tick","tick":31395,"id":386,"x":2031.395751953125,"y":1248.03466796875,"heading":0.2318808138370514,"mode":0,"energy":0.06429475545883179,"carrying":0,"timerA":0,"timerB":0,"sensors":[],"transitions":[],"interactions":[]}}
+{"type":"trace","trace":{"type":"tick","tick":31396,"id":386,"x":2032.285888671875,"y":1248.1678466796875,"heading":0.1485474854707718,"mode":0,"energy":0.04429475590586662,"carrying":0,"timerA":0,"timerB":0,"sensors":[],"transitions":[],"interactions":[]}}
+{"type":"trace","trace":{"type":"tick","tick":31397,"id":386,"x":2033.18115234375,"y":1248.2598876953125,"heading":0.1024879515171051,"mode":0,"energy":0.02429475635290146,"carrying":0,"timerA":0,"timerB":0,"sensors":[],"transitions":[],"interactions":[]}}
+{"type":"trace","trace":{"type":"tick","tick":31398,"id":386,"x":2034.0753173828125,"y":1248.3621826171875,"heading":0.11392668634653091,"mode":0,"energy":0.004294756334275007,"carrying":0,"timerA":0,"timerB":0,"sensors":[],"transitions":[],"interactions":[{"kind":"starvation","cause":"starvation","faction":0}]}}
+{"type":"trace_demo_summary","traceRows":60,"finalHash":"23e9d299385713f9","finalTick":33235,"outcome":"victory"}
+```
+
+### Gate 3 — Throughput Regression Vs Stage 1
+
+Stage 1 default throughput: `949.5291338308674` ticks/sec. Stage 1 1200-ant throughput: `350.889104984984` ticks/sec.
+
+Default command:
+
+```sh
+npm run sim -- --seed 1337 --ticks 50000
+```
+
+Output:
+
+```text
+
+> antzoo@1.0.0 sim
+> tsx scripts/run.ts --seed 1337 --ticks 50000
+
+{"type":"summary","outcome":"victory","finalTick":33235,"finalHash":"23e9d299385713f9","peakPopulation":354,"ticksPerSecond":1054.2531234786475}
+```
+
+Stress command:
+
+```sh
+npm run sim -- --seed 1337 --ticks 50000 --stress-ants 1200
+```
+
+Output:
+
+```text
+
+> antzoo@1.0.0 sim
+> tsx scripts/run.ts --seed 1337 --ticks 50000 --stress-ants 1200
+
+{"type":"summary","outcome":"gameOver","finalTick":15594,"finalHash":"36ab424a76d914d6","peakPopulation":1200,"ticksPerSecond":383.5867987394844}
+```
+
+Regression report:
+
+| Config | Stage 1 ticks/sec | Stage 4 untraced ticks/sec | Change |
+| --- | ---: | ---: | ---: |
+| default | 949.5291338308674 | 1054.2531234786475 | +11.03% |
+| 1200 ants | 350.889104984984 | 383.5867987394844 | +9.32% |
+
+Untraced overhead is under 5%; this run measured faster than Stage 1.
+
+### Gate 4 — Parity Vs Final Stage 3 Commit
+
+Stage 3 commit: `0908a08cf1f724aa84a8d5bdac58bf466aecbb20`
+
+Current Stage 4 command:
+
+```sh
+./node_modules/.bin/tsx -e 'import { createWorld, stepWorld } from "./src/sim"; import { hashWorldState } from "./src/debug/snapshot"; import { applyTuningPatch } from "./src/debug/scenario"; import { TUNING } from "./src/tuning"; applyTuningPatch("seed.value", 1337); const world = createWorld(); const checkpoints = new Set([1000, 10000, 50000]); for (let tick = 1; tick <= 50000; tick += 1) { stepWorld(world, 1 / TUNING.time.stepHz); if (checkpoints.has(tick)) console.log(`${tick}\t${hashWorldState(world)}`); }'
+```
+
+Output:
+
+```text
+1000	897635155d16b44d
+10000	206a4c9c844b2de8
+50000	23e9d299385713f9
+```
+
+Stage 3 temp-worktree command:
+
+```sh
+tmpdir=$(mktemp -d /tmp/antzoo-stage3-XXXXXX) && git worktree add --detach "$tmpdir" 0908a08cf1f724aa84a8d5bdac58bf466aecbb20 >/tmp/antzoo-worktree-add.log && (cd "$tmpdir" && /Users/drewgoddyn/projects/antzoo/node_modules/.bin/tsx -e 'import { createWorld, stepWorld } from "./src/sim"; import { hashWorldState } from "./src/debug/snapshot"; import { applyTuningPatch } from "./src/debug/scenario"; import { TUNING } from "./src/tuning"; applyTuningPatch("seed.value", 1337); const world = createWorld(); const checkpoints = new Set([1000, 10000, 50000]); for (let tick = 1; tick <= 50000; tick += 1) { stepWorld(world, 1 / TUNING.time.stepHz); if (checkpoints.has(tick)) console.log(`${tick}\t${hashWorldState(world)}`); }'); code=$?; git worktree remove "$tmpdir" >/tmp/antzoo-worktree-remove.log; exit $code
+```
+
+Output:
+
+```text
+Preparing worktree (detached HEAD 0908a08)
+1000	897635155d16b44d
+10000	206a4c9c844b2de8
+50000	23e9d299385713f9
+```
+
+Parity table:
+
+| Tick | Stage 3 hash | Stage 4 hash | Match |
+| ---: | --- | --- | --- |
+| 1000 | `897635155d16b44d` | `897635155d16b44d` | yes |
+| 10000 | `206a4c9c844b2de8` | `206a4c9c844b2de8` | yes |
+| 50000 | `23e9d299385713f9` | `23e9d299385713f9` | yes |
+
+### Gate 5 — Tests, Typecheck, And Build
+
+Command:
+
+```sh
+npm test
+```
+
+Output:
+
+```text
+
+> antzoo@1.0.0 test
+> tsx scripts/test-debug.ts
+
+PASS T0 rng
+PASS T0 time
+PASS T0 stepCount
+PASS T0 ants.x
+PASS T0 ants.y
+PASS T0 ants.heading
+PASS T0 ants.energy
+PASS T0 ants.stepsSincePickup
+PASS T0 ants.timerA
+PASS T0 ants.timerB
+PASS T0 ants.mode
+PASS T0 ants.carrying
+PASS T0 ants.flags
+PASS T0 ants.caste
+PASS T0 ants.faction
+PASS T0 spatial
+PASS T0 grid.pherFood.player
+PASS T0 grid.pherFood.rival
+PASS T0 grid.pherHome.player
+PASS T0 grid.pherHome.rival
+PASS T0 grid.pherDanger
+PASS T0 grid.lure
+PASS T0 grid.moisture
+PASS T0 grid.foodAmt
+PASS T0 grid.bookkeeping
+PASS T0 nestFood.player
+PASS T0 nestFood.rival
+PASS T0 queen/brood.player
+PASS T0 queen/brood.rival
+PASS T0 rival struct
+PASS T0 spider
+PASS T0 bushes
+PASS T0 carcass
+PASS T0 corpses
+PASS T0 obstacles
+PASS T0 combatMarks
+PASS T0 debug-only field
+PASS T0 debug ant id
+PASS T0 debug ant birthTick
+PASS T0 debug ant distanceTraveled
+PASS T0 debug ant ticksInMode
+PASS T0 debug ant deliveries
+PASS T0 debug ant ticksSinceLastDelivery
+PASS T0 debug ant ticksSinceFoodPerceived
+PASS T0 debug trace active
+PASS T0 debug trace beyondR
+PASS T0 debug trace record
+PASS T1 same seed hashes at 1k/10k/50k
+PASS T1 different seeds diverge by 1k
+PASS T2 sample-every 100 vs no sampling final hash
+PASS T3 death accounting - top causes: starvation=347, spider=21, terminal_cull=10
+PASS T3 id uniqueness over 50k
+PASS T5 traced run matches untraced hash
+PASS T5 trace rows captured - rows=4096
+```
+
+Command:
+
+```sh
+npm run typecheck
+```
+
+Output:
+
+```text
+
+> antzoo@1.0.0 typecheck
+> tsc --noEmit
+
+```
+
+Command:
+
+```sh
+npm run build
+```
+
+Output:
+
+```text
+
+> antzoo@1.0.0 build
+> tsc --noEmit && vite build
+
+vite v6.4.3 building for production...
+transforming...
+✓ 748 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                               0.34 kB │ gzip:   0.25 kB
+dist/assets/CanvasPool-DLNx4bdG.js            0.78 kB │ gzip:   0.43 kB
+dist/assets/Filter-Z1tDTyCG.js                0.90 kB │ gzip:   0.47 kB
+dist/assets/BufferResource-BioPunpx.js       10.61 kB │ gzip:   2.80 kB
+dist/assets/webworkerAll-BKHdk-Ld.js         15.93 kB │ gzip:   5.07 kB
+dist/assets/CanvasRenderer-BzxM-Wxj.js       18.03 kB │ gzip:   6.01 kB
+dist/assets/BitmapFont-BuHyeAw1.js           34.48 kB │ gzip:  11.75 kB
+dist/assets/WebGPURenderer-CngroGzR.js       39.14 kB │ gzip:  10.95 kB
+dist/assets/browserAll-B9INjlm-.js           43.26 kB │ gzip:  11.36 kB
+dist/assets/RenderTargetSystem-BO95vEyu.js   47.11 kB │ gzip:  12.97 kB
+dist/assets/WebGLRenderer-BZnvlcFf.js        68.88 kB │ gzip:  18.91 kB
+dist/assets/index-DuVAKsg2.js               615.18 kB │ gzip: 189.36 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 2.10s
+```

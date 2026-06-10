@@ -1,6 +1,6 @@
 import { createWorld, stepWorld } from "../src/sim";
 import { hashWorldState, snapshotWorld } from "../src/debug/snapshot";
-import { assertDebugAntIdsUnique, getDebugState } from "../src/debug/events";
+import { assertDebugAntIdsUnique, configureDebugTrace, getDebugState, getDebugTrace } from "../src/debug/events";
 import { TUNING } from "../src/tuning";
 
 type TestResult = { name: string; pass: boolean; detail?: string; showDetailOnPass?: boolean };
@@ -90,6 +90,9 @@ function testT0(): TestResult[] {
   tests.push(preservesHash("T0 debug ant deliveries", base, before, (world) => { getDebugState(world)!.ants.deliveries[0] += 1; }));
   tests.push(preservesHash("T0 debug ant ticksSinceLastDelivery", base, before, (world) => { getDebugState(world)!.ants.ticksSinceLastDelivery[0] += 1; }));
   tests.push(preservesHash("T0 debug ant ticksSinceFoodPerceived", base, before, (world) => { getDebugState(world)!.ants.ticksSinceFoodPerceived[0] += 1; }));
+  tests.push(preservesHash("T0 debug trace active", base, before, (world) => { getDebugState(world)!.ants.traceActive[0] = 1; }));
+  tests.push(preservesHash("T0 debug trace beyondR", base, before, (world) => { getDebugState(world)!.ants.traceBeyondRWasBeyond[0] = 1; }));
+  tests.push(preservesHash("T0 debug trace record", base, before, (world) => { getDebugState(world)!.trace.full.push({ type: "tick", tick: world.stepCount, id: 1, x: 0, y: 0, heading: 0, mode: 0, energy: 0, carrying: 0, timerA: 0, timerB: 0, sensors: [], transitions: [], interactions: [] }); }));
   return tests;
 }
 
@@ -174,6 +177,18 @@ function testT3AndIds(): TestResult[] {
   ];
 }
 
+function testT5TracePurity(): TestResult[] {
+  const traced = makeWorld(1337);
+  configureDebugTrace(traced, { ids: [1], windowStart: 0, windowEnd: 5000 });
+  runTicks(traced, 5000);
+  const untraced = atTick(1337, 5000);
+  const traces = getDebugTrace(traced, 1);
+  return [
+    { name: "T5 traced run matches untraced hash", pass: hashWorldState(traced) === hashWorldState(untraced), detail: `${hashWorldState(traced)} vs ${hashWorldState(untraced)}` },
+    { name: "T5 trace rows captured", pass: traces.length > 0, detail: `rows=${traces.length}`, showDetailOnPass: true },
+  ];
+}
+
 function printResult(result: TestResult): void {
   const detail = result.detail && (!result.pass || result.showDetailOnPass) ? ` - ${result.detail}` : "";
   console.log(`${result.pass ? "PASS" : "FAIL"} ${result.name}${detail}`);
@@ -193,6 +208,10 @@ for (const result of testT2()) {
   if (!result.pass) failed = true;
 }
 for (const result of testT3AndIds()) {
+  printResult(result);
+  if (!result.pass) failed = true;
+}
+for (const result of testT5TracePurity()) {
   printResult(result);
   if (!result.pass) failed = true;
 }

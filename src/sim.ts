@@ -1,6 +1,6 @@
 import { AntFlag, AntMode, FxParticle, Grid, HudSnapshot, Obstacle, ParticleKind, SpatialHash, Telemetry, Tool, World } from "./types";
 import { TUNING } from "./tuning";
-import { assignDebugAntSlot, copyDebugAntSlot, getDebugState, initDebugState, recordDebugAntTick, recordDebugDeath, recordDebugEvent, recordDebugNanRespawn, recordDebugSeasonChange, resetDebugAntSlot, type DeathCause } from "./debug/events";
+import { assignDebugAntSlot, copyDebugAntSlot, getDebugState, getDebugTraceBeyondRadius, initDebugState, isDebugTraceEnabled, recordDebugAntTick, recordDebugDeath, recordDebugEvent, recordDebugNanRespawn, recordDebugSeasonChange, recordTraceInteraction, recordTraceModeTransition, recordTraceSensor, recordTraceTickEnd, recordTraceTickStart, resetDebugAntSlot, updateDebugTraceBeyondArm, type DeathCause } from "./debug/events";
 
 const TAU = TUNING.sim.tau;
 const HALF = TUNING.sim.randomTurnHalf;
@@ -1410,16 +1410,25 @@ function pickupFood(world: World, index: number): boolean {
     grid.foodAmt[idx] = 0;
     removeFoodIndex(grid, idx);
   }
+  const previousMode = ants.mode[index];
   ants.carrying[index] = 1;
   ants.mode[index] = AntMode.Carry;
   ants.energy[index] = Math.min(TUNING.ant.energyMax, ants.energy[index] + TUNING.ant.snackOnPickup);
   ants.stepsSincePickup[index] = 0;
   ants.timerA[index] = 1;
   ants.timerB[index] = TUNING.sim.excitementSec;
+  recordTraceModeTransition(world, index, previousMode, AntMode.Carry, "saw_food");
+  recordTraceInteraction(world, index, {
+    kind: "pickup",
+    x: (idx % grid.cols + HALF) * grid.cell,
+    y: (Math.floor(idx / grid.cols) + HALF) * grid.cell,
+    cell: idx,
+    amountAfter: grid.foodAmt[idx],
+  });
   return true;
 }
 
-function steerAnt(world: World, index: number, dt: number): void {
+function steerAnt(world: World, index: number, dt: number, traceEnabled: boolean): void {
   const ants = world.ants;
   const faction = factionAnts(ants).faction[index];
   const mode = ants.mode[index];
@@ -1439,9 +1448,30 @@ function steerAnt(world: World, index: number, dt: number): void {
   const ly = y + Math.sin(left) * dist;
   const rx = x + Math.cos(right) * dist;
   const ry = y + Math.sin(right) * dist;
-  const straightScore = sampleField(world, field, sx, sy) * weak - TUNING.sense.dangerWeight * sampleField(world, world.grid.pherDanger, sx, sy) - obstaclePenalty(world, sx, sy);
-  const leftScore = sampleField(world, field, lx, ly) * weak - TUNING.sense.dangerWeight * sampleField(world, world.grid.pherDanger, lx, ly) - obstaclePenalty(world, lx, ly);
-  const rightScore = sampleField(world, field, rx, ry) * weak - TUNING.sense.dangerWeight * sampleField(world, world.grid.pherDanger, rx, ry) - obstaclePenalty(world, rx, ry);
+  const straightField = sampleField(world, field, sx, sy);
+  const straightDanger = sampleField(world, world.grid.pherDanger, sx, sy);
+  const straightObstacle = obstaclePenalty(world, sx, sy);
+  const leftField = sampleField(world, field, lx, ly);
+  const leftDanger = sampleField(world, world.grid.pherDanger, lx, ly);
+  const leftObstacle = obstaclePenalty(world, lx, ly);
+  const rightField = sampleField(world, field, rx, ry);
+  const rightDanger = sampleField(world, world.grid.pherDanger, rx, ry);
+  const rightObstacle = obstaclePenalty(world, rx, ry);
+  const straightScore = straightField * weak - TUNING.sense.dangerWeight * straightDanger - straightObstacle;
+  const leftScore = leftField * weak - TUNING.sense.dangerWeight * leftDanger - leftObstacle;
+  const rightScore = rightField * weak - TUNING.sense.dangerWeight * rightDanger - rightObstacle;
+  if (traceEnabled) {
+    recordTraceSensor(world, index, {
+      field: mode === AntMode.Carry ? "home" : "food",
+      center: straightField,
+      left: leftField,
+      right: rightField,
+      threshold: TUNING.sim.sensorThreshold,
+      centerAbove: straightField > TUNING.sim.sensorThreshold,
+      leftAbove: leftField > TUNING.sim.sensorThreshold,
+      rightAbove: rightField > TUNING.sim.sensorThreshold,
+    });
+  }
   let target = heading;
   if (leftScore > straightScore && leftScore >= rightScore) target = left;
   if (rightScore > straightScore && rightScore > leftScore) target = right;
@@ -1525,6 +1555,7 @@ function recruitQuery(index: number): void {
   ants.stepsSincePickup[index] = 0;
   ants.timerA[index] = 0;
   ants.timerB[index] = 0;
+  recordTraceModeTransition(world, index, AntMode.Wander, AntMode.Seek, "recruited");
 }
 
 function recruitNearbyWanderers(world: World, carrierIndex: number): void {
@@ -1647,11 +1678,20 @@ function updateAnts(world: World, dt: number): void {
   const season = seasonAt(world.time);
   const energyDrainMul = seasonEnergyDrainMul(season);
   const speedMul = seasonSpeedMul(season);
+  const traceEnabled = isDebugTraceEnabled(world);
+  const traceBeyondRadius = getDebugTraceBeyondRadius(world);
+  const traceBeyondRadius2 = traceBeyondRadius * traceBeyondRadius;
   for (let i = ants.count - 1; i >= 0; i -= 1) {
     if (!Number.isFinite(ants.x[i]) || !Number.isFinite(ants.y[i]) || !Number.isFinite(ants.heading[i])) {
       respawnNonFiniteAnt(world, i);
       continue;
     }
+    if (traceBeyondRadius > 0) {
+      const dx = ants.x[i] - nestX(world, faction[i]);
+      const dy = ants.y[i] - nestY(world, faction[i]);
+      updateDebugTraceBeyondArm(world, i, dx * dx + dy * dy > traceBeyondRadius2);
+    }
+    if (traceEnabled) recordTraceTickStart(world, i);
     const debugPrevX = ants.x[i];
     const debugPrevY = ants.y[i];
     const debugPrevMode = ants.mode[i];
@@ -1663,19 +1703,24 @@ function updateAnts(world: World, dt: number): void {
       pushCorpse(world, ants.x[i], ants.y[i]);
       splatPher(world.grid, world.grid.pherDanger, idx, TUNING.sim.deathDanger);
       spawnParticle(world, ants.x[i], ants.y[i], ParticleKind.Death, TUNING.particles.death.count, TUNING.particles.death.speed, TUNING.particles.death.life, TUNING.particles.death.size);
+      recordTraceInteraction(world, i, { kind: "starvation", cause: "starvation", faction: faction[i] });
       recordAntDeath(world, faction[i], "starvation", i);
+      recordTraceTickEnd(world, i);
       removeAnt(world, i);
       continue;
     }
 
+    const timerABefore = ants.timerA[i];
     if (!ants.carrying[i] && ants.timerA[i] > 0) ants.timerA[i] = Math.max(0, ants.timerA[i] - dt);
     if (ants.timerB[i] > 0) ants.timerB[i] = Math.max(0, ants.timerB[i] - dt);
+    if (timerABefore > 0 && ants.timerA[i] === 0) recordTraceModeTransition(world, i, ants.mode[i], ants.mode[i], "timer_expired");
 
     if (caste[i] === TUNING.caste.soldier) {
       ants.mode[i] = AntMode.Wander;
       ants.carrying[i] = 0;
       updateSoldierAnt(world, i, dt, speedMul);
       recordDebugAntTick(world, i, debugPrevX, debugPrevY, debugPrevMode, dt, false, false);
+      if (traceEnabled) recordTraceTickEnd(world, i);
       continue;
     }
     if (caste[i] === TUNING.caste.nurse) {
@@ -1683,6 +1728,7 @@ function updateAnts(world: World, dt: number): void {
       ants.carrying[i] = 0;
       updateNurseAnt(world, i, dt, speedMul);
       recordDebugAntTick(world, i, debugPrevX, debugPrevY, debugPrevMode, dt, false, false);
+      if (traceEnabled) recordTraceTickEnd(world, i);
       continue;
     }
 
@@ -1690,9 +1736,12 @@ function updateAnts(world: World, dt: number): void {
       ants.stepsSincePickup[i] = 0;
       const foodField = pherFoodField(world.grid, faction[i]);
       const ahead = sampleField(world, foodField, ants.x[i] + Math.cos(ants.heading[i]) * TUNING.sense.dist, ants.y[i] + Math.sin(ants.heading[i]) * TUNING.sense.dist);
-      if (ahead > TUNING.sim.sensorThreshold || hasFoodNear(world, i, TUNING.sense.dist) >= 0) {
+      const sawTrail = ahead > TUNING.sim.sensorThreshold;
+      const sawFood = sawTrail ? false : hasFoodNear(world, i, TUNING.sense.dist) >= 0;
+      if (sawTrail || sawFood) {
         debugPerceivedFood = true;
         ants.mode[i] = AntMode.Seek;
+        recordTraceModeTransition(world, i, AntMode.Wander, AntMode.Seek, sawTrail ? "saw_trail" : "saw_food");
       }
     }
     if (ants.mode[i] === AntMode.Seek) {
@@ -1719,7 +1768,10 @@ function updateAnts(world: World, dt: number): void {
         } else {
           ants.stepsSincePickup[i] = 0;
         }
-        if (ants.timerA[i] <= 0 && !seesTrail && !seesFood) ants.mode[i] = AntMode.Wander;
+        if (ants.timerA[i] <= 0 && !seesTrail && !seesFood) {
+          ants.mode[i] = AntMode.Wander;
+          recordTraceModeTransition(world, i, AntMode.Seek, AntMode.Wander, "gave_up");
+        }
       }
     }
     if (ants.mode[i] === AntMode.Carry) {
@@ -1747,6 +1799,8 @@ function updateAnts(world: World, dt: number): void {
         ants.stepsSincePickup[i] = 0;
         ants.timerA[i] = 0;
         ants.timerB[i] = 0;
+        recordTraceModeTransition(world, i, AntMode.Carry, AntMode.Wander, "delivered");
+        recordTraceInteraction(world, i, { kind: "delivery", faction: faction[i], nestFood: nestFood(world, faction[i]) });
         nestPulse(world, faction[i], faction[i] === FACTION_RIVAL ? TUNING.rival.nestPulseImpulse : TUNING.sim.nestPulseImpulse);
         if (faction[i] === FACTION_PLAYER) world.hudFlash = TUNING.render.statPopMs / TUNING.time.msPerSec;
         spawnDeliveryParticle(world, ants.x[i], ants.y[i], faction[i]);
@@ -1754,7 +1808,7 @@ function updateAnts(world: World, dt: number): void {
       if (ants.mode[i] === AntMode.Carry) recruitNearbyWanderers(world, i);
     }
 
-    steerAnt(world, i, dt);
+    steerAnt(world, i, dt, traceEnabled);
     fleeSpider(world, i, dt);
     avoid(world, i, dt);
 
@@ -1779,6 +1833,7 @@ function updateAnts(world: World, dt: number): void {
       splatPher(world.grid, pherHomeField(world.grid, faction[i]), idx, TUNING.pher.depositHome);
     }
     recordDebugAntTick(world, i, debugPrevX, debugPrevY, debugPrevMode, dt, debugDelivered, debugPerceivedFood);
+    if (traceEnabled) recordTraceTickEnd(world, i);
   }
 }
 
@@ -1828,7 +1883,9 @@ function killSpiderVictim(world: World): void {
   splatPher(world.grid, world.grid.pherDanger, idx, TUNING.spider.killDanger);
   spawnParticle(world, ants.x[index], ants.y[index], ParticleKind.Death, TUNING.particles.death.count, TUNING.particles.death.speed, TUNING.particles.death.life, TUNING.particles.death.size);
   recordDebugEvent(world, { type: "spider_kill", tick: world.stepCount, x: ants.x[index], y: ants.y[index], victimId: getDebugState(world)?.ants.id[index] ?? 0, victimFaction });
+  recordTraceInteraction(world, index, { kind: "spider", cause: "spider", faction: victimFaction, spiderX: spider.x, spiderY: spider.y });
   recordAntDeath(world, victimFaction, "spider", index);
+  recordTraceTickEnd(world, index);
   spider.eatTimer = TUNING.spider.eatPauseSec;
   removeAnt(world, index);
 }
@@ -1908,7 +1965,9 @@ function updateFactionCombat(world: EcologyWorld, dt: number): number {
     const antFaction = faction[i];
     pushCorpse(world, ants.x[i], ants.y[i]);
     spawnParticle(world, ants.x[i], ants.y[i], ParticleKind.Death, TUNING.particles.death.count, TUNING.particles.death.speed, TUNING.particles.death.life, TUNING.particles.death.size);
+    recordTraceInteraction(world, i, { kind: "combat", cause: "combat", faction: antFaction });
     recordAntDeath(world, antFaction, "combat", i);
+    recordTraceTickEnd(world, i);
     removeAnt(world, i);
     removed += 1;
   }
