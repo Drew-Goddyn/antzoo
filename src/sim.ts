@@ -1,5 +1,6 @@
 import { AntFlag, AntMode, FxParticle, Grid, HudSnapshot, Obstacle, ParticleKind, SpatialHash, Telemetry, Tool, World } from "./types";
 import { TUNING } from "./tuning";
+import { assignDebugAntSlot, copyDebugAntSlot, getDebugState, initDebugState, recordDebugAntTick, recordDebugDeath, recordDebugEvent, recordDebugNanRespawn, recordDebugSeasonChange, resetDebugAntSlot, type DeathCause } from "./debug/events";
 
 const TAU = TUNING.sim.tau;
 const HALF = TUNING.sim.randomTurnHalf;
@@ -599,12 +600,13 @@ function pushCorpse(world: World, x: number, y: number): void {
   world.corpses.push({ x, y, decay: TUNING.corpse.decaySec, maxDecay: TUNING.corpse.decaySec });
 }
 
-function recordAntDeath(world: World, faction: number): void {
+function recordAntDeath(world: World, faction: number, cause: DeathCause, index: number): void {
   if (faction === FACTION_RIVAL) ecologyWorld(world).rival.totalDeaths += 1;
   else {
     world.totalDeaths += 1;
     world.deathWindowCount += 1;
   }
+  recordDebugDeath(world, index, faction, cause);
 }
 
 function copyAntSlot(world: World, from: number, to: number): void {
@@ -623,6 +625,7 @@ function copyAntSlot(world: World, from: number, to: number): void {
   ants.flags[to] = ants.flags[from];
   caste[to] = caste[from];
   faction[to] = faction[from];
+  copyDebugAntSlot(world, from, to);
 }
 
 function removeAnt(world: World, index: number): void {
@@ -636,6 +639,7 @@ function removeAnt(world: World, index: number): void {
   ants.mode[last] = AntMode.Wander;
   caste[last] = TUNING.caste.worker;
   faction[last] = FACTION_PLAYER;
+  resetDebugAntSlot(world, last);
   ants.count = last;
   ants.freeList[ants.freeCount] = last;
   ants.freeCount = Math.min(ants.capacity, ants.freeCount + 1);
@@ -662,6 +666,7 @@ function addAnt(world: World, x: number, y: number, heading: number, casteValue:
   ants.flags[index] = AntFlag.Alive;
   caste[index] = casteValue;
   faction[index] = factionValue;
+  assignDebugAntSlot(world, index, factionValue);
   return index;
 }
 
@@ -1028,6 +1033,7 @@ function spawnCarcass(world: EcologyWorld): void {
   world.carcass.toast = TUNING.ecology.carcassToastSec;
   world.carcass.nextSpawn = 0;
   depositFood(world, world.carcass.x, world.carcass.y, TUNING.ecology.carcassAmount, TUNING.ecology.carcassRadius, FACTION_ALL);
+  recordDebugEvent(world, { type: "carcass_spawn", tick: world.stepCount, x: world.carcass.x, y: world.carcass.y, amount: world.carcass.amount });
   spawnParticle(world, world.carcass.x, world.carcass.y, ParticleKind.Spawn, TUNING.particles.spawn.count, TUNING.particles.spawn.speed, TUNING.particles.spawn.life, TUNING.particles.spawn.size);
 }
 
@@ -1042,6 +1048,7 @@ function spawnCarcassAt(world: EcologyWorld, x: number, y: number): void {
   world.carcass.toast = TUNING.ecology.carcassToastSec;
   world.carcass.nextSpawn = 0;
   depositFood(world, world.carcass.x, world.carcass.y, TUNING.ecology.carcassAmount, TUNING.ecology.carcassRadius, FACTION_ALL);
+  recordDebugEvent(world, { type: "carcass_spawn", tick: world.stepCount, x: world.carcass.x, y: world.carcass.y, amount: world.carcass.amount });
   spawnParticle(world, world.carcass.x, world.carcass.y, ParticleKind.Spawn, TUNING.particles.spawn.count * 3, TUNING.particles.spawn.speed, TUNING.particles.spawn.life, TUNING.particles.spawn.size);
 }
 
@@ -1085,6 +1092,7 @@ function spawnSpider(world: World): void {
   }
   spider.nextSpawn = 0;
   world.spiderToast = TUNING.spider.toastSec;
+  recordDebugEvent(world, { type: "spider_spawn", tick: world.stepCount, x: spider.x, y: spider.y, hp: combatSpider(world).hp });
 }
 
 function spawnAnt(world: World, heading: number, dist: number, casteValue: number = chooseCaste(world), factionValue: number = FACTION_PLAYER, respectGameplayCap: boolean = true): void {
@@ -1320,6 +1328,7 @@ export function createWorld(width: number = TUNING.sim.minWidth, height: number 
       viewH: Math.max(TUNING.sim.minHeight, height),
     },
   };
+  initDebugState(world, seasonAt(world.time));
   generateMoisture(world);
   world.spider.nextSpawn = nextSpiderDelay(world);
   world.carcass.nextSpawn = nextCarcassDelay(world);
@@ -1483,6 +1492,7 @@ function respawnNonFiniteAnt(world: World, index: number): void {
   }
   const ants = world.ants;
   const faction = factionAnts(ants).faction[index];
+  recordDebugNanRespawn(world, index, faction);
   const heading = nextRand(world) * TAU;
   ants.x[index] = nestX(world, faction);
   ants.y[index] = nestY(world, faction);
@@ -1642,13 +1652,18 @@ function updateAnts(world: World, dt: number): void {
       respawnNonFiniteAnt(world, i);
       continue;
     }
+    const debugPrevX = ants.x[i];
+    const debugPrevY = ants.y[i];
+    const debugPrevMode = ants.mode[i];
+    let debugDelivered = false;
+    let debugPerceivedFood = false;
     ants.energy[i] -= TUNING.ant.drainPerSec * energyDrainMul * dt;
     if (ants.energy[i] <= 0) {
       const idx = cellIndex(world.grid, ants.x[i], ants.y[i]);
       pushCorpse(world, ants.x[i], ants.y[i]);
       splatPher(world.grid, world.grid.pherDanger, idx, TUNING.sim.deathDanger);
       spawnParticle(world, ants.x[i], ants.y[i], ParticleKind.Death, TUNING.particles.death.count, TUNING.particles.death.speed, TUNING.particles.death.life, TUNING.particles.death.size);
-      recordAntDeath(world, faction[i]);
+      recordAntDeath(world, faction[i], "starvation", i);
       removeAnt(world, i);
       continue;
     }
@@ -1660,12 +1675,14 @@ function updateAnts(world: World, dt: number): void {
       ants.mode[i] = AntMode.Wander;
       ants.carrying[i] = 0;
       updateSoldierAnt(world, i, dt, speedMul);
+      recordDebugAntTick(world, i, debugPrevX, debugPrevY, debugPrevMode, dt, false, false);
       continue;
     }
     if (caste[i] === TUNING.caste.nurse) {
       ants.mode[i] = AntMode.Wander;
       ants.carrying[i] = 0;
       updateNurseAnt(world, i, dt, speedMul);
+      recordDebugAntTick(world, i, debugPrevX, debugPrevY, debugPrevMode, dt, false, false);
       continue;
     }
 
@@ -1673,10 +1690,15 @@ function updateAnts(world: World, dt: number): void {
       ants.stepsSincePickup[i] = 0;
       const foodField = pherFoodField(world.grid, faction[i]);
       const ahead = sampleField(world, foodField, ants.x[i] + Math.cos(ants.heading[i]) * TUNING.sense.dist, ants.y[i] + Math.sin(ants.heading[i]) * TUNING.sense.dist);
-      if (ahead > TUNING.sim.sensorThreshold || hasFoodNear(world, i, TUNING.sense.dist) >= 0) ants.mode[i] = AntMode.Seek;
+      if (ahead > TUNING.sim.sensorThreshold || hasFoodNear(world, i, TUNING.sense.dist) >= 0) {
+        debugPerceivedFood = true;
+        ants.mode[i] = AntMode.Seek;
+      }
     }
     if (ants.mode[i] === AntMode.Seek) {
-      if (!pickupFood(world, i)) {
+      const pickedUp = pickupFood(world, i);
+      if (pickedUp) debugPerceivedFood = true;
+      if (!pickedUp) {
         const foodField = pherFoodField(world.grid, faction[i]);
         const aheadX = ants.x[i] + Math.cos(ants.heading[i]) * TUNING.sense.dist;
         const aheadY = ants.y[i] + Math.sin(ants.heading[i]) * TUNING.sense.dist;
@@ -1684,6 +1706,7 @@ function updateAnts(world: World, dt: number): void {
         const trailHere = sampleField(world, foodField, ants.x[i], ants.y[i]);
         const seesTrail = trailAhead > TUNING.sim.sensorThreshold || trailHere > TUNING.sim.sensorThreshold;
         const seesFood = hasFoodNear(world, i, TUNING.sense.dist) >= 0;
+        if (seesTrail || seesFood) debugPerceivedFood = true;
         if (ants.timerA[i] > 0) {
           ants.stepsSincePickup[i] = 0;
         } else if (seesTrail) {
@@ -1704,6 +1727,7 @@ function updateAnts(world: World, dt: number): void {
       const dy = ants.y[i] - nestY(world, faction[i]);
       if (dx * dx + dy * dy <= TUNING.nest.r * TUNING.nest.r) {
         addNestFood(world, faction[i], 1);
+        debugDelivered = true;
         if (faction[i] === FACTION_RIVAL) ecologyWorld(world).rival.totalDelivered += 1;
         else world.totalDelivered += 1;
         const telemetry = world.telemetry;
@@ -1754,6 +1778,7 @@ function updateAnts(world: World, dt: number): void {
     } else {
       splatPher(world.grid, pherHomeField(world.grid, faction[i]), idx, TUNING.pher.depositHome);
     }
+    recordDebugAntTick(world, i, debugPrevX, debugPrevY, debugPrevMode, dt, debugDelivered, debugPerceivedFood);
   }
 }
 
@@ -1802,7 +1827,8 @@ function killSpiderVictim(world: World): void {
   pushCorpse(world, ants.x[index], ants.y[index]);
   splatPher(world.grid, world.grid.pherDanger, idx, TUNING.spider.killDanger);
   spawnParticle(world, ants.x[index], ants.y[index], ParticleKind.Death, TUNING.particles.death.count, TUNING.particles.death.speed, TUNING.particles.death.life, TUNING.particles.death.size);
-  recordAntDeath(world, victimFaction);
+  recordDebugEvent(world, { type: "spider_kill", tick: world.stepCount, x: ants.x[index], y: ants.y[index], victimId: getDebugState(world)?.ants.id[index] ?? 0, victimFaction });
+  recordAntDeath(world, victimFaction, "spider", index);
   spider.eatTimer = TUNING.spider.eatPauseSec;
   removeAnt(world, index);
 }
@@ -1819,6 +1845,7 @@ function soldierAttackQuery(index: number): void {
 function killSpiderBySoldiers(world: World, rewardFaction: number): void {
   const spider = world.spider;
   spawnParticle(world, spider.x, spider.y, ParticleKind.Death, TUNING.particles.spiderSquash.count, TUNING.particles.spiderSquash.speed, TUNING.particles.spiderSquash.life, TUNING.particles.spiderSquash.size);
+  recordDebugEvent(world, { type: "spider_squashed", tick: world.stepCount, x: spider.x, y: spider.y, rewardFaction });
   world.trauma += TUNING.spider.squashTrauma;
   addNestFood(world, rewardFaction, TUNING.spider.trophyFood);
   world.spiderToast = 0;
@@ -1881,7 +1908,7 @@ function updateFactionCombat(world: EcologyWorld, dt: number): number {
     const antFaction = faction[i];
     pushCorpse(world, ants.x[i], ants.y[i]);
     spawnParticle(world, ants.x[i], ants.y[i], ParticleKind.Death, TUNING.particles.death.count, TUNING.particles.death.speed, TUNING.particles.death.life, TUNING.particles.death.size);
-    recordAntDeath(world, antFaction);
+    recordAntDeath(world, antFaction, "combat", i);
     removeAnt(world, i);
     removed += 1;
   }
@@ -1966,7 +1993,9 @@ function updateCarcass(world: EcologyWorld, dt: number): void {
   carcass.age += dt;
   removeFoodInRadius(world, carcass.x, carcass.y, (TUNING.ecology.carcassAmount / TUNING.ecology.carcassDecaySec) * dt, TUNING.ecology.carcassRadius);
   carcass.amount = foodAmountInRadius(world, carcass.x, carcass.y, TUNING.ecology.carcassRadius);
+  const wasSpoiled = carcass.spoiled;
   carcass.spoiled = carcass.age >= TUNING.ecology.carcassDecaySec - TUNING.ecology.carcassSpoilSec;
+  if (!wasSpoiled && carcass.spoiled) recordDebugEvent(world, { type: "carcass_spoiled", tick: world.stepCount, x: carcass.x, y: carcass.y, amount: carcass.amount });
   if (carcass.amount > 0) splatFoodScentRadius(world.grid, carcass.x, carcass.y, TUNING.ecology.carcassScentRadius, TUNING.ecology.carcassScentDeposit * dt, FACTION_ALL);
   if (carcass.spoiled && carcass.amount > 0) splatPher(world.grid, world.grid.pherDanger, cellIndex(world.grid, carcass.x, carcass.y), TUNING.ecology.carcassDangerDeposit);
   if (carcass.age >= TUNING.ecology.carcassDecaySec || carcass.amount <= TUNING.sim.minTurnEpsilon) scheduleNextCarcass(world);
@@ -2001,7 +2030,7 @@ function removeOneFactionAnt(world: World, factionValue: number): boolean {
   for (let i = ants.count - 1; i >= 0; i -= 1) {
     if (faction[i] !== factionValue) continue;
     pushCorpse(world, ants.x[i], ants.y[i]);
-    recordAntDeath(world, factionValue);
+    recordAntDeath(world, factionValue, "terminal_cull", i);
     removeAnt(world, i);
     return true;
   }
@@ -2019,15 +2048,20 @@ function beginTerminalCascade(world: EcologyWorld, factionValue: number): void {
     world.terminalStartAnts = startAnts;
     world.terminalCull = 0;
   }
+  recordDebugEvent(world, { type: "terminal_start", tick: world.stepCount, faction: factionValue });
 }
 
 function finishQueenCascade(world: EcologyWorld, factionValue: number): void {
   while (removeOneFactionAnt(world, factionValue)) {}
+  const yearsSurvived = Math.floor(world.time / TUNING.seasons.yearSec);
+  recordDebugEvent(world, { type: "terminal_end", tick: world.stepCount, faction: factionValue });
+  recordDebugEvent(world, { type: "game_over", tick: world.stepCount, faction: factionValue, yearsSurvived });
   if (factionValue === FACTION_RIVAL) {
     world.rival.gameOver = true;
     world.victory = true;
     world.victoryYear = Math.floor(world.time / TUNING.seasons.yearSec) + 1;
     world.gameOver = true;
+    recordDebugEvent(world, { type: "victory", tick: world.stepCount, faction: FACTION_PLAYER, yearsSurvived });
   } else {
     world.gameOver = true;
   }
@@ -2105,7 +2139,10 @@ function updateBrood(world: EcologyWorld, dt: number, factionValue: number): voi
   setNestFood(world, factionValue, food);
   if (broodProgress >= TUNING.caste.broodProgressRequired && world.ants.count < Math.min(TUNING.ants.max, world.ants.capacity)) {
     broodProgress = 0;
-    spawnAnt(world, nextRand(world) * TAU, TUNING.nest.r, chooseCaste(world, factionValue), factionValue);
+    const heading = nextRand(world) * TAU;
+    const casteValue = chooseCaste(world, factionValue);
+    spawnAnt(world, heading, TUNING.nest.r, casteValue, factionValue);
+    recordDebugEvent(world, { type: "brood_hatch", tick: world.stepCount, faction: factionValue, caste: casteValue });
   }
   if (factionValue === FACTION_RIVAL) {
     rival.broodProgress = broodProgress;
@@ -2121,16 +2158,20 @@ function startRain(world: EcologyWorld): void {
   world.rainTimer = duration;
   world.rainDuration = duration;
   world.rainToast = TUNING.seasons.rainToastSec;
+  recordDebugEvent(world, { type: "rain_start", tick: world.stepCount });
 }
 
 function updateSeasonEvents(world: EcologyWorld, dt: number): void {
   const playerCount = countFactionAnts(world, FACTION_PLAYER);
   const rivalCount = countFactionAnts(world, FACTION_RIVAL);
+  const currentSeason = seasonAt(world.time);
+  recordDebugSeasonChange(world, currentSeason, seasonLabel(currentSeason), Math.floor(world.time / TUNING.seasons.yearSec) + 1);
   if (playerCount > world.peakPopulation) world.peakPopulation = playerCount;
   if (rivalCount > world.rival.peakPopulation) world.rival.peakPopulation = rivalCount;
   world.rainToast = Math.max(0, world.rainToast - dt);
   if (world.rainTimer > 0) {
     world.rainTimer = Math.max(0, world.rainTimer - dt);
+    if (world.rainTimer === 0) recordDebugEvent(world, { type: "rain_end", tick: world.stepCount });
     return;
   }
   world.rainDuration = 0;
@@ -2138,7 +2179,7 @@ function updateSeasonEvents(world: EcologyWorld, dt: number): void {
   if (world.rainCheckTimer < TUNING.seasons.rainCheckSec) return;
   const elapsed = world.rainCheckTimer;
   world.rainCheckTimer = 0;
-  const chance = seasonRainChancePerSec(seasonAt(world.time)) * elapsed;
+  const chance = seasonRainChancePerSec(currentSeason) * elapsed;
   if (chance > 0 && nextRand(world) < chance) startRain(world);
 }
 
@@ -2427,6 +2468,7 @@ function squashSpider(world: World, x: number, y: number, radius: number): void 
   const squashR = radius + TUNING.spider.squashRadius;
   if (dx * dx + dy * dy > squashR * squashR) return;
   spawnParticle(world, spider.x, spider.y, ParticleKind.Death, TUNING.particles.spiderSquash.count, TUNING.particles.spiderSquash.speed, TUNING.particles.spiderSquash.life, TUNING.particles.spiderSquash.size);
+  recordDebugEvent(world, { type: "spider_squashed", tick: world.stepCount, x: spider.x, y: spider.y, rewardFaction: FACTION_PLAYER });
   world.trauma += TUNING.spider.squashTrauma;
   addNestFood(world, FACTION_PLAYER, TUNING.spider.trophyFood);
   world.spiderToast = 0;

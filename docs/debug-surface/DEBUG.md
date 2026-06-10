@@ -20,10 +20,11 @@ Options:
 | `--ticks N` | Number of fixed 1/60 simulation steps to execute. |
 | `--sample-every N` | Emit a complete snapshot every N ticks. |
 | `--hash-every N` | Emit a hash-only record every N ticks. |
+| `--events full` | Retain the unbounded event log during the run and emit `event` records before the final summary. |
 | `--out PATH` | Write JSONL to a file instead of stdout. |
 | `--stress-ants N` | Before timing, call `stressSpawn` until live ant count reaches N. This is a stimulus/setup action and consumes gameplay RNG. |
 
-Every JSONL record has a `type` field. Stage 1 emits `snapshot`, `hash`, and final `summary` records. The final summary includes `outcome`, `finalTick`, `finalHash`, `peakPopulation`, and `ticksPerSecond`.
+Every JSONL record has a `type` field. The runner emits `snapshot`, `hash`, `event`, and final `summary` records. The final summary includes `outcome`, `finalTick`, `finalHash`, `peakPopulation`, and `ticksPerSecond`.
 
 ## Snapshot schema
 
@@ -46,17 +47,17 @@ Every JSONL record has a `type` field. Stage 1 emits `snapshot`, `hash`, and fin
 | `terminal` | Whether terminal cascade is active. |
 | `gameOver` | Whether that faction has lost. |
 | `totalDeaths` | Cumulative deaths for that faction. |
-| `deathsByCause` | `null` in Stage 1; filled in Stage 2. |
+| `deathsByCause` | Cumulative `{starvation, spider, combat, terminal_cull}` counts. |
 | `totalDelivered` | Cumulative deliveries for that faction. |
-| `nanRespawns` | `null` in Stage 1; filled in Stage 2. |
+| `nanRespawns` | Cumulative non-finite ant respawns for that faction. |
 | `energy` | `min`, `mean`, `p10`, `p50` live-ant energy units; `null` stats when no ants are alive. |
 | `dispersion.meanDistance` | Mean live-ant distance from own nest, world units. |
 | `dispersion.p90Distance` | P90 live-ant distance from own nest, world units. |
 | `dispersion.countBeyondR` | Live ants farther than `dispersion.radius`. |
 | `dispersion.radius` | Default radius: one third of the world diagonal. |
-| `age` | `null` in Stage 1; filled in Stage 2. |
-| `deliveriesPerAnt` | `null` in Stage 1; filled in Stage 2. |
-| `neverDeliveredShare` | `null` in Stage 1; filled in Stage 2. |
+| `age` | Live ant age in ticks: `{p50, max}`. |
+| `deliveriesPerAnt` | Live ant delivery distribution: `{mean, p50}`. |
+| `neverDeliveredShare` | Fraction of live ants with zero deliveries. |
 | `fields.player.pherFood`, `fields.player.pherHome` | Player pheromone field summaries: `sum`, `max`, `activeCells`. |
 | `fields.rival.pherFood`, `fields.rival.pherHome` | Rival pheromone field summaries. |
 | `fields.shared.pherDanger`, `fields.shared.lure`, `fields.shared.moisture` | Shared field summaries. |
@@ -86,6 +87,30 @@ Every JSONL record has a `type` field. Stage 1 emits `snapshot`, `hash`, and fin
 - Bushes, carcass, corpses, obstacles, and combat marks.
 
 The hash intentionally includes `world.rng`; this fingerprints the entire draw history.
+
+## Events
+
+The browser path always keeps a fixed-size debug event ring. Headless runs can retain every event with `--events full`; these records are emitted as JSONL before the summary. Event recording appends debug-only data, never calls `nextRand`, and never writes gameplay state.
+
+Event records:
+
+| Type | Fields |
+| --- | --- |
+| `death` | `tick`, `faction`, `cause`, `id`, `birthTick`, `age`, `deliveries`, `distanceTraveled`, `ticksInMode`, `ticksSinceLastDelivery`, `ticksSinceFoodPerceived`. |
+| `nan_respawn` | `tick`, `faction`, `id`, prior `x`, prior `y`. Respawn behavior is unchanged. |
+| `season_change` | `tick`, `season`, `label`, `year`. |
+| `rain_start`, `rain_end` | `tick`. |
+| `carcass_spawn` | `tick`, `x`, `y`, `amount`. |
+| `carcass_spoiled` | `tick`, `x`, `y`, `amount`. |
+| `spider_spawn` | `tick`, `x`, `y`, `hp`. |
+| `spider_kill` | `tick`, `x`, `y`, `victimId`, `victimFaction`. |
+| `spider_squashed` | `tick`, `x`, `y`, `rewardFaction`. |
+| `brood_hatch` | `tick`, `faction`, `caste`. |
+| `terminal_start`, `terminal_end` | `tick`, `faction`. |
+| `game_over` | `tick`, `faction`, `yearsSurvived`. |
+| `victory` | `tick`, winner `faction`, `yearsSurvived`. |
+
+Spawns and deliveries are counters, not event records. Per-ant debug state is copied in `copyAntSlot` and reset in `addAnt`/`removeAnt` so swap-remove compaction does not desynchronize identities.
 
 ## Caveats
 

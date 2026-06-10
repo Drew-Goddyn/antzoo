@@ -1,8 +1,9 @@
 import { createWorld, stepWorld } from "../src/sim";
 import { hashWorldState, snapshotWorld } from "../src/debug/snapshot";
+import { assertDebugAntIdsUnique, getDebugState } from "../src/debug/events";
 import { TUNING } from "../src/tuning";
 
-type TestResult = { name: string; pass: boolean; detail?: string };
+type TestResult = { name: string; pass: boolean; detail?: string; showDetailOnPass?: boolean };
 type MutableWorld = ReturnType<typeof createWorld> & Record<string, any>;
 
 const checkpoints = [1000, 10000, 50000];
@@ -82,6 +83,13 @@ function testT0(): TestResult[] {
   tests.push(changesHash("T0 obstacles", base, before, (world) => { world.obstacles[0].r += 0.001; }));
   tests.push(changesHash("T0 combatMarks", base, before, (world) => { world.combatMarks[0] = 1; }));
   tests.push(preservesHash("T0 debug-only field", base, before, (world) => { world.__debugOnlyProbe = { value: 1 }; }));
+  tests.push(preservesHash("T0 debug ant id", base, before, (world) => { getDebugState(world)!.ants.id[0] += 1; }));
+  tests.push(preservesHash("T0 debug ant birthTick", base, before, (world) => { getDebugState(world)!.ants.birthTick[0] += 1; }));
+  tests.push(preservesHash("T0 debug ant distanceTraveled", base, before, (world) => { getDebugState(world)!.ants.distanceTraveled[0] += 1; }));
+  tests.push(preservesHash("T0 debug ant ticksInMode", base, before, (world) => { getDebugState(world)!.ants.ticksInMode[0] += 1; }));
+  tests.push(preservesHash("T0 debug ant deliveries", base, before, (world) => { getDebugState(world)!.ants.deliveries[0] += 1; }));
+  tests.push(preservesHash("T0 debug ant ticksSinceLastDelivery", base, before, (world) => { getDebugState(world)!.ants.ticksSinceLastDelivery[0] += 1; }));
+  tests.push(preservesHash("T0 debug ant ticksSinceFoodPerceived", base, before, (world) => { getDebugState(world)!.ants.ticksSinceFoodPerceived[0] += 1; }));
   return tests;
 }
 
@@ -124,8 +132,51 @@ function testT2(): TestResult[] {
   return [{ name: "T2 sample-every 100 vs no sampling final hash", pass: sampled === unsampled, detail: `${sampled} vs ${unsampled}` }];
 }
 
+function testT3AndIds(): TestResult[] {
+  const world = makeWorld(1337);
+  let idError: string | null = null;
+  for (let tick = 1; tick <= 50000; tick += 1) {
+    stepWorld(world, 1 / TUNING.time.stepHz);
+    if (tick % 100 === 0 || tick === 50000) {
+      try {
+        assertDebugAntIdsUnique(world);
+      } catch (error) {
+        idError = error instanceof Error ? error.message : String(error);
+        break;
+      }
+    }
+  }
+  const snapshot = snapshotWorld(world);
+  const causes = ["starvation", "spider", "combat", "terminal_cull"] as const;
+  const aggregate = new Map<string, number>();
+  let accountingPass = true;
+  for (const factionName of ["player", "rival"] as const) {
+    const faction = snapshot.factions[factionName];
+    if (!faction.deathsByCause) {
+      accountingPass = false;
+      continue;
+    }
+    let sum = 0;
+    for (const cause of causes) {
+      sum += faction.deathsByCause[cause];
+      aggregate.set(cause, (aggregate.get(cause) ?? 0) + faction.deathsByCause[cause]);
+    }
+    if (sum !== faction.totalDeaths) accountingPass = false;
+  }
+  const topCauses = [...aggregate.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 3)
+    .map(([cause, count]) => `${cause}=${count}`)
+    .join(", ");
+  return [
+    { name: "T3 death accounting", pass: accountingPass, detail: `top causes: ${topCauses}`, showDetailOnPass: true },
+    { name: "T3 id uniqueness over 50k", pass: idError === null, detail: idError ?? undefined },
+  ];
+}
+
 function printResult(result: TestResult): void {
-  console.log(`${result.pass ? "PASS" : "FAIL"} ${result.name}${result.pass || !result.detail ? "" : ` - ${result.detail}`}`);
+  const detail = result.detail && (!result.pass || result.showDetailOnPass) ? ` - ${result.detail}` : "";
+  console.log(`${result.pass ? "PASS" : "FAIL"} ${result.name}${detail}`);
 }
 
 let failed = false;
@@ -138,6 +189,10 @@ for (const result of testT1()) {
   if (!result.pass) failed = true;
 }
 for (const result of testT2()) {
+  printResult(result);
+  if (!result.pass) failed = true;
+}
+for (const result of testT3AndIds()) {
   printResult(result);
   if (!result.pass) failed = true;
 }

@@ -2,6 +2,7 @@ import { createWriteStream, mkdirSync } from "node:fs";
 import { dirname } from "node:path";
 import { createWorld, stepWorld, stressSpawn } from "../src/sim";
 import { snapshotWorld, hashWorldState } from "../src/debug/snapshot";
+import { getDebugEvents, setDebugEventCapture } from "../src/debug/events";
 import { TUNING } from "../src/tuning";
 
 interface RunOptions {
@@ -11,6 +12,7 @@ interface RunOptions {
   hashEvery: number;
   out: string | null;
   stressAnts: number;
+  events: "none" | "full";
 }
 
 function readNumber(args: string[], index: number, name: string): number {
@@ -29,6 +31,7 @@ function parseArgs(argv: string[]): RunOptions {
     hashEvery: 0,
     out: null,
     stressAnts: 0,
+    events: "none",
   };
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i];
@@ -52,8 +55,13 @@ function parseArgs(argv: string[]): RunOptions {
     } else if (arg === "--stress-ants") {
       options.stressAnts = readNumber(argv, i, arg);
       i += 1;
+    } else if (arg === "--events") {
+      const value = argv[i + 1];
+      if (value !== "full" && value !== "none") throw new Error("--events must be full or none");
+      options.events = value;
+      i += 1;
     } else if (arg === "--help" || arg === "-h") {
-      console.log("Usage: npm run sim -- --seed 1337 --ticks 50000 --sample-every 600 --hash-every 1000 --out runs/x.jsonl --stress-ants 1200");
+      console.log("Usage: npm run sim -- --seed 1337 --ticks 50000 --sample-every 600 --hash-every 1000 --events full --out runs/x.jsonl --stress-ants 1200");
       process.exit(0);
     } else {
       throw new Error(`Unknown argument: ${arg}`);
@@ -82,6 +90,7 @@ async function main(): Promise<void> {
   const options = parseArgs(process.argv.slice(2));
   TUNING.seed.value = options.seed;
   const world = createWorld();
+  if (options.events === "full") setDebugEventCapture(world, "full");
   if (options.stressAnts > world.ants.count) stressSpawn(world, options.stressAnts - world.ants.count);
   if (options.out !== null) mkdirSync(dirname(options.out), { recursive: true });
   const stream = options.out === null ? process.stdout : createWriteStream(options.out);
@@ -100,6 +109,9 @@ async function main(): Promise<void> {
     }
   }
   const elapsed = (performance.now() - start) / TUNING.time.msPerSec;
+  if (options.events === "full") {
+    for (const event of getDebugEvents(world)) writeLine({ type: "event", event });
+  }
   writeLine({
     type: "summary",
     outcome: outcomeFor(world),

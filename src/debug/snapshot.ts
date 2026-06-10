@@ -1,6 +1,7 @@
 import { getSeasonState } from "../sim";
 import { AntMode, type Grid, type World } from "../types";
 import { TUNING } from "../tuning";
+import { getDebugState, type DeathCause, type WorldDebugState } from "./events";
 
 export const DEBUG_SCHEMA_VERSION = 1;
 
@@ -246,7 +247,49 @@ function fieldSummary(field: Float32Array, epsilon: number = TUNING.pher.activeE
   return { sum, max, activeCells };
 }
 
-function factionSnapshot(world: EcologyWorld, faction: number) {
+const DEATH_CAUSES: DeathCause[] = ["starvation", "spider", "combat", "terminal_cull"];
+
+function deathsByCause(debug: WorldDebugState, faction: number): CauseCounts {
+  const slot = factionIndex(faction);
+  return {
+    starvation: debug.deathsByCause.starvation[slot],
+    spider: debug.deathsByCause.spider[slot],
+    combat: debug.deathsByCause.combat[slot],
+    terminal_cull: debug.deathsByCause.terminal_cull[slot],
+  };
+}
+
+function liveAntDebugStats(world: EcologyWorld, faction: number, debug: WorldDebugState | undefined) {
+  if (!debug) {
+    return {
+      age: null,
+      deliveriesPerAnt: null,
+      neverDeliveredShare: null,
+    };
+  }
+  const ants = debugAnts(world);
+  const ages: number[] = [];
+  const deliveries: number[] = [];
+  let neverDelivered = 0;
+  for (let i = 0; i < ants.count; i += 1) {
+    if (ants.faction[i] !== faction) continue;
+    const delivered = debug.ants.deliveries[i];
+    ages.push(world.stepCount - debug.ants.birthTick[i]);
+    deliveries.push(delivered);
+    if (delivered === 0) neverDelivered += 1;
+  }
+  ages.sort((a, b) => a - b);
+  deliveries.sort((a, b) => a - b);
+  let deliverySum = 0;
+  for (const value of deliveries) deliverySum += value;
+  return {
+    age: ages.length > 0 ? { p50: quantile(ages, 0.5) ?? 0, max: ages[ages.length - 1] } : { p50: 0, max: 0 },
+    deliveriesPerAnt: deliveries.length > 0 ? { mean: deliverySum / deliveries.length, p50: quantile(deliveries, 0.5) ?? 0 } : { mean: 0, p50: 0 },
+    neverDeliveredShare: deliveries.length > 0 ? neverDelivered / deliveries.length : 0,
+  };
+}
+
+function factionSnapshot(world: EcologyWorld, faction: number, debug: WorldDebugState | undefined) {
   const ants = debugAnts(world);
   const nest = factionNest(world, faction);
   const energies: number[] = [];
@@ -278,6 +321,7 @@ function factionSnapshot(world: EcologyWorld, faction: number) {
   const queenHunger = faction === TUNING.factions.rival ? world.rival.queenHunger : world.queenHunger;
   const totalDeaths = faction === TUNING.factions.rival ? world.rival.totalDeaths : world.totalDeaths;
   const totalDelivered = faction === TUNING.factions.rival ? world.rival.totalDelivered : world.totalDelivered;
+  const debugStats = liveAntDebugStats(world, faction, debug);
   return {
     population: { total, byCaste, byMode },
     nestFood: nest.food,
@@ -286,9 +330,9 @@ function factionSnapshot(world: EcologyWorld, faction: number) {
     terminal,
     gameOver,
     totalDeaths,
-    deathsByCause: null,
+    deathsByCause: debug ? deathsByCause(debug, faction) : null,
     totalDelivered,
-    nanRespawns: null,
+    nanRespawns: debug ? debug.nanRespawns[factionIndex(faction)] : null,
     energy: numberStats(energies),
     dispersion: {
       meanDistance: distances.length > 0 ? distanceSum / distances.length : null,
@@ -296,9 +340,9 @@ function factionSnapshot(world: EcologyWorld, faction: number) {
       countBeyondR,
       radius,
     },
-    age: null,
-    deliveriesPerAnt: null,
-    neverDeliveredShare: null,
+    age: debugStats.age,
+    deliveriesPerAnt: debugStats.deliveriesPerAnt,
+    neverDeliveredShare: debugStats.neverDeliveredShare,
   };
 }
 
@@ -339,6 +383,7 @@ export function snapshotWorld(world: World, options: { ticksPerSecond?: number }
   const ecology = ecologyWorld(world);
   const grid = debugGrid(world);
   const spider = debugSpider(world);
+  const debug = getDebugState(world);
   let totalStock = 0;
   let countRegrowing = 0;
   for (const bush of ecology.bushes) {
@@ -354,8 +399,8 @@ export function snapshotWorld(world: World, options: { ticksPerSecond?: number }
       schemaVersion: DEBUG_SCHEMA_VERSION,
     },
     factions: {
-      player: factionSnapshot(ecology, TUNING.factions.player),
-      rival: factionSnapshot(ecology, TUNING.factions.rival),
+      player: factionSnapshot(ecology, TUNING.factions.player, debug),
+      rival: factionSnapshot(ecology, TUNING.factions.rival, debug),
     },
     fields: {
       player: {
