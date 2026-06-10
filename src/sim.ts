@@ -1,4 +1,4 @@
-import { AntFlag, AntMode, Corpse, FxParticle, Grid, HudSnapshot, Obstacle, ParticleKind, SpatialHash, Telemetry, Tool, World } from "./types";
+import { AntFlag, AntMode, FxParticle, Grid, HudSnapshot, Obstacle, ParticleKind, SpatialHash, Telemetry, Tool, World } from "./types";
 import { TUNING } from "./tuning";
 
 const TAU = TUNING.sim.tau;

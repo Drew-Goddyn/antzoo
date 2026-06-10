@@ -1,5 +1,5 @@
 import { Application, Assets, CanvasSource, Container, Graphics, Particle, ParticleContainer, Rectangle, Sprite, Texture } from "pixi.js";
-import { AntMode, ParticleKind, Renderer, Tool, World } from "./types";
+import { ParticleKind, Renderer, Tool, World } from "./types";
 import { TUNING } from "./tuning";
 
 const HALF = TUNING.sim.randomTurnHalf;
