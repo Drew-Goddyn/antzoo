@@ -1,0 +1,38 @@
+{
+  "name": "antzoo",
+  "version": "1.0.0",
+  "description": "An interactive ant colony god simulator built with React, TypeScript, and PixiJS.",
+  "license": "MIT",
+  "type": "module",
+  "keywords": [
+    "ants",
+    "simulation",
+    "pixi",
+    "react",
+    "vite"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Drew-Goddyn/antzoo.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Drew-Goddyn/antzoo/issues"
+  },
+  "homepage": "https://github.com/Drew-Goddyn/antzoo",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "typecheck": "tsc --noEmit",
+    "build": "tsc --noEmit && vite build"
+  },
+  "dependencies": {
+    "pixi.js": "^8.19.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.1.8",
+    "@types/react-dom": "^19.1.6",
+    "typescript": "^5.8.3",
+    "vite": "^6.3.5"
+  }
+}
