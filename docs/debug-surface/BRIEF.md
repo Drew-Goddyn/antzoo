@@ -1,3 +1,5 @@
+STATUS: COMPLETE — historical. Active program: docs/fleet/FLEET.md. Worker manual: DEBUG.md.
+
 # antzoo debug surface — staged implementation brief
 
 ## How this document is used

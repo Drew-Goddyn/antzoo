@@ -1,3 +1,5 @@
+STATUS: COMPLETE — historical. Active program: docs/fleet/FLEET.md. Worker manual: DEBUG.md.
+
 # antzoo debug surface — dispatch prompts
 
 Companion to `docs/debug-surface/BRIEF.md` (commit this file alongside it as `docs/debug-surface/DISPATCH.md`). Execution model: **one autonomous build run, then one adversarial audit run by a different agent, with the human reading verdicts and DEBUG.md — never code.**

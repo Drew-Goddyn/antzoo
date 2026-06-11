@@ -10,6 +10,10 @@ type Outcome = "running" | "gameOver" | "victory";
 type FactionMap<T> = Record<FactionName, T>;
 type CauseCounts = Record<DeathCause, number>;
 type DeathCauseMedians = FactionMap<Record<DeathCause, number | null>>;
+type FlowDeficitRatios = FactionMap<{
+  drainTotalToSnackEnergyGained: number | null;
+  foodDeliveredToQueenBroodConsumed: number | null;
+}>;
 
 interface RunOptions {
   seed: number;
@@ -243,6 +247,14 @@ function zeroFlow(): DebugFlowCounters {
   return { foodDelivered: 0, queenConsumed: 0, broodConsumed: 0, snackEnergyGained: 0, drainTotal: 0 };
 }
 
+function addFlow(target: DebugFlowCounters, source: DebugFlowCounters): void {
+  target.foodDelivered += source.foodDelivered;
+  target.queenConsumed += source.queenConsumed;
+  target.broodConsumed += source.broodConsumed;
+  target.snackEnergyGained += source.snackEnergyGained;
+  target.drainTotal += source.drainTotal;
+}
+
 function subtractFlow(current: FactionMap<DebugFlowCounters>, previous: FactionMap<DebugFlowCounters>): FactionMap<DebugFlowCounters> {
   const result = { player: zeroFlow(), rival: zeroFlow() };
   for (const faction of FACTIONS) {
@@ -459,7 +471,33 @@ function populationQuartiles(runs: RunSummary[]) {
   };
 }
 
+function safeRatio(numerator: number, denominator: number): number | null {
+  return denominator > 0 ? numerator / denominator : null;
+}
+
+function flowTotals(runs: RunSummary[]): FactionMap<DebugFlowCounters> {
+  const result = { player: zeroFlow(), rival: zeroFlow() };
+  for (const run of runs) {
+    for (const faction of FACTIONS) addFlow(result[faction], run.flowTotals[faction]);
+  }
+  return result;
+}
+
+function flowDeficitRatios(flow: FactionMap<DebugFlowCounters>): FlowDeficitRatios {
+  return {
+    player: {
+      drainTotalToSnackEnergyGained: safeRatio(flow.player.drainTotal, flow.player.snackEnergyGained),
+      foodDeliveredToQueenBroodConsumed: safeRatio(flow.player.foodDelivered, flow.player.queenConsumed + flow.player.broodConsumed),
+    },
+    rival: {
+      drainTotalToSnackEnergyGained: safeRatio(flow.rival.drainTotal, flow.rival.snackEnergyGained),
+      foodDeliveredToQueenBroodConsumed: safeRatio(flow.rival.foodDelivered, flow.rival.queenConsumed + flow.rival.broodConsumed),
+    },
+  };
+}
+
 function summarizeRuns(type: "seed_summary" | "cross_seed_rollup", runs: RunSummary[], seed?: number) {
+  const cumulativeFlowTotals = flowTotals(runs);
   return {
     type,
     ...(seed === undefined ? {} : { seed }),
@@ -472,6 +510,8 @@ function summarizeRuns(type: "seed_summary" | "cross_seed_rollup", runs: RunSumm
     deathsByCauseMedians: deathsByCauseMedians(runs),
     obituaryAggregateMedians: obituaryAggregateMedians(runs),
     populationQuartiles: populationQuartiles(runs),
+    flowTotals: cumulativeFlowTotals,
+    flowDeficitRatios: flowDeficitRatios(cumulativeFlowTotals),
     ticksPerSecondQuartiles: quartiles(runs.map((run) => run.ticksPerSecond)),
   };
 }

@@ -55,6 +55,9 @@ Batch `seed_summary` and `cross_seed_rollup` records include:
 | `obituaryAggregateMedians` | Median of included runs' obituary medians by cause and faction, with `count` summed across included runs. |
 | `populationQuartiles.peak` | Per-faction quartiles for peak population. |
 | `populationQuartiles.final` | Per-faction quartiles for final population. |
+| `flowTotals` | Per-faction cumulative sums of the hash-excluded debug flow counters across all included runs. In `seed_summary` this means all replicates for one seed; in `cross_seed_rollup` this means all included seeds and replicates. |
+| `flowDeficitRatios.<faction>.drainTotalToSnackEnergyGained` | `flowTotals.<faction>.drainTotal / flowTotals.<faction>.snackEnergyGained`, or `null` when no snack energy was gained. Values above `1` mean drain exceeded snack energy gained. |
+| `flowDeficitRatios.<faction>.foodDeliveredToQueenBroodConsumed` | `flowTotals.<faction>.foodDelivered / (flowTotals.<faction>.queenConsumed + flowTotals.<faction>.broodConsumed)`, or `null` when neither queen nor brood consumed food. Values below `1` mean recorded consumption exceeded delivered food. |
 | `finalHashes` / `hashesAllMatch` | Replication determinism evidence for the included runs. |
 
 ## Test gates

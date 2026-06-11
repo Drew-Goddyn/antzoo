@@ -125,6 +125,14 @@ function testT0(): TestResult[] {
   tests.push(preservesHash("T0 debug flow broodConsumed", base, before, (world) => { getDebugState(world)!.flow[0].broodConsumed += 1; }));
   tests.push(preservesHash("T0 debug flow snackEnergyGained", base, before, (world) => { getDebugState(world)!.flow[0].snackEnergyGained += 1; }));
   tests.push(preservesHash("T0 debug flow drainTotal", base, before, (world) => { getDebugState(world)!.flow[0].drainTotal += 1; }));
+  tests.push(preservesHash("T0 debug flow rollup ratio sources", base, before, (world) => {
+    const debug = getDebugState(world)!;
+    debug.flow[0].drainTotal += 10;
+    debug.flow[0].snackEnergyGained += 2;
+    debug.flow[1].foodDelivered += 5;
+    debug.flow[1].queenConsumed += 1;
+    debug.flow[1].broodConsumed += 1;
+  }));
   tests.push(preservesHash("T0 debug obituary aggregates", base, before, (world) => {
     const samples = getDebugState(world)!.obituaries.starvation[0];
     samples.age.push(1);
