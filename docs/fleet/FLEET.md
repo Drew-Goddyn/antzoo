@@ -6,13 +6,14 @@
 
 Use a pool of autonomous workers (up to 15 concurrent, ~100 dispatches/day) to run headless experiments against the antzoo simulation and return structured reports. Every claim reduces to `(seed, config, tick, observable)`. The operator reads reports and verdicts, never code. Worker confusion is a defect in this document or in DEBUG.md — the fix is always a doc patch plus redispatch, never per-worker coaching.
 
-## Established baseline (anchor values — 5 seeds, 1337–1341, 50k tick budget)
+## Established baseline (Wave 0, 50k tick budget)
 
-- Outcomes: player 3 victories / 2 collapses. All games end decisively before ~35k ticks; "running" at 50k has never been observed. Losses are queen collapses (terminal cascade), not attrition.
-- Mortality: starvation dominates both factions (player median 175/run, rival 154). Spider and combat are noise.
-- Player starvation obituaries: median age ~10,000 ticks, median 3 deliveries, ~72 sim-seconds since last food perception. Rival starvation obituaries: median **0** deliveries, every seed.
-- Player peak population ~187–217; rival pinned at ~165.
-- Throughput ~700–1,100 ticks/sec headless. A 20-seed cell ≈ 15–20 min of compute.
+- Expanded baseline (W0-A, seeds 1337–1376, n=40): player 32 victories / 7 collapses / 1 still running at tick 50000; player win rate 80%, SE 0.063. Decisive endings dominate, but "running" at 50k has now been observed once.
+- Anchor subset (W0-C, seeds 1337–1341, n=5): player 3 victories / 2 collapses, matching the original anchor. Losses are queen collapses (terminal cascade), not attrition.
+- Mortality: starvation dominates both factions. W0-A medians are player 168.5 starvation deaths/run and rival 136; W0-C anchor medians are player 175 and rival 154. Spider and combat remain noise.
+- Player starvation obituaries: W0-A median age 9,698.5 ticks, median 3 deliveries, 72.38 sim-seconds since last food perception. Rival starvation obituaries: median **0** deliveries.
+- Population: W0-A player peak median 202.5 (range 173–264); rival peak median 165 (range 159–170).
+- Throughput/capacity: W0 reports show median ticks/sec in the ~188–238 range, with inconsistent reported wall clocks. Use actual reported wall clock per worker/cell until capacity is remeasured cleanly.
 
 Open hypotheses for wave 1: (H1) early nearest-food distance per faction predicts the winner ("terrain luck"); (H2) the founding cohort dies as a synchronized wave near tick 10k and survival depends on brood banked before it; (H3) workforce composition (worker share) is the live causal lever behind the rival's zero-delivery starvation.
 
@@ -55,6 +56,8 @@ Confidence: <high/medium/low> — <why, in one clause>
 Rejection criteria (operator side): prose claims without verbatim rollup lines; patched keys without recorded defaults; claims missing (seed, tick) citations; missing n.
 
 ## Dispatch template
+
+Before sending a dispatch, replace every angle-bracket placeholder. Wave slugs are lowercase `wave<number>` (`wave0`, `wave1`, ...). Never send a worker a prompt containing `<CELL-ID>`, `<wave>`, or any other unresolved placeholder.
 
 ```
 Read docs/fleet/FLEET.md and docs/debug-surface/DEBUG.md in full. You are
