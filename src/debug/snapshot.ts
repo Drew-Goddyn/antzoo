@@ -522,6 +522,69 @@ function boolScalar(hash: StableHasher, name: string, value: boolean): void {
   hash.bool(value);
 }
 
+const PRESENTATION_TUNING_ROOTS = new Set(["ui", "controls", "camera", "minimap", "colors"]);
+const HASHED_RENDER_TUNING = new Set(["particleCanvasPadding", "particleDrag", "particleGravity"]);
+
+function shouldTraverseTuningPath(path: string[]): boolean {
+  return path.length === 0 || !PRESENTATION_TUNING_ROOTS.has(path[0]);
+}
+
+function shouldHashTuningLeaf(path: string[]): boolean {
+  const [root, leaf] = path;
+  if (root === "render") return HASHED_RENDER_TUNING.has(leaf);
+  if (root === "spider" && (leaf.startsWith("draw") || leaf.startsWith("toast"))) return false;
+  if (root === "seasons" && (leaf.endsWith("Tint") || leaf.startsWith("rainStreak") || leaf.startsWith("rainToast"))) return false;
+  if (root === "ecology" && leaf === "carcassToastSec") return false;
+  if (root === "sim" && leaf === "fpsEma") return false;
+  return true;
+}
+
+function hashString(hash: StableHasher, value: string): void {
+  hash.u32(value.length);
+  for (let i = 0; i < value.length; i += 1) hash.u32(value.charCodeAt(i));
+}
+
+function hashTuningValue(hash: StableHasher, path: string[], value: unknown): void {
+  if (!shouldTraverseTuningPath(path)) return;
+  if (Array.isArray(value)) {
+    hash.tag(`tuning.${path.join(".")}`);
+    hash.tag("array");
+    hash.u32(value.length);
+    for (let i = 0; i < value.length; i += 1) hashTuningValue(hash, [...path, String(i)], value[i]);
+    return;
+  }
+  if (value && typeof value === "object") {
+    const object = value as Record<string, unknown>;
+    const keys = Object.keys(object).sort();
+    hash.tag(`tuning.${path.join(".")}`);
+    hash.tag("object");
+    hash.u32(keys.length);
+    for (const key of keys) hashTuningValue(hash, [...path, key], object[key]);
+    return;
+  }
+  if (!shouldHashTuningLeaf(path)) return;
+  hash.tag(`tuning.${path.join(".")}`);
+  if (typeof value === "number") {
+    hash.tag("number");
+    hash.f64(value);
+  } else if (typeof value === "boolean") {
+    hash.tag("boolean");
+    hash.bool(value);
+  } else if (typeof value === "string") {
+    hash.tag("string");
+    hashString(hash, value);
+  } else if (value === null || value === undefined) {
+    hash.tag(String(value));
+  } else {
+    throw new Error(`Unsupported tuning hash value at ${path.join(".")}: ${typeof value}`);
+  }
+}
+
+function hashTuning(hash: StableHasher): void {
+  hash.tag("tuning");
+  hashTuningValue(hash, [], TUNING);
+}
+
 function hashAnts(hash: StableHasher, world: World): void {
   const ants = debugAnts(world);
   hash.tag("ants");
@@ -698,6 +761,7 @@ function hashFactionScalars(hash: StableHasher, world: EcologyWorld): void {
 export function hashWorldState(world: World): string {
   const ecology = ecologyWorld(world);
   const hash = new StableHasher();
+  hashTuning(hash);
   scalar(hash, "width", world.width);
   scalar(hash, "height", world.height);
   scalar(hash, "time", world.time);

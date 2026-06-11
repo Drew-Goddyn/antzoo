@@ -827,3 +827,374 @@ dist/assets/index-DuVAKsg2.js               615.18 kB │ gzip: 189.36 kB
 - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
 ✓ built in 2.10s
 ```
+
+## Remediation
+
+### Findings Addressed
+
+- F1: `hashWorldState(world)` now includes a deterministic digest of gameplay-affecting tuning. Presentation-only tuning remains excluded.
+- F2: `DEBUG.md` now states that `tick`, `birthTick`, and `age` are ticks, while obituary `ticksInMode`, `ticksSinceLastDelivery`, and `ticksSinceFoodPerceived` are simulated seconds despite their historical names.
+- F3: `DEBUG.md` now includes a complete Playwright gate command, and `playwright-core` is a dev dependency so the command can import the browser API from this repo.
+- F4: `DEBUG.md` now uses demonstrative trace examples for the committed baseline and explicitly labels `nan_respawn` as an incident arm that may emit zero rows on a finite run.
+
+### F1 - Tuning Hash Reproduction
+
+Command:
+
+```sh
+./node_modules/.bin/tsx -e 'import { createWorld, stepWorld } from "./src/sim"; import { hashWorldState } from "./src/debug/snapshot"; import { applyTuningPatch } from "./src/debug/scenario"; import { TUNING } from "./src/tuning"; TUNING.seed.value = 1337; const a = createWorld(); const b = createWorld(); for (let i = 0; i < 5000; i += 1) { stepWorld(a, 1 / TUNING.time.stepHz); stepWorld(b, 1 / TUNING.time.stepHz); } const beforeA = hashWorldState(a); const beforeB = hashWorldState(b); applyTuningPatch("ant.drainPerSec", TUNING.ant.drainPerSec + 0.1); const afterA = hashWorldState(a); const afterB = hashWorldState(b); console.log(`before_same\t${beforeA === beforeB ? "yes" : "no"}\t${beforeA}\t${beforeB}`); console.log(`after_tuning_same_between_worlds\t${afterA === afterB ? "yes" : "no"}\t${afterA}\t${afterB}`); console.log(`tuning_changed_hash\t${beforeA !== afterA ? "yes" : "no"}`);'
+```
+
+Output:
+
+```text
+before_same	yes	632028e9736dd465	632028e9736dd465
+after_tuning_same_between_worlds	yes	ec542375c325ecc1	ec542375c325ecc1
+tuning_changed_hash	yes
+```
+
+### Test Gate - T0, T1, T2, T3, T5
+
+Command:
+
+```sh
+npm test
+```
+
+Output:
+
+```text
+
+> antzoo@1.0.0 test
+> tsx scripts/test-debug.ts
+
+PASS T0 rng
+PASS T0 time
+PASS T0 stepCount
+PASS T0 ants.x
+PASS T0 ants.y
+PASS T0 ants.heading
+PASS T0 ants.energy
+PASS T0 ants.stepsSincePickup
+PASS T0 ants.timerA
+PASS T0 ants.timerB
+PASS T0 ants.mode
+PASS T0 ants.carrying
+PASS T0 ants.flags
+PASS T0 ants.caste
+PASS T0 ants.faction
+PASS T0 spatial
+PASS T0 grid.pherFood.player
+PASS T0 grid.pherFood.rival
+PASS T0 grid.pherHome.player
+PASS T0 grid.pherHome.rival
+PASS T0 grid.pherDanger
+PASS T0 grid.lure
+PASS T0 grid.moisture
+PASS T0 grid.foodAmt
+PASS T0 grid.bookkeeping
+PASS T0 nestFood.player
+PASS T0 nestFood.rival
+PASS T0 queen/brood.player
+PASS T0 queen/brood.rival
+PASS T0 rival struct
+PASS T0 spider
+PASS T0 bushes
+PASS T0 carcass
+PASS T0 corpses
+PASS T0 obstacles
+PASS T0 combatMarks
+PASS T0 tuning ant.drainPerSec
+PASS T0 tuning ui.hudHz
+PASS T0 debug-only field
+PASS T0 debug ant id
+PASS T0 debug ant birthTick
+PASS T0 debug ant distanceTraveled
+PASS T0 debug ant ticksInMode
+PASS T0 debug ant deliveries
+PASS T0 debug ant ticksSinceLastDelivery
+PASS T0 debug ant ticksSinceFoodPerceived
+PASS T0 debug trace active
+PASS T0 debug trace beyondR
+PASS T0 debug trace record
+PASS T1 same seed hashes at 1k/10k/50k
+PASS T1 different seeds diverge by 1k
+PASS T2 sample-every 100 vs no sampling final hash
+PASS T3 death accounting - top causes: starvation=347, spider=21, terminal_cull=10
+PASS T3 id uniqueness over 50k
+PASS T5 traced run matches untraced hash
+PASS T5 trace rows captured - rows=4096
+```
+
+### F2 - Obituary Unit Evidence
+
+Command:
+
+```sh
+npm run sim -- --seed 1337 --ticks 50000 --events full | rg '^\{"type":"event"|^\{"type":"summary"' | node -e 'const fs=require("fs"); const rows=fs.readFileSync(0,"utf8").trim().split(/\n/).filter(Boolean).map(JSON.parse); const death=rows.find(r=>r.type==="event" && r.event.type==="death" && r.event.age>0); const e=death.event; const modeSum=e.ticksInMode.reduce((a,b)=>a+b,0); console.log(JSON.stringify({id:e.id, tick:e.tick, ageTicks:e.age, modeSeconds:modeSum, ticksSinceLastDeliverySeconds:e.ticksSinceLastDelivery, ticksSinceFoodPerceivedSeconds:e.ticksSinceFoodPerceived, ageSeconds:e.age/60}, null, 2));'
+```
+
+Output:
+
+```json
+{
+  "id": 242,
+  "tick": 3526,
+  "ageTicks": 3526,
+  "modeSeconds": 58.76611328125,
+  "ticksSinceLastDeliverySeconds": 58.76594161987305,
+  "ticksSinceFoodPerceivedSeconds": 0,
+  "ageSeconds": 58.766666666666666
+}
+```
+
+### F3 - Playwright Browser Gate
+
+Dev server command:
+
+```sh
+npm run dev -- --port 5173
+```
+
+Output:
+
+```text
+
+> antzoo@1.0.0 dev
+> vite --host 127.0.0.1 --port 5173
+
+2:33:15 PM [vite] (client) Re-optimizing dependencies because lockfile has changed
+
+  VITE v6.4.3  ready in 176 ms
+
+  Local:   http://127.0.0.1:5173/
+```
+
+Playwright command:
+
+```sh
+node - <<'JS'
+const { chromium } = require("playwright-core");
+
+(async () => {
+  const browser = await chromium.launch({ channel: "chrome", headless: true });
+  const page = await browser.newPage();
+  await page.goto("http://127.0.0.1:5173/?seed=1337&paused=1", { waitUntil: "domcontentloaded" });
+  await page.waitForFunction(() => Boolean(window.__antzoo));
+  const result = await page.evaluate(() => {
+    const api = window.__antzoo;
+    if (!api) throw new Error("window.__antzoo missing");
+    api.pause();
+    api.step(5000);
+    const snapshot = api.getSnapshot();
+    return {
+      version: api.version,
+      tick: snapshot.meta.tick,
+      hash: api.getHash(),
+      population: snapshot.factions.player.population.total,
+      hasEventsArray: Array.isArray(api.getEvents()),
+      deathsByCauseIsObject: typeof snapshot.factions.player.deathsByCause === "object" && snapshot.factions.player.deathsByCause !== null,
+      schemaVersion: snapshot.meta.schemaVersion
+    };
+  });
+  console.log(JSON.stringify(result, null, 2));
+  await browser.close();
+})().catch((error) => {
+  console.error(error);
+  process.exit(1);
+});
+JS
+```
+
+Output:
+
+```json
+{
+  "version": "debug-surface-stage4",
+  "tick": 5000,
+  "hash": "632028e9736dd465",
+  "population": 190,
+  "hasEventsArray": true,
+  "deathsByCauseIsObject": true,
+  "schemaVersion": 1
+}
+```
+
+### F4 - Trace Examples
+
+Command:
+
+```sh
+npm run sim -- --scenario scenarios/baseline-1337.json --trace-ids 386 --trace-window 31339:31398 | rg '^\{"type":"trace"|^\{"type":"summary"' | node -e 'const fs=require("fs"); const rows=fs.readFileSync(0,"utf8").trim().split(/\n/).filter(Boolean).map(JSON.parse); console.log(JSON.stringify({traceRows: rows.filter(r=>r.type==="trace").length, ids:[...new Set(rows.filter(r=>r.type==="trace").map(r=>r.trace.id))], firstTick: rows.find(r=>r.type==="trace")?.trace.tick, lastTick: rows.filter(r=>r.type==="trace").at(-1)?.trace.tick, summary: rows.find(r=>r.type==="summary")}, null, 2));'
+```
+
+Output:
+
+```json
+{
+  "traceRows": 60,
+  "ids": [
+    386
+  ],
+  "firstTick": 31339,
+  "lastTick": 31398,
+  "summary": {
+    "type": "summary",
+    "outcome": "victory",
+    "finalTick": 33235,
+    "finalHash": "5101d7c52c007c01",
+    "peakPopulation": 354,
+    "ticksPerSecond": 1086.9836834265689
+  }
+}
+```
+
+Command:
+
+```sh
+npm run sim -- --seed 1337 --ticks 50000 --trace-arm beyondR:5 | rg '^\{"type":"trace"|^\{"type":"summary"' | node -e 'const fs=require("fs"); const text=fs.readFileSync(0,"utf8").trim(); const rows=text?text.split(/\n/).filter(Boolean).map(JSON.parse):[]; console.log(JSON.stringify({traceRows: rows.filter(r=>r.type==="trace").length, ids:[...new Set(rows.filter(r=>r.type==="trace").map(r=>r.trace.id))], summary: rows.find(r=>r.type==="summary")}, null, 2));'
+```
+
+Output:
+
+```json
+{
+  "traceRows": 28442,
+  "ids": [
+    188,
+    113,
+    57,
+    76,
+    179
+  ],
+  "summary": {
+    "type": "summary",
+    "outcome": "victory",
+    "finalTick": 33235,
+    "finalHash": "5101d7c52c007c01",
+    "peakPopulation": 354,
+    "ticksPerSecond": 1082.666296650255
+  }
+}
+```
+
+Command:
+
+```sh
+npm run sim -- --seed 1337 --ticks 50000 --trace-arm nan_respawn | rg '^\{"type":"trace"|^\{"type":"summary"' | node -e 'const fs=require("fs"); const text=fs.readFileSync(0,"utf8").trim(); const rows=text?text.split(/\n/).filter(Boolean).map(JSON.parse):[]; console.log(JSON.stringify({traceRows: rows.filter(r=>r.type==="trace").length, ids:[...new Set(rows.filter(r=>r.type==="trace").map(r=>r.trace.id))], summary: rows.find(r=>r.type==="summary")}, null, 2));'
+```
+
+Output:
+
+```json
+{
+  "traceRows": 0,
+  "ids": [],
+  "summary": {
+    "type": "summary",
+    "outcome": "victory",
+    "finalTick": 33235,
+    "finalHash": "5101d7c52c007c01",
+    "peakPopulation": 354,
+    "ticksPerSecond": 1079.8299195584787
+  }
+}
+```
+
+### Scenario Replay Gate
+
+Command:
+
+```sh
+tmp1=$(mktemp /tmp/antzoo-remed-food-probe-1-XXXXXX.jsonl); tmp2=$(mktemp /tmp/antzoo-remed-food-probe-2-XXXXXX.jsonl); npm run sim -- --scenario scenarios/food-distance-probe.json --hash-every 3000 | rg '^\{' > "$tmp1" && npm run sim -- --scenario scenarios/food-distance-probe.json --hash-every 3000 | rg '^\{' > "$tmp2" && node -e 'const fs = require("fs"); const [a,b] = process.argv.slice(1).map((path) => fs.readFileSync(path, "utf8").trim().split(/\n/).map(JSON.parse)); const hashes = (rows) => rows.filter((row) => row.type === "hash").map((row) => [row.tick, row.hash]); const stimuli = (rows) => rows.filter((row) => row.type === "stimulus").map((row) => `${row.tick}:${row.action.do}:${row.action.tool ?? ""}:${row.action.x ?? ""}:${row.action.y ?? ""}`); console.log("tick\trun1_hash\trun2_hash\tmatch"); const h1 = hashes(a); const h2 = hashes(b); for (let i = 0; i < h1.length; i += 1) console.log(`${h1[i][0]}\t${h1[i][1]}\t${h2[i]?.[1]}\t${h1[i][1] === h2[i]?.[1] ? "yes" : "no"}`); const s1 = stimuli(a); const s2 = stimuli(b); console.log(`stimuli_run1\t${s1.join(",")}`); console.log(`stimuli_run2\t${s2.join(",")}`); console.log(`stimuli_match\t${JSON.stringify(s1) === JSON.stringify(s2) ? "yes" : "no"}`); console.log(`final_hash_match\t${a.at(-1).finalHash === b.at(-1).finalHash ? "yes" : "no"}`);' "$tmp1" "$tmp2"; code=$?; rm "$tmp1" "$tmp2"; exit $code
+```
+
+Output:
+
+```text
+tick	run1_hash	run2_hash	match
+3000	1d17eb0a3c502152	1d17eb0a3c502152	yes
+6000	9a6972c3715b1c9f	9a6972c3715b1c9f	yes
+9000	8c0f100995d8b509	8c0f100995d8b509	yes
+12000	12dd610706bfe653	12dd610706bfe653	yes
+stimuli_run1	600:applyTool:food:2300:1150,3600:applyTool:food:2800:1150,9000:applyTool:food:3300:1150
+stimuli_run2	600:applyTool:food:2300:1150,3600:applyTool:food:2800:1150,9000:applyTool:food:3300:1150
+stimuli_match	yes
+final_hash_match	yes
+```
+
+### Traced-Run Parity Gate
+
+Command:
+
+```sh
+tmp_untraced=$(mktemp /tmp/antzoo-remed-untraced-XXXXXX.jsonl); tmp_traced=$(mktemp /tmp/antzoo-remed-traced-XXXXXX.jsonl); npm run sim -- --seed 1337 --ticks 50000 --hash-every 10000 | rg '^\{' > "$tmp_untraced" && npm run sim -- --seed 1337 --ticks 50000 --hash-every 10000 --trace-ids 1 --trace-window 1:5 | rg '^\{' > "$tmp_traced" && node -e 'const fs = require("fs"); const [a,b] = process.argv.slice(1).map((path) => fs.readFileSync(path, "utf8").trim().split(/\n/).map(JSON.parse)); const hashes = (rows) => rows.filter((row) => row.type === "hash").map((row) => [row.tick, row.hash]); const h1 = hashes(a); const h2 = hashes(b); console.log("tick\tuntraced_hash\ttraced_hash\tmatch"); for (let i = 0; i < h1.length; i += 1) console.log(`${h1[i][0]}\t${h1[i][1]}\t${h2[i]?.[1]}\t${h1[i][1] === h2[i]?.[1] ? "yes" : "no"}`); const s1 = a.find((row) => row.type === "summary"); const s2 = b.find((row) => row.type === "summary"); console.log(`trace_rows\t${b.filter((row) => row.type === "trace").length}`); console.log(`final_untraced\t${s1.finalHash}`); console.log(`final_traced\t${s2.finalHash}`); console.log(`final_match\t${s1.finalHash === s2.finalHash ? "yes" : "no"}`);' "$tmp_untraced" "$tmp_traced"; code=$?; rm "$tmp_untraced" "$tmp_traced"; exit $code
+```
+
+Output:
+
+```text
+tick	untraced_hash	traced_hash	match
+10000	f3a0258093e285b0	f3a0258093e285b0	yes
+20000	a77b2856f9e8a95e	a77b2856f9e8a95e	yes
+30000	1aaad77433d11398	1aaad77433d11398	yes
+trace_rows	5
+final_untraced	5101d7c52c007c01
+final_traced	5101d7c52c007c01
+final_match	yes
+```
+
+### Typecheck And Build
+
+Command:
+
+```sh
+npm run typecheck
+```
+
+Output:
+
+```text
+
+> antzoo@1.0.0 typecheck
+> tsc --noEmit
+
+```
+
+Command:
+
+```sh
+npm run build
+```
+
+Output:
+
+```text
+
+> antzoo@1.0.0 build
+> tsc --noEmit && vite build
+
+vite v6.4.3 building for production...
+transforming...
+✓ 748 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                               0.34 kB │ gzip:   0.25 kB
+dist/assets/CanvasPool-BAJh6kCN.js            0.78 kB │ gzip:   0.43 kB
+dist/assets/Filter-DIXPRB-p.js                0.90 kB │ gzip:   0.48 kB
+dist/assets/BufferResource-ycL7o52C.js       10.61 kB │ gzip:   2.80 kB
+dist/assets/webworkerAll-Dh8k7ReG.js         15.93 kB │ gzip:   5.07 kB
+dist/assets/CanvasRenderer-DSqUZBNP.js       18.03 kB │ gzip:   6.01 kB
+dist/assets/BitmapFont-mnoY0HNJ.js           34.48 kB │ gzip:  11.75 kB
+dist/assets/WebGPURenderer-BreTx7C3.js       39.14 kB │ gzip:  10.95 kB
+dist/assets/browserAll-B_mqonX_.js           43.26 kB │ gzip:  11.36 kB
+dist/assets/RenderTargetSystem-Bk9SDqUD.js   47.11 kB │ gzip:  12.97 kB
+dist/assets/WebGLRenderer-Bt8V9CCS.js        68.88 kB │ gzip:  18.92 kB
+dist/assets/index-Mn7I1hqi.js               616.43 kB │ gzip: 189.78 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 1.75s
+```

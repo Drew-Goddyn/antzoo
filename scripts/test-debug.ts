@@ -1,6 +1,7 @@
 import { createWorld, stepWorld } from "../src/sim";
 import { hashWorldState, snapshotWorld } from "../src/debug/snapshot";
 import { assertDebugAntIdsUnique, configureDebugTrace, getDebugState, getDebugTrace } from "../src/debug/events";
+import { applyTuningPatch, getTuningPath } from "../src/debug/scenario";
 import { TUNING } from "../src/tuning";
 
 type TestResult = { name: string; pass: boolean; detail?: string; showDetailOnPass?: boolean };
@@ -35,6 +36,28 @@ function preservesHash(name: string, base: MutableWorld, before: string, mutate:
   mutate(world);
   const after = hashWorldState(world);
   return { name, pass: before === after, detail: before !== after ? `${before} -> ${after}` : undefined };
+}
+
+function changesTuningHash(name: string, world: MutableWorld, before: string, path: string, value: unknown): TestResult {
+  const original = getTuningPath(path);
+  applyTuningPatch(path, value);
+  try {
+    const after = hashWorldState(world);
+    return { name, pass: before !== after, detail: before === after ? "hash did not change" : undefined };
+  } finally {
+    applyTuningPatch(path, original);
+  }
+}
+
+function preservesTuningHash(name: string, world: MutableWorld, before: string, path: string, value: unknown): TestResult {
+  const original = getTuningPath(path);
+  applyTuningPatch(path, value);
+  try {
+    const after = hashWorldState(world);
+    return { name, pass: before === after, detail: before !== after ? `${before} -> ${after}` : undefined };
+  } finally {
+    applyTuningPatch(path, original);
+  }
 }
 
 function firstLiveIndex(world: MutableWorld): number {
@@ -82,6 +105,8 @@ function testT0(): TestResult[] {
   tests.push(changesHash("T0 corpses", base, before, (world) => { world.corpses.push({ x: 1, y: 1, decay: 1, maxDecay: 1 }); }));
   tests.push(changesHash("T0 obstacles", base, before, (world) => { world.obstacles[0].r += 0.001; }));
   tests.push(changesHash("T0 combatMarks", base, before, (world) => { world.combatMarks[0] = 1; }));
+  tests.push(changesTuningHash("T0 tuning ant.drainPerSec", base, before, "ant.drainPerSec", TUNING.ant.drainPerSec + 0.1));
+  tests.push(preservesTuningHash("T0 tuning ui.hudHz", base, before, "ui.hudHz", TUNING.ui.hudHz + 1));
   tests.push(preservesHash("T0 debug-only field", base, before, (world) => { world.__debugOnlyProbe = { value: 1 }; }));
   tests.push(preservesHash("T0 debug ant id", base, before, (world) => { getDebugState(world)!.ants.id[0] += 1; }));
   tests.push(preservesHash("T0 debug ant birthTick", base, before, (world) => { getDebugState(world)!.ants.birthTick[0] += 1; }));

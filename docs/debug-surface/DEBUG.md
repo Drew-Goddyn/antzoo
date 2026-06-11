@@ -1,6 +1,6 @@
 # antzoo debug surface
 
-This document is the machine-facing orientation for the antzoo debug surface. All tick values are simulation ticks. The fixed simulation step is 60 ticks per simulated second.
+This document is the machine-facing orientation for the antzoo debug surface. Fields named `tick`, `birthTick`, or `age` are simulation ticks. The fixed simulation step is 60 ticks per simulated second. Obituary duration fields with historical `ticks*` names are documented in the event table below and use simulated seconds.
 
 ## Headless runs
 
@@ -81,8 +81,9 @@ Every JSONL record has a `type` field. The runner emits `snapshot`, `hash`, `eve
 
 ## Hash domain
 
-`hashWorldState(world)` hashes gameplay state only and excludes camera, HUD, telemetry/perf timing, render state, particles, and debug-only structures. It includes:
+`hashWorldState(world)` hashes gameplay state and gameplay-affecting tuning only. It excludes camera, HUD, telemetry/perf timing, presentation-only render settings, particles, and debug-only structures. It includes:
 
+- A deterministic digest of active tuning that can affect simulation futures or programmatic inputs, including `ant.*`, `pher.*`, `ecology.*`, `seasons.*` gameplay fields, tools/input knobs, particle/fx knobs that run inside `stepWorld`, seed, world/grid/spatial sizes, and caste/faction constants. Presentation-only tuning such as `ui.*`, `controls.*`, `camera.*`, `minimap.*`, `colors.*`, spider draw/toast fields, seasonal tint/rain-streak/toast fields, and browser render chrome is excluded.
 - `world.rng`, dimensions, `time`, `frame`, `stepCount`, spawn/death timers, trauma, nest pulse, rain and cooldown scalars.
 - Live ant arrays sliced to `ants.count`: `x`, `y`, `heading`, `energy`, `stepsSincePickup`, `timerA`, `timerB`, `mode`, `carrying`, `flags`, runtime `caste`, and runtime `faction`.
 - Spatial hash arrays and faction masks that can affect programmatic interactions between steps.
@@ -101,7 +102,7 @@ Event records:
 
 | Type | Fields |
 | --- | --- |
-| `death` | `tick`, `faction`, `cause`, `id`, `birthTick`, `age`, `deliveries`, `distanceTraveled`, `ticksInMode`, `ticksSinceLastDelivery`, `ticksSinceFoodPerceived`. |
+| `death` | `tick`, `birthTick`, and `age` are simulation ticks. `distanceTraveled` is world units. `ticksInMode`, `ticksSinceLastDelivery`, and `ticksSinceFoodPerceived` are simulated seconds despite their historical names. Other fields: `faction`, `cause`, `id`, `deliveries`. |
 | `nan_respawn` | `tick`, `faction`, `id`, prior `x`, prior `y`. Respawn behavior is unchanged. |
 | `season_change` | `tick`, `season`, `label`, `year`. |
 | `rain_start`, `rain_end` | `tick`. |
@@ -124,10 +125,12 @@ Decision tracing is opt-in. It is debug-only, excluded from `hashWorldState`, ne
 CLI examples:
 
 ```sh
-npm run sim -- --scenario scenarios/baseline-1337.json --trace-ids 412,517 --trace-window 30000:41300
+npm run sim -- --scenario scenarios/baseline-1337.json --trace-ids 386 --trace-window 31339:31398
 npm run sim -- --seed 1337 --ticks 50000 --trace-arm beyondR:5
 npm run sim -- --seed 1337 --ticks 50000 --trace-arm nan_respawn
 ```
+
+The first two commands are demonstrative for the committed baseline: id `386` emits the final 60 ticks before a starvation death, and `beyondR:5` emits rows for the next five ants crossing the default dispersion radius. `nan_respawn` is an incident arm; a normal finite baseline may emit zero trace rows for it.
 
 Headless trace rows are emitted as JSONL records:
 
@@ -199,7 +202,51 @@ Boot URL params:
 | `paused=1` | Starts paused. |
 | `scenario` | Base64-encoded scenario JSON. Its seed/tuning are applied before `createWorld()`, then its timeline executes as the world advances. |
 
-Playwright gate snippet:
+Playwright gate:
+
+Terminal 1:
+
+```sh
+npm run dev -- --port 5173
+```
+
+Terminal 2:
+
+```sh
+node - <<'JS'
+const { chromium } = require("playwright-core");
+
+(async () => {
+  const browser = await chromium.launch({ channel: "chrome", headless: true });
+  const page = await browser.newPage();
+  await page.goto("http://127.0.0.1:5173/?seed=1337&paused=1", { waitUntil: "domcontentloaded" });
+  await page.waitForFunction(() => Boolean(window.__antzoo));
+  const result = await page.evaluate(() => {
+    const api = window.__antzoo;
+    if (!api) throw new Error("window.__antzoo missing");
+    api.pause();
+    api.step(5000);
+    const snapshot = api.getSnapshot();
+    return {
+      version: api.version,
+      tick: snapshot.meta.tick,
+      hash: api.getHash(),
+      population: snapshot.factions.player.population.total,
+      hasEventsArray: Array.isArray(api.getEvents()),
+      deathsByCauseIsObject: typeof snapshot.factions.player.deathsByCause === "object" && snapshot.factions.player.deathsByCause !== null,
+      schemaVersion: snapshot.meta.schemaVersion
+    };
+  });
+  console.log(JSON.stringify(result, null, 2));
+  await browser.close();
+})().catch((error) => {
+  console.error(error);
+  process.exit(1);
+});
+JS
+```
+
+The repo includes `playwright-core` as a dev dependency and uses the local Chrome channel for this gate. The evaluated browser body is:
 
 ```js
 const result = await page.evaluate(() => {
