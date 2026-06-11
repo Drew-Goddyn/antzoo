@@ -1,6 +1,6 @@
 import { AntFlag, AntMode, FxParticle, Grid, HudSnapshot, Obstacle, ParticleKind, SpatialHash, Telemetry, Tool, World } from "./types";
 import { TUNING } from "./tuning";
-import { assignDebugAntSlot, copyDebugAntSlot, getDebugState, getDebugTraceBeyondRadius, initDebugState, isDebugTraceEnabled, recordDebugAntTick, recordDebugDeath, recordDebugEvent, recordDebugNanRespawn, recordDebugSeasonChange, recordTraceInteraction, recordTraceModeTransition, recordTraceSensor, recordTraceTickEnd, recordTraceTickStart, resetDebugAntSlot, updateDebugTraceBeyondArm, type DeathCause } from "./debug/events";
+import { assignDebugAntSlot, copyDebugAntSlot, getDebugState, getDebugTraceBeyondRadius, initDebugState, isDebugTraceEnabled, recordDebugAntTick, recordDebugBroodConsumed, recordDebugDeath, recordDebugDrain, recordDebugEvent, recordDebugFoodDelivered, recordDebugNanRespawn, recordDebugSeasonChange, recordDebugSnackEnergyGained, recordTraceInteraction, recordTraceModeTransition, recordTraceSensor, recordTraceTickEnd, recordTraceTickStart, resetDebugAntSlot, updateDebugTraceBeyondArm, type DeathCause } from "./debug/events";
 
 const TAU = TUNING.sim.tau;
 const HALF = TUNING.sim.randomTurnHalf;
@@ -1405,6 +1405,7 @@ function pickupFood(world: World, index: number): boolean {
   if (idx < 0) return false;
   const ants = world.ants;
   const grid = world.grid;
+  const previousEnergy = ants.energy[index];
   grid.foodAmt[idx] -= 1;
   if (grid.foodAmt[idx] <= 0) {
     grid.foodAmt[idx] = 0;
@@ -1414,6 +1415,7 @@ function pickupFood(world: World, index: number): boolean {
   ants.carrying[index] = 1;
   ants.mode[index] = AntMode.Carry;
   ants.energy[index] = Math.min(TUNING.ant.energyMax, ants.energy[index] + TUNING.ant.snackOnPickup);
+  recordDebugSnackEnergyGained(world, factionAnts(ants).faction[index], Math.max(0, ants.energy[index] - previousEnergy));
   ants.stepsSincePickup[index] = 0;
   ants.timerA[index] = 1;
   ants.timerB[index] = TUNING.sim.excitementSec;
@@ -1697,7 +1699,9 @@ function updateAnts(world: World, dt: number): void {
     const debugPrevMode = ants.mode[i];
     let debugDelivered = false;
     let debugPerceivedFood = false;
-    ants.energy[i] -= TUNING.ant.drainPerSec * energyDrainMul * dt;
+    const drain = TUNING.ant.drainPerSec * energyDrainMul * dt;
+    ants.energy[i] -= drain;
+    recordDebugDrain(world, faction[i], drain);
     if (ants.energy[i] <= 0) {
       const idx = cellIndex(world.grid, ants.x[i], ants.y[i]);
       pushCorpse(world, ants.x[i], ants.y[i]);
@@ -1779,6 +1783,7 @@ function updateAnts(world: World, dt: number): void {
       const dy = ants.y[i] - nestY(world, faction[i]);
       if (dx * dx + dy * dy <= TUNING.nest.r * TUNING.nest.r) {
         addNestFood(world, faction[i], 1);
+        recordDebugFoodDelivered(world, faction[i], 1);
         debugDelivered = true;
         if (faction[i] === FACTION_RIVAL) ecologyWorld(world).rival.totalDelivered += 1;
         else world.totalDelivered += 1;
@@ -2188,6 +2193,7 @@ function updateBrood(world: EcologyWorld, dt: number, factionValue: number): voi
   let broodProgress = factionValue === FACTION_RIVAL ? rival.broodProgress : world.broodProgress;
   let broodWork = factionValue === FACTION_RIVAL ? rival.broodWork : world.broodWork;
   let food = nestFood(world, factionValue);
+  const foodBeforeBrood = food;
   if (food < 1 && broodProgress < TUNING.caste.broodProgressRequired) return;
   broodWork += (nurses * dt) / TUNING.caste.nurseWorkSecPerUnit;
   while (broodWork >= 1 && food >= 1 && broodProgress < TUNING.caste.broodProgressRequired) {
@@ -2195,6 +2201,7 @@ function updateBrood(world: EcologyWorld, dt: number, factionValue: number): voi
     food -= 1;
     broodProgress += 1;
   }
+  if (foodBeforeBrood > food) recordDebugBroodConsumed(world, factionValue, foodBeforeBrood - food);
   setNestFood(world, factionValue, food);
   if (broodProgress >= TUNING.caste.broodProgressRequired && world.ants.count < Math.min(TUNING.ants.max, world.ants.capacity)) {
     broodProgress = 0;

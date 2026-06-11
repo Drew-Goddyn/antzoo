@@ -1198,3 +1198,268 @@ dist/assets/index-Mn7I1hqi.js               616.43 kB │ gzip: 189.78 kB
 - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
 ✓ built in 1.75s
 ```
+
+## Fleet ergonomics
+
+### Gate 1 - Summary interval flows and obituary rollups
+
+Command:
+
+```sh
+npm run sim -- --seed 1337 --ticks 12000 --sample-every 6000 | rg '^\{' | node -e 'const fs = require("fs"); const rows = fs.readFileSync(0, "utf8").trim().split(/\n/).filter(Boolean).map(JSON.parse); for (const row of rows) { if (row.type === "snapshot") console.log(JSON.stringify({type: row.type, tick: row.snapshot.meta.tick, intervalFlow: row.intervalFlow})); if (row.type === "summary") console.log(JSON.stringify({type: row.type, seed: row.seed, finalTick: row.finalTick, finalHash: row.finalHash, flowTotals: row.flowTotals, playerStarvationObituary: row.obituaryAggregates.player.starvation, rivalStarvationObituary: row.obituaryAggregates.rival.starvation})); }'
+```
+
+Output:
+
+```text
+{"type":"snapshot","tick":6000,"intervalFlow":{"player":{"foodDelivered":424,"queenConsumed":0,"broodConsumed":211,"snackEnergyGained":4122.630657672882,"drainTotal":20639.42000035767},"rival":{"foodDelivered":179,"queenConsumed":0,"broodConsumed":77,"snackEnergyGained":1392.6122517585754,"drainTotal":18748.120000316387}}}
+{"type":"snapshot","tick":12000,"intervalFlow":{"player":{"foodDelivered":169,"queenConsumed":0,"broodConsumed":50,"snackEnergyGained":2027.3415369987488,"drainTotal":16079.899999632245},"rival":{"foodDelivered":259,"queenConsumed":0,"broodConsumed":60,"snackEnergyGained":1325.2581105232239,"drainTotal":12812.680000279674}}}
+{"type":"summary","seed":1337,"finalTick":12000,"finalHash":"7e2023a63ede5c52","flowTotals":{"player":{"foodDelivered":593,"queenConsumed":0,"broodConsumed":261,"snackEnergyGained":6149.972194671631,"drainTotal":36719.319999989915},"rival":{"foodDelivered":438,"queenConsumed":0,"broodConsumed":137,"snackEnergyGained":2717.8703622817993,"drainTotal":31560.80000059606}},"playerStarvationObituary":{"count":108,"medianAge":7946,"medianDeliveries":1,"medianTicksSinceFoodPerceived":75.17657852172852},"rivalStarvationObituary":{"count":72,"medianAge":5001,"medianDeliveries":0,"medianTicksSinceFoodPerceived":49.3327522277832}}
+```
+
+### Gate 2 - Batch seeds and replicates
+
+Command:
+
+```sh
+npm run sim -- --seeds 1337,7331 --replicates 2 --ticks 10000 | rg '^\{' | node -e 'const fs = require("fs"); const rows = fs.readFileSync(0, "utf8").trim().split(/\n/).filter(Boolean).map(JSON.parse); for (const row of rows) console.log(JSON.stringify({type: row.type, seed: row.seed, runs: row.runs, hashesAllMatch: row.hashesAllMatch, factionOutcomeCounts: row.factionOutcomeCounts, deathsByCauseMedians: row.deathsByCauseMedians, populationQuartiles: row.populationQuartiles}));'
+```
+
+Output:
+
+```text
+{"type":"seed_summary","seed":1337,"runs":2,"hashesAllMatch":true,"factionOutcomeCounts":{"player":{"running":2,"gameOver":0,"victory":0},"rival":{"running":2,"gameOver":0,"victory":0}},"deathsByCauseMedians":{"player":{"starvation":81,"spider":0,"combat":1,"terminal_cull":0},"rival":{"starvation":64,"spider":0,"combat":1,"terminal_cull":0}},"populationQuartiles":{"peak":{"player":{"count":2,"min":190,"q1":190,"median":190,"q3":190,"max":190},"rival":{"count":2,"min":164,"q1":164,"median":164,"q3":164,"max":164}},"final":{"player":{"count":2,"min":117,"q1":117,"median":117,"q3":117,"max":117},"rival":{"count":2,"min":105,"q1":105,"median":105,"q3":105,"max":105}}}}
+{"type":"seed_summary","seed":7331,"runs":2,"hashesAllMatch":true,"factionOutcomeCounts":{"player":{"running":2,"gameOver":0,"victory":0},"rival":{"running":2,"gameOver":0,"victory":0}},"deathsByCauseMedians":{"player":{"starvation":49,"spider":0,"combat":1,"terminal_cull":0},"rival":{"starvation":60,"spider":3,"combat":0,"terminal_cull":0}},"populationQuartiles":{"peak":{"player":{"count":2,"min":205,"q1":205,"median":205,"q3":205,"max":205},"rival":{"count":2,"min":169,"q1":169,"median":169,"q3":169,"max":169}},"final":{"player":{"count":2,"min":189,"q1":189,"median":189,"q3":189,"max":189},"rival":{"count":2,"min":112,"q1":112,"median":112,"q3":112,"max":112}}}}
+{"type":"cross_seed_rollup","runs":4,"hashesAllMatch":false,"factionOutcomeCounts":{"player":{"running":4,"gameOver":0,"victory":0},"rival":{"running":4,"gameOver":0,"victory":0}},"deathsByCauseMedians":{"player":{"starvation":65,"spider":0,"combat":1,"terminal_cull":0},"rival":{"starvation":62,"spider":1.5,"combat":0.5,"terminal_cull":0}},"populationQuartiles":{"peak":{"player":{"count":4,"min":190,"q1":190,"median":197.5,"q3":205,"max":205},"rival":{"count":4,"min":164,"q1":164,"median":166.5,"q3":169,"max":169}},"final":{"player":{"count":4,"min":117,"q1":117,"median":153,"q3":189,"max":189},"rival":{"count":4,"min":105,"q1":105,"median":108.5,"q3":112,"max":112}}}}
+```
+
+### Gate 3 - CI fast gate
+
+Command:
+
+```sh
+npm test -- --fast
+```
+
+Output:
+
+```text
+
+> antzoo@1.0.0 test
+> tsx scripts/test-debug.ts --fast
+
+PASS T0 rng
+PASS T0 time
+PASS T0 stepCount
+PASS T0 ants.x
+PASS T0 ants.y
+PASS T0 ants.heading
+PASS T0 ants.energy
+PASS T0 ants.stepsSincePickup
+PASS T0 ants.timerA
+PASS T0 ants.timerB
+PASS T0 ants.mode
+PASS T0 ants.carrying
+PASS T0 ants.flags
+PASS T0 ants.caste
+PASS T0 ants.faction
+PASS T0 spatial
+PASS T0 grid.pherFood.player
+PASS T0 grid.pherFood.rival
+PASS T0 grid.pherHome.player
+PASS T0 grid.pherHome.rival
+PASS T0 grid.pherDanger
+PASS T0 grid.lure
+PASS T0 grid.moisture
+PASS T0 grid.foodAmt
+PASS T0 grid.bookkeeping
+PASS T0 nestFood.player
+PASS T0 nestFood.rival
+PASS T0 queen/brood.player
+PASS T0 queen/brood.rival
+PASS T0 rival struct
+PASS T0 spider
+PASS T0 bushes
+PASS T0 carcass
+PASS T0 corpses
+PASS T0 obstacles
+PASS T0 combatMarks
+PASS T0 tuning ant.drainPerSec
+PASS T0 tuning ui.hudHz
+PASS T0 debug-only field
+PASS T0 debug ant id
+PASS T0 debug ant birthTick
+PASS T0 debug ant distanceTraveled
+PASS T0 debug ant ticksInMode
+PASS T0 debug ant deliveries
+PASS T0 debug ant ticksSinceLastDelivery
+PASS T0 debug ant ticksSinceFoodPerceived
+PASS T0 debug trace active
+PASS T0 debug trace beyondR
+PASS T0 debug trace record
+PASS T0 debug flow foodDelivered
+PASS T0 debug flow queenConsumed
+PASS T0 debug flow broodConsumed
+PASS T0 debug flow snackEnergyGained
+PASS T0 debug flow drainTotal
+PASS T0 debug obituary aggregates
+PASS T1 same seed hashes at 1k/10k
+PASS T1 different seeds diverge by 1k
+PASS T2 sample-every 100 vs no sampling final hash
+PASS T3 death accounting - top causes: starvation=145, combat=2, spider=0
+PASS T3 id uniqueness over 10k
+PASS T5 traced run matches untraced hash
+PASS T5 trace rows captured - rows=4096
+```
+
+### Gate 4 - Full local test gate
+
+Command:
+
+```sh
+npm test
+```
+
+Output:
+
+```text
+
+> antzoo@1.0.0 test
+> tsx scripts/test-debug.ts
+
+PASS T0 rng
+PASS T0 time
+PASS T0 stepCount
+PASS T0 ants.x
+PASS T0 ants.y
+PASS T0 ants.heading
+PASS T0 ants.energy
+PASS T0 ants.stepsSincePickup
+PASS T0 ants.timerA
+PASS T0 ants.timerB
+PASS T0 ants.mode
+PASS T0 ants.carrying
+PASS T0 ants.flags
+PASS T0 ants.caste
+PASS T0 ants.faction
+PASS T0 spatial
+PASS T0 grid.pherFood.player
+PASS T0 grid.pherFood.rival
+PASS T0 grid.pherHome.player
+PASS T0 grid.pherHome.rival
+PASS T0 grid.pherDanger
+PASS T0 grid.lure
+PASS T0 grid.moisture
+PASS T0 grid.foodAmt
+PASS T0 grid.bookkeeping
+PASS T0 nestFood.player
+PASS T0 nestFood.rival
+PASS T0 queen/brood.player
+PASS T0 queen/brood.rival
+PASS T0 rival struct
+PASS T0 spider
+PASS T0 bushes
+PASS T0 carcass
+PASS T0 corpses
+PASS T0 obstacles
+PASS T0 combatMarks
+PASS T0 tuning ant.drainPerSec
+PASS T0 tuning ui.hudHz
+PASS T0 debug-only field
+PASS T0 debug ant id
+PASS T0 debug ant birthTick
+PASS T0 debug ant distanceTraveled
+PASS T0 debug ant ticksInMode
+PASS T0 debug ant deliveries
+PASS T0 debug ant ticksSinceLastDelivery
+PASS T0 debug ant ticksSinceFoodPerceived
+PASS T0 debug trace active
+PASS T0 debug trace beyondR
+PASS T0 debug trace record
+PASS T0 debug flow foodDelivered
+PASS T0 debug flow queenConsumed
+PASS T0 debug flow broodConsumed
+PASS T0 debug flow snackEnergyGained
+PASS T0 debug flow drainTotal
+PASS T0 debug obituary aggregates
+PASS T1 same seed hashes at 1k/10k/50k
+PASS T1 different seeds diverge by 1k
+PASS T2 sample-every 100 vs no sampling final hash
+PASS T3 death accounting - top causes: starvation=347, spider=21, terminal_cull=10
+PASS T3 id uniqueness over 50k
+PASS T5 traced run matches untraced hash
+PASS T5 trace rows captured - rows=4096
+```
+
+### Gate 5 - Typecheck and build
+
+Command:
+
+```sh
+npm run typecheck
+```
+
+Output:
+
+```text
+
+> antzoo@1.0.0 typecheck
+> tsc --noEmit
+
+```
+
+Command:
+
+```sh
+npm run build
+```
+
+Output:
+
+```text
+
+> antzoo@1.0.0 build
+> tsc --noEmit && vite build
+
+vite v6.4.3 building for production...
+transforming...
+✓ 748 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                               0.34 kB │ gzip:   0.25 kB
+dist/assets/CanvasPool-B1kldNEn.js            0.78 kB │ gzip:   0.43 kB
+dist/assets/Filter-BfNtvaR3.js                0.90 kB │ gzip:   0.47 kB
+dist/assets/BufferResource-BoE5UwAh.js       10.61 kB │ gzip:   2.80 kB
+dist/assets/webworkerAll-DOatwnnN.js         15.93 kB │ gzip:   5.07 kB
+dist/assets/CanvasRenderer-BFe1bqgw.js       18.03 kB │ gzip:   6.02 kB
+dist/assets/BitmapFont-Dgig1cQ2.js           34.48 kB │ gzip:  11.74 kB
+dist/assets/WebGPURenderer-2hSoBJvd.js       39.14 kB │ gzip:  10.95 kB
+dist/assets/browserAll-DATsUlb7.js           43.26 kB │ gzip:  11.36 kB
+dist/assets/RenderTargetSystem-Bia39qJG.js   47.11 kB │ gzip:  12.97 kB
+dist/assets/WebGLRenderer-FaXEUdoI.js        68.88 kB │ gzip:  18.91 kB
+dist/assets/index-cpbQg8sy.js               617.22 kB │ gzip: 189.98 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 2.46s
+```
+
+### Gate 6 - Parity vs pre-fleet HEAD
+
+Command:
+
+```sh
+current=$(./node_modules/.bin/tsx -e 'import { createWorld, stepWorld } from "./src/sim"; import { hashWorldState } from "./src/debug/snapshot"; import { TUNING } from "./src/tuning"; TUNING.seed.value = 1337; const world = createWorld(); const checkpoints = new Set([1000, 10000, 50000]); for (let tick = 1; tick <= 50000; tick += 1) { stepWorld(world, 1 / TUNING.time.stepHz); if (checkpoints.has(tick)) console.log(`${tick}\t${hashWorldState(world)}`); }') && tmpdir=$(mktemp -d /tmp/antzoo-parity-head-XXXXXX) && git worktree add --detach "$tmpdir" HEAD >/tmp/antzoo-parity-worktree-add.log && base=$(cd "$tmpdir" && /Users/drewgoddyn/projects/antzoo/node_modules/.bin/tsx -e 'import { createWorld, stepWorld } from "./src/sim"; import { hashWorldState } from "./src/debug/snapshot"; import { TUNING } from "./src/tuning"; TUNING.seed.value = 1337; const world = createWorld(); const checkpoints = new Set([1000, 10000, 50000]); for (let tick = 1; tick <= 50000; tick += 1) { stepWorld(world, 1 / TUNING.time.stepHz); if (checkpoints.has(tick)) console.log(`${tick}\t${hashWorldState(world)}`); }') && git worktree remove "$tmpdir" >/tmp/antzoo-parity-worktree-remove.log && node -e 'const [base,current] = process.argv.slice(1).map((text) => new Map(text.trim().split(/\n/).map((line) => line.split(/\t/)))); console.log("tick\tbase_hash\tcurrent_hash\tmatch"); for (const tick of ["1000","10000","50000"]) console.log(`${tick}\t${base.get(tick)}\t${current.get(tick)}\t${base.get(tick) === current.get(tick) ? "yes" : "no"}`);' "$base" "$current"
+```
+
+Output:
+
+```text
+Preparing worktree (detached HEAD 3cc5db5)
+tick	base_hash	current_hash	match
+1000	873d5ca92b5e2d15	873d5ca92b5e2d15	yes
+10000	f3a0258093e285b0	f3a0258093e285b0	yes
+50000	5101d7c52c007c01	5101d7c52c007c01	yes
+```

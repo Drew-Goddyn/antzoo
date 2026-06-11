@@ -1,7 +1,7 @@
 import { getSeasonState } from "../sim";
 import { AntMode, type Grid, type World } from "../types";
 import { TUNING } from "../tuning";
-import { getDebugState, type DeathCause, type WorldDebugState } from "./events";
+import { getDebugState, type DeathCause, type DebugFlowCounters, type WorldDebugState } from "./events";
 
 export const DEBUG_SCHEMA_VERSION = 1;
 
@@ -149,6 +149,7 @@ export interface WorldSnapshot {
     age: { p50: number; max: number } | null;
     deliveriesPerAnt: { mean: number; p50: number } | null;
     neverDeliveredShare: number | null;
+    flow: DebugFlowCounters | null;
   }>;
   fields: {
     player: { pherFood: FieldSummary; pherHome: FieldSummary };
@@ -343,6 +344,7 @@ function factionSnapshot(world: EcologyWorld, faction: number, debug: WorldDebug
     age: debugStats.age,
     deliveriesPerAnt: debugStats.deliveriesPerAnt,
     neverDeliveredShare: debugStats.neverDeliveredShare,
+    flow: debug ? { ...debug.flow[factionIndex(faction)] } : null,
   };
 }
 

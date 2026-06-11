@@ -4,6 +4,28 @@ import { TUNING } from "../tuning";
 export type DeathCause = "starvation" | "spider" | "combat" | "terminal_cull";
 export type FactionDebugCounts = [number, number];
 export type TraceModeReason = "saw_trail" | "saw_food" | "timer_expired" | "recruited" | "delivered" | "gave_up";
+export type FactionName = "player" | "rival";
+
+export interface DebugFlowCounters {
+  foodDelivered: number;
+  queenConsumed: number;
+  broodConsumed: number;
+  snackEnergyGained: number;
+  drainTotal: number;
+}
+
+export interface ObituaryAggregate {
+  count: number;
+  medianAge: number | null;
+  medianDeliveries: number | null;
+  medianTicksSinceFoodPerceived: number | null;
+}
+
+export interface ObituarySamples {
+  age: number[];
+  deliveries: number[];
+  ticksSinceFoodPerceived: number[];
+}
 
 export type DebugEvent =
   | {
@@ -126,6 +148,8 @@ export interface WorldDebugState {
   deathsByCause: Record<DeathCause, FactionDebugCounts>;
   nanRespawns: FactionDebugCounts;
   spawns: FactionDebugCounts;
+  flow: [DebugFlowCounters, DebugFlowCounters];
+  obituaries: Record<DeathCause, [ObituarySamples, ObituarySamples]>;
   lastSeason: number;
   trace: DebugTraceState;
 }
@@ -144,6 +168,49 @@ function emptyCauseCounts(): Record<DeathCause, FactionDebugCounts> {
     spider: [0, 0],
     combat: [0, 0],
     terminal_cull: [0, 0],
+  };
+}
+
+function emptyFlowCounters(): DebugFlowCounters {
+  return {
+    foodDelivered: 0,
+    queenConsumed: 0,
+    broodConsumed: 0,
+    snackEnergyGained: 0,
+    drainTotal: 0,
+  };
+}
+
+function emptyObituarySamples(): ObituarySamples {
+  return { age: [], deliveries: [], ticksSinceFoodPerceived: [] };
+}
+
+function emptyObituaries(): Record<DeathCause, [ObituarySamples, ObituarySamples]> {
+  return {
+    starvation: [emptyObituarySamples(), emptyObituarySamples()],
+    spider: [emptyObituarySamples(), emptyObituarySamples()],
+    combat: [emptyObituarySamples(), emptyObituarySamples()],
+    terminal_cull: [emptyObituarySamples(), emptyObituarySamples()],
+  };
+}
+
+function median(values: readonly number[]): number | null {
+  if (values.length === 0) return null;
+  const sorted = [...values].sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  return sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
+}
+
+function flowCopy(flow: DebugFlowCounters): DebugFlowCounters {
+  return { ...flow };
+}
+
+function emptyObituaryAggregates(): Record<DeathCause, ObituaryAggregate> {
+  return {
+    starvation: { count: 0, medianAge: null, medianDeliveries: null, medianTicksSinceFoodPerceived: null },
+    spider: { count: 0, medianAge: null, medianDeliveries: null, medianTicksSinceFoodPerceived: null },
+    combat: { count: 0, medianAge: null, medianDeliveries: null, medianTicksSinceFoodPerceived: null },
+    terminal_cull: { count: 0, medianAge: null, medianDeliveries: null, medianTicksSinceFoodPerceived: null },
   };
 }
 
@@ -187,6 +254,8 @@ export function initDebugState(world: World, initialSeason: number): WorldDebugS
     deathsByCause: emptyCauseCounts(),
     nanRespawns: [0, 0],
     spawns: [0, 0],
+    flow: [emptyFlowCounters(), emptyFlowCounters()],
+    obituaries: emptyObituaries(),
     lastSeason: initialSeason,
     trace: createTraceState(capacity),
   };
@@ -303,6 +372,13 @@ export function recordDebugDeath(world: World, index: number, faction: number, c
   state.deathsByCause[cause][factionSlot] += 1;
   const ants = state.ants;
   const base = index * 3;
+  const age = world.stepCount - ants.birthTick[index];
+  const deliveries = ants.deliveries[index];
+  const ticksSinceFoodPerceived = ants.ticksSinceFoodPerceived[index];
+  const obituary = state.obituaries[cause][factionSlot];
+  obituary.age.push(age);
+  obituary.deliveries.push(deliveries);
+  obituary.ticksSinceFoodPerceived.push(ticksSinceFoodPerceived);
   recordDebugEvent(world, {
     type: "death",
     tick: world.stepCount,
@@ -310,13 +386,63 @@ export function recordDebugDeath(world: World, index: number, faction: number, c
     cause,
     id: ants.id[index],
     birthTick: ants.birthTick[index],
-    age: world.stepCount - ants.birthTick[index],
-    deliveries: ants.deliveries[index],
+    age,
+    deliveries,
     distanceTraveled: ants.distanceTraveled[index],
     ticksInMode: [ants.ticksInMode[base], ants.ticksInMode[base + 1], ants.ticksInMode[base + 2]],
     ticksSinceLastDelivery: ants.ticksSinceLastDelivery[index],
-    ticksSinceFoodPerceived: ants.ticksSinceFoodPerceived[index],
+    ticksSinceFoodPerceived,
   });
+}
+
+export function recordDebugFoodDelivered(world: World, faction: number, amount: number): void {
+  requireDebugState(world).flow[factionIndex(faction)].foodDelivered += amount;
+}
+
+export function recordDebugQueenConsumed(world: World, faction: number, amount: number): void {
+  requireDebugState(world).flow[factionIndex(faction)].queenConsumed += amount;
+}
+
+export function recordDebugBroodConsumed(world: World, faction: number, amount: number): void {
+  requireDebugState(world).flow[factionIndex(faction)].broodConsumed += amount;
+}
+
+export function recordDebugSnackEnergyGained(world: World, faction: number, amount: number): void {
+  requireDebugState(world).flow[factionIndex(faction)].snackEnergyGained += amount;
+}
+
+export function recordDebugDrain(world: World, faction: number, amount: number): void {
+  requireDebugState(world).flow[factionIndex(faction)].drainTotal += amount;
+}
+
+export function getDebugFlowCounters(world: World): Record<FactionName, DebugFlowCounters> {
+  const state = getDebugState(world);
+  if (!state) return { player: emptyFlowCounters(), rival: emptyFlowCounters() };
+  return {
+    player: flowCopy(state.flow[0]),
+    rival: flowCopy(state.flow[1]),
+  };
+}
+
+export function getDebugObituaryAggregates(world: World): Record<FactionName, Record<DeathCause, ObituaryAggregate>> {
+  const state = getDebugState(world);
+  if (!state) return { player: emptyObituaryAggregates(), rival: emptyObituaryAggregates() };
+  const result = {
+    player: emptyObituaryAggregates(),
+    rival: emptyObituaryAggregates(),
+  };
+  for (const cause of Object.keys(state.obituaries) as DeathCause[]) {
+    for (const [slot, faction] of (["player", "rival"] as const).entries()) {
+      const samples = state.obituaries[cause][slot];
+      result[faction][cause] = {
+        count: samples.age.length,
+        medianAge: median(samples.age),
+        medianDeliveries: median(samples.deliveries),
+        medianTicksSinceFoodPerceived: median(samples.ticksSinceFoodPerceived),
+      };
+    }
+  }
+  return result;
 }
 
 export function recordDebugNanRespawn(world: World, index: number, faction: number): void {

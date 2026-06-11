@@ -10,13 +10,15 @@ Run the simulation without the browser:
 npm run sim -- --seed 1337 --ticks 50000 --sample-every 600 --out runs/baseline-1337.jsonl
 ```
 
-The CLI sets `TUNING.seed.value` before calling `createWorld()`. It does not change `createWorld()`'s signature. The browser loop caps catch-up work at `TUNING.time.maxStepsPerFrame`; the headless loop intentionally does not inherit that cap and steps as fast as Node can run.
+The CLI sets `TUNING.seed.value` before calling `createWorld()`. It does not change `createWorld()`'s signature. Batch mode resets mutable `TUNING` from `DEFAULTS` before each replicate, then applies scenario setup and the selected seed, so scenario timeline patches cannot leak across seeds. The browser loop caps catch-up work at `TUNING.time.maxStepsPerFrame`; the headless loop intentionally does not inherit that cap and steps as fast as Node can run.
 
 Options:
 
 | Option | Meaning |
 | --- | --- |
 | `--seed N` | Set `TUNING.seed.value` before world construction. |
+| `--seeds A,B,C` | Batch mode. Run the same configuration once for each listed seed, or `--replicates` times for each seed. Emits one `seed_summary` record per seed and one final `cross_seed_rollup` record. Cannot be combined with `--seed`. |
+| `--replicates N` | Batch mode. Repeat each seed N times. Replicates intentionally reuse the exact seed; `hashesAllMatch` in the seed summary is the deterministic-replication check. |
 | `--ticks N` | Number of fixed 1/60 simulation steps to execute. |
 | `--sample-every N` | Emit a complete snapshot every N ticks. |
 | `--hash-every N` | Emit a hash-only record every N ticks. |
@@ -29,7 +31,43 @@ Options:
 | `--out PATH` | Write JSONL to a file instead of stdout. |
 | `--stress-ants N` | Before timing, call `stressSpawn` until live ant count reaches N. This is a stimulus/setup action and consumes gameplay RNG. |
 
-Every JSONL record has a `type` field. The runner emits `snapshot`, `hash`, `event`, `trace`, `stimulus`, `scenario_snapshot`, and final `summary` records. The final summary includes `outcome`, `finalTick`, `finalHash`, `peakPopulation`, and `ticksPerSecond`.
+Every JSONL record has a `type` field. Single-run mode emits `snapshot`, `hash`, `event`, `trace`, `stimulus`, `scenario_snapshot`, and final `summary` records. Batch mode is summary-only and emits `seed_summary` records followed by one `cross_seed_rollup` record.
+
+Single-run `snapshot` and `scenario_snapshot` records include `intervalFlow`, the per-faction delta since the previous emitted snapshot record. These counters are debug-only and hash-excluded:
+
+| Flow counter | Meaning |
+| --- | --- |
+| `foodDelivered` | Carried food delivered to that faction's nest. |
+| `queenConsumed` | Food consumed by queen feeding. This is currently always `0` because the present gameplay only tracks queen hunger and does not decrement nest food for queen feeding. |
+| `broodConsumed` | Nest food consumed by brood progress. |
+| `snackEnergyGained` | Actual ant energy gained from `TUNING.ant.snackOnPickup`, after capping at max energy. |
+| `drainTotal` | Total ant energy drain applied by the per-tick drain term. |
+
+The final `summary` record includes `seed`, `replicate`, global `outcome`, per-faction `factionOutcomes`, `finalTick`, `finalHash`, `peakPopulation`, `peakPopulationByFaction`, `finalPopulationByFaction`, `deathsByCause`, `obituaryAggregates`, `flowTotals`, and `ticksPerSecond`.
+
+Batch `seed_summary` and `cross_seed_rollup` records include:
+
+| Path | Meaning |
+| --- | --- |
+| `outcomeCounts` | Global outcome counts across included runs. |
+| `factionOutcomeCounts` | Per-faction counts of `running`, `gameOver`, and `victory`. |
+| `deathsByCauseMedians` | Median per-run death count by cause and faction. |
+| `obituaryAggregateMedians` | Median of included runs' obituary medians by cause and faction, with `count` summed across included runs. |
+| `populationQuartiles.peak` | Per-faction quartiles for peak population. |
+| `populationQuartiles.final` | Per-faction quartiles for final population. |
+| `finalHashes` / `hashesAllMatch` | Replication determinism evidence for the included runs. |
+
+## Test gates
+
+`npm test` runs the full local debug-surface gate: T0 hash sensitivity, T1 determinism at 1k/10k/50k ticks, T2 sampling purity through 50k ticks, T3 death accounting/id uniqueness through 50k ticks, and T5 trace purity.
+
+CI uses:
+
+```sh
+npm test -- --fast
+```
+
+Fast mode preserves the same invariants but caps the long T1/T2/T3 runs at 10k ticks so every push can afford to run the gate. Use plain `npm test` before accepting local debug-surface changes.
 
 ## Snapshot schema
 
@@ -63,6 +101,7 @@ Every JSONL record has a `type` field. The runner emits `snapshot`, `hash`, `eve
 | `age` | Live ant age in ticks: `{p50, max}`. |
 | `deliveriesPerAnt` | Live ant delivery distribution: `{mean, p50}`. |
 | `neverDeliveredShare` | Fraction of live ants with zero deliveries. |
+| `flow` | Cumulative debug flow counters for that faction. These are hash-excluded; CLI snapshot records also include per-interval deltas as `intervalFlow`. |
 | `fields.player.pherFood`, `fields.player.pherHome` | Player pheromone field summaries: `sum`, `max`, `activeCells`. |
 | `fields.rival.pherFood`, `fields.rival.pherHome` | Rival pheromone field summaries. |
 | `fields.shared.pherDanger`, `fields.shared.lure`, `fields.shared.moisture` | Shared field summaries. |
@@ -117,6 +156,8 @@ Event records:
 | `victory` | `tick`, winner `faction`, `yearsSurvived`. |
 
 Spawns and deliveries are counters, not event records. Per-ant debug state is copied in `copyAntSlot` and reset in `addAnt`/`removeAnt` so swap-remove compaction does not desynchronize identities.
+
+`summary.obituaryAggregates` rolls death obituaries up by faction and cause. Each cause has `{count, medianAge, medianDeliveries, medianTicksSinceFoodPerceived}`. `medianAge` is in simulation ticks. `medianTicksSinceFoodPerceived` uses the historical field name from death events and is measured in simulated seconds.
 
 ## Decision traces
 

@@ -7,7 +7,9 @@ import { TUNING } from "../src/tuning";
 type TestResult = { name: string; pass: boolean; detail?: string; showDetailOnPass?: boolean };
 type MutableWorld = ReturnType<typeof createWorld> & Record<string, any>;
 
-const checkpoints = [1000, 10000, 50000];
+const fastMode = process.argv.includes("--fast");
+const longTicks = fastMode ? 10000 : 50000;
+const checkpoints = fastMode ? [1000, 10000] : [1000, 10000, 50000];
 
 function makeWorld(seed = 1337): MutableWorld {
   TUNING.seed.value = seed;
@@ -118,6 +120,17 @@ function testT0(): TestResult[] {
   tests.push(preservesHash("T0 debug trace active", base, before, (world) => { getDebugState(world)!.ants.traceActive[0] = 1; }));
   tests.push(preservesHash("T0 debug trace beyondR", base, before, (world) => { getDebugState(world)!.ants.traceBeyondRWasBeyond[0] = 1; }));
   tests.push(preservesHash("T0 debug trace record", base, before, (world) => { getDebugState(world)!.trace.full.push({ type: "tick", tick: world.stepCount, id: 1, x: 0, y: 0, heading: 0, mode: 0, energy: 0, carrying: 0, timerA: 0, timerB: 0, sensors: [], transitions: [], interactions: [] }); }));
+  tests.push(preservesHash("T0 debug flow foodDelivered", base, before, (world) => { getDebugState(world)!.flow[0].foodDelivered += 1; }));
+  tests.push(preservesHash("T0 debug flow queenConsumed", base, before, (world) => { getDebugState(world)!.flow[0].queenConsumed += 1; }));
+  tests.push(preservesHash("T0 debug flow broodConsumed", base, before, (world) => { getDebugState(world)!.flow[0].broodConsumed += 1; }));
+  tests.push(preservesHash("T0 debug flow snackEnergyGained", base, before, (world) => { getDebugState(world)!.flow[0].snackEnergyGained += 1; }));
+  tests.push(preservesHash("T0 debug flow drainTotal", base, before, (world) => { getDebugState(world)!.flow[0].drainTotal += 1; }));
+  tests.push(preservesHash("T0 debug obituary aggregates", base, before, (world) => {
+    const samples = getDebugState(world)!.obituaries.starvation[0];
+    samples.age.push(1);
+    samples.deliveries.push(1);
+    samples.ticksSinceFoodPerceived.push(1);
+  }));
   return tests;
 }
 
@@ -139,15 +152,16 @@ function testT1(): TestResult[] {
   const a = hashSeries(1337);
   const b = hashSeries(1337);
   const c = hashSeries(7331);
+  const checkpointLabel = fastMode ? "1k/10k" : "1k/10k/50k";
   return [
-    { name: "T1 same seed hashes at 1k/10k/50k", pass: a.join("|") === b.join("|"), detail: `${a.join(",")} vs ${b.join(",")}` },
+    { name: `T1 same seed hashes at ${checkpointLabel}`, pass: a.join("|") === b.join("|"), detail: `${a.join(",")} vs ${b.join(",")}` },
     { name: "T1 different seeds diverge by 1k", pass: a[0] !== c[0], detail: `${a[0]} vs ${c[0]}` },
   ];
 }
 
 function finalHash(seed: number, sampleEvery: number): string {
   const world = makeWorld(seed);
-  for (let tick = 1; tick <= 50000; tick += 1) {
+  for (let tick = 1; tick <= longTicks; tick += 1) {
     stepWorld(world, 1 / TUNING.time.stepHz);
     if (sampleEvery > 0 && tick % sampleEvery === 0) snapshotWorld(world);
   }
@@ -163,9 +177,9 @@ function testT2(): TestResult[] {
 function testT3AndIds(): TestResult[] {
   const world = makeWorld(1337);
   let idError: string | null = null;
-  for (let tick = 1; tick <= 50000; tick += 1) {
+  for (let tick = 1; tick <= longTicks; tick += 1) {
     stepWorld(world, 1 / TUNING.time.stepHz);
-    if (tick % 100 === 0 || tick === 50000) {
+    if (tick % 100 === 0 || tick === longTicks) {
       try {
         assertDebugAntIdsUnique(world);
       } catch (error) {
@@ -198,7 +212,7 @@ function testT3AndIds(): TestResult[] {
     .join(", ");
   return [
     { name: "T3 death accounting", pass: accountingPass, detail: `top causes: ${topCauses}`, showDetailOnPass: true },
-    { name: "T3 id uniqueness over 50k", pass: idError === null, detail: idError ?? undefined },
+    { name: `T3 id uniqueness over ${fastMode ? "10k" : "50k"}`, pass: idError === null, detail: idError ?? undefined },
   ];
 }
 
