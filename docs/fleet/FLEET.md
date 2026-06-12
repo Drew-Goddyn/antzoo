@@ -8,20 +8,23 @@ Use a pool of autonomous workers (up to 15 concurrent, ~100 dispatches/day) to r
 
 ## Established baseline (Wave 0, 50k tick budget)
 
-- Expanded baseline (W0-A, seeds 1337–1376, n=40): player 32 victories / 7 collapses / 1 still running at tick 50000; player win rate 80%, SE 0.063. Decisive endings dominate, but "running" at 50k has now been observed once.
-- Anchor subset (W0-C, seeds 1337–1341, n=5): player 3 victories / 2 collapses, matching the original anchor. Losses are queen collapses (terminal cascade), not attrition.
-- Mortality: starvation dominates both factions. W0-A medians are player 168.5 starvation deaths/run and rival 136; W0-C anchor medians are player 175 and rival 154. Spider and combat remain noise.
-- Player starvation obituaries: W0-A median age 9,698.5 ticks, median 3 deliveries, 72.38 sim-seconds since last food perception. Rival starvation obituaries: median **0** deliveries.
-- Population: W0-A player peak median 202.5 (range 173–264); rival peak median 165 (range 159–170).
-- Throughput/capacity: W0 reports show median ticks/sec in the ~188–238 range, with inconsistent reported wall clocks. Use actual reported wall clock per worker/cell until capacity is remeasured cleanly.
+- Accepted baseline batches (W0-A, W0-A2, W0-A3; seeds 1337-1456, n=120): player 94 victories / 24 collapses / 2 still running at tick 50000; player win rate 78.3%, SE 0.0376. Decisive endings dominate, but "running" at 50k is now repeat-observed.
+- Anchor and ledger subsets (W0-C, W0-C2, W0-C3; seeds 1337-1351, n=15): player 12 victories / 3 collapses. The original anchor seeds 1337-1341 remain player 3 victories / 2 collapses.
+- Mortality: starvation dominates both factions. Across accepted n=40 baseline batches, median starvation deaths/run range from player 168.5-183 and rival 136-142.5. Spider and combat remain noise.
+- Starvation obituaries: across accepted n=40 baseline batches, player starvation median deliveries is 3 and rival starvation median deliveries is 0. Player median starvation age is roughly 9.70k-9.83k ticks; rival median starvation age is roughly 8.12k-9.51k ticks.
+- Population: accepted n=40 baseline batches have player peak median 198-202.5 and rival peak median 165-166; final population medians are player 40-48 and rival 0.
+- Scenario patching: W0-B-rerun patches `ant.drainPerSec` from default 1.2 to 1.5 for seeds 1337-1346. Patched final hashes differ from baseline for all 10 seeds, and repeated patched runs match per-seed final hashes exactly.
+- Flow counters: W0-C/W0-C2/W0-C3 show `foodDelivered` is not conserved by `queenConsumed + broodConsumed + nestFood`; W0-C2/W0-C3 raw tables have 60/60 nonzero differences. `drainTotal` exceeds `snackEnergyGained` at rollup scale.
+- Throughput/capacity: W0 reports show median ticks/sec in the ~188-238 range where reported, with inconsistent wall clocks and some report omissions. Use actual reported wall clock per worker/cell until capacity is remeasured cleanly.
 
-Open hypotheses for wave 1: (H1) early nearest-food distance per faction predicts the winner ("terrain luck"); (H2) the founding cohort dies as a synchronized wave near tick 10k and survival depends on brood banked before it; (H3) workforce composition (worker share) is the live causal lever behind the rival's zero-delivery starvation.
+Open hypotheses for wave 1: (H1) early nearest-food distance per faction predicts the winner ("terrain luck"); (H2) the founding cohort dies as a synchronized wave near tick 10k and survival depends on brood banked before it; (H3) workforce composition (worker share) is the live causal lever behind the rival's zero-delivery starvation. Trace probes before broader decision-trace waves: seed 1401's `running` state at tick 50000, and the flow-counter semantic mismatch.
 
 ## Units and known wrinkles (workers: read before interpreting)
 
 - `tick`, `birthTick`, obituary `age` are **ticks** (60 = 1 sim-second). Obituary `ticksInMode`, `ticksSinceLastDelivery`, `ticksSinceFoodPerceived` are **sim-seconds** despite their names.
 - `hashesAllMatch: false` in `cross_seed_rollup` is expected — different seeds differ by design. It is meaningful only within a `seed_summary` (replicates of one seed).
 - Hashes identify `(state, config)`: any tuning patch changes the hash. Never compare hashes across configs.
+- `ticksPerSecond` and `ticksPerSecondQuartiles` are performance telemetry, not simulation state. Repeated commands can match final hashes and gameplay outcomes while timing fields differ; determinism claims should compare per-seed final hashes and non-performance fields, not byte-identical full rollups.
 - Baseline runs typically terminate in victory/gameOver before the tick budget; `finalTick` < requested ticks is normal, not an error.
 
 ## Worker contract
@@ -76,14 +79,14 @@ you, write the report anyway with what you have and a BLOCKED section.
 | Cell | Question | Spec |
 |---|---|---|
 | W0-A | True baseline win rate | Baseline config, seeds 1337–1376 (n=40), 50k ticks. Report win rate ±SE, outcome/terminal patterns, whether the 5-seed anchors above replicate. |
-| W0-B | Does the sweep mechanism work? | Verify `--seeds` composes with `--scenario` and `patchTuning`: run seeds 1337–1346 with a scenario patching `ant.drainPerSec` to 1.25× default. Confirm tuning applied (hash differs from baseline per seed; report the patched/default values), rollup well-formed, replicate determinism (same command twice ⇒ identical rollup). |
+| W0-B | Does the sweep mechanism work? | Verify `--seeds` composes with `--scenario` and `patchTuning`: run seeds 1337–1346 with a scenario patching `ant.drainPerSec` to 1.25× default. Confirm tuning applied (hash differs from baseline per seed; report the patched/default values), rollup well-formed, and replicate determinism by showing repeated patched runs have identical per-seed final hashes and non-performance outcome fields. Timing fields may differ. |
 | W0-C | Do the flow counters reconcile? | Seeds 1337–1341, `--sample-every 600`. From snapshots: does cumulative foodDelivered ≈ queenConsumed + broodConsumed (+ nestFood residual ~0)? Does drainTotal vs snackEnergyGained show the deficit? Report the ledger at 3 ticks per seed. Also report wall-clock per run (fleet capacity planning). |
 
 Wave 0 is also worker calibration: completion rate, report-schema compliance, and runtime are findings about the fleet itself.
 
 ## Wave 1 — the science (dispatch after wave 0 reports are read; ~12 cells)
 
-Tick budget 50k, n=20 seeds per cell (fresh range 2000–2019) unless stated. Baseline comparison values: the W0-A rollup (paste into each dispatch once available; until then, the anchor numbers above).
+Tick budget 50k, n=20 seeds per cell (fresh range 2000–2019) unless stated. Baseline comparison values: use the accepted Wave 0 baseline above (94/120 player wins, 24 collapses, 2 running, SE 0.0376), plus the per-report rollup medians in `docs/fleet/findings/wave0.md` when a cell needs detailed mortality or population comparisons.
 
 | Cell | Question | Spec |
 |---|---|---|
