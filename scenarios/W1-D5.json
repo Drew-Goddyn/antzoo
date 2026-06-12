@@ -1,7 +1,0 @@
-{
-  "name": "W1-D5",
-  "seed": 2000,
-  "ticks": 50000,
-  "tuning": { "ant.drainPerSec": 1.5 },
-  "timeline": []
-}
