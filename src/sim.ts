@@ -2137,6 +2137,11 @@ function updateQueenState(world: EcologyWorld, dt: number, factionValue: number)
   let terminalTimer = factionValue === FACTION_RIVAL ? rival.terminalTimer : world.terminalTimer;
   let terminalStartAnts = factionValue === FACTION_RIVAL ? rival.terminalStartAnts : world.terminalStartAnts;
   let terminalCull = factionValue === FACTION_RIVAL ? rival.terminalCull : world.terminalCull;
+  if (terminalTimer <= 0 && nestFood(world, factionValue) > TUNING.sim.minTurnEpsilon && countFactionAnts(world, factionValue) <= 0) {
+    beginTerminalCascade(world, factionValue);
+    finishQueenCascade(world, factionValue);
+    return;
+  }
   if (terminalTimer > 0) {
     terminalTimer += dt;
     const deathsPerSecond = terminalStartAnts / TUNING.queen.terminalCascadeSec;
