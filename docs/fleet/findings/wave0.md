@@ -79,6 +79,6 @@ Ledger aggregate uses the raw tables in W0-C2 and W0-C3 for seeds 1342-1351: 10 
 
 ## Program metrics
 
-- Clarification/PR-comment rounds per dispatch: 0 operator review rounds verified with `gh`. PRs #5-#13 have only the automatic Jules intro comment and no reviews.
+- Judgment rounds: 0 observed; PR-channel rounds are 0, verified via `gh` across PRs #5-#13. Ceremony rounds: session-channel ceremony rounds occurred but were uncounted, n unknown. This corrects the prior "0 clarification rounds" claim to "0 judgment rounds observed, ceremony rounds unmeasured."
 - Report acceptance rate: original first submission 2/3; extension batch 5/6; cumulative Wave 0 reports 7/9 accepted.
 - Novel findings per accepted cell: W0-A produced the 120-seed baseline and the repeated 50k `running` outcome; W0-B-rerun validated scenario patching and deterministic final hashes while exposing the timing-field caveat; W0-C/C2/C3 established that the flow counters are not a closed ledger.

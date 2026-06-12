@@ -45,6 +45,8 @@ Single-run `snapshot` and `scenario_snapshot` records include `intervalFlow`, th
 
 The final `summary` record includes `seed`, `replicate`, global `outcome`, per-faction `factionOutcomes`, `finalTick`, `finalHash`, `peakPopulation`, `peakPopulationByFaction`, `finalPopulationByFaction`, `deathsByCause`, `obituaryAggregates`, `flowTotals`, and `ticksPerSecond`.
 
+Timing fields (`ticksPerSecond`, `ticksPerSecondQuartiles`, `perf.ticksPerSecond`, and wall-clock report runtime) are nondeterministic performance telemetry. Determinism comparisons must use final hashes and outcome fields only, never timing fields or byte-identical full records.
+
 Batch `seed_summary` and `cross_seed_rollup` records include:
 
 | Path | Meaning |
