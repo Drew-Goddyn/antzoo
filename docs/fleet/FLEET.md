@@ -6,18 +6,22 @@
 
 Use a pool of autonomous workers (up to 15 concurrent, ~100 dispatches/day) to run headless experiments against the antzoo simulation and return structured reports. Every claim reduces to `(seed, config, tick, observable)`. The operator reads reports and verdicts, never code. Worker confusion is a defect in this document or in DEBUG.md — the fix is always a doc patch plus redispatch, never per-worker coaching.
 
-## Established baseline (Wave 0, 50k tick budget)
+## Established baseline (Wave 0 + promoted Wave 1 facts, 50k tick budget)
 
-- Accepted combined baseline (W0-A, W0-A2, W0-A3; seeds 1337-1456, n=120): player 94 victories / 24 collapses / 2 running, 78.3% win rate, SE 0.038. Decisive endings dominate, but `running` at 50k is a real outcome (2/120) and is under investigation as a possible unwinnable zombie state in W1-Z1.
+- Accepted combined baseline (W0-A, W0-A2, W0-A3; seeds 1337-1456, n=120): player 94 victories / 24 collapses / 2 running, 78.3% win rate, SE 0.038. Decisive endings dominate, but `running` at 50k is a real outcome (2/120). W1-Z1 confirms at least one running case is an unwinnable zero-population stalemate.
 - Ledger subsets (W0-C, W0-C2, W0-C3; seeds 1337-1351, n=15): player 12 victories / 3 collapses. These support flow-counter analysis but do not replace the combined baseline above.
 - Mortality: starvation dominates both factions. Across accepted n=40 baseline batches, median starvation deaths/run range from player 168.5-183 and rival 136-142.5. Spider and combat remain noise.
 - Starvation obituaries: across accepted n=40 baseline batches, player starvation median deliveries is 3 and rival starvation median deliveries is 0 in every accepted batch. Player median starvation age is roughly 9.70k-9.83k ticks; rival median starvation age is roughly 8.12k-9.51k ticks.
 - Population: accepted n=40 baseline batches have player peak median 198-202.5 and rival peak median 165-166; final population medians are player 40-48 and rival 0.
 - Scenario patching: W0-B-rerun patches `ant.drainPerSec` from default 1.2 to 1.5 for seeds 1337-1346. Patched final hashes differ from baseline for all 10 seeds, and repeated patched runs match per-seed final hashes exactly.
 - Flow counters: W0-C/W0-C2/W0-C3 show `foodDelivered` is not conserved by `queenConsumed + broodConsumed + nestFood`; W0-C2/W0-C3 raw tables have 60/60 nonzero differences. Drain/snack ratios are roughly 5-6x for player and 12-14x for rival at rollup scale.
+- Corrected nest-food ledger from W1-L1: for the audited probes, `startFood + foodDelivered - broodConsumed - refills * 0.5 - nestFood = 0`. `queenConsumed` currently reads 0 in those probes, so queen-consumption semantics remain a counter gap rather than a conserved ledger term.
+- Drain response is non-linear. In accepted n=20 Wave 1 drain cells, 0.75× default drain (`ant.drainPerSec = 0.9`) produced 8/20 player wins plus one running outcome, while 1.25× default drain (`ant.drainPerSec = 1.5`) produced 20/20 player wins. Lower drain is not automatically safer.
+- Founding-wave depth is a live boundary signal. In W1-F1 (`n=10`), observed trough-depth drops of 66-76 survived and drops of 87-90 collapsed. The exact boundary between 76 and 87 is unresolved.
+- Seed 1401 is a confirmed stalemate mechanism, not merely a slow game. W1-Z1 shows player population reaches zero at tick 47400 and remains zero through tick 60000 while `terminal` stays false. In `src/sim.ts`, the zero-population check is nested under `terminalTimer > 0`; once a faction has zero ants without entering that timer path, neither faction can ever win.
 - Throughput/capacity: W0 reports show median ticks/sec in the ~188-238 range where reported, with inconsistent wall clocks and some report omissions. Use actual reported wall clock per worker/cell until capacity is remeasured cleanly.
 
-Open hypotheses for wave 1: (H1) early nearest-food distance per faction predicts the winner ("terrain luck"); (H2) the founding cohort dies as a synchronized wave near tick 10k and survival depends on brood banked before it; (H3) workforce composition (worker share) is the live causal lever behind the rival's zero-delivery starvation. Trace probes before broader decision-trace waves: seed 1401's `running` state at tick 50000, and the flow-counter semantic mismatch.
+Open hypotheses for wave 2: (H1) early nearest-food distance per faction predicts the winner ("terrain luck"), pending the rejected W1-T1b half; (H2) founding-wave trough depth predicts the survival/collapse boundary; (H3) the inter-faction worker-share gap, not absolute worker level alone, drives win rate; (H4) drain has distinct economic and military regimes; (H5) W1-C3 seed 2002 is either the same stalemate class as seed 1401 or a merely slow high-population game.
 
 ## Units and known wrinkles (workers: read before interpreting)
 
@@ -50,7 +54,7 @@ The worker contract and report schema are platform-neutral. Any future worker pl
 
 ## Hypotheses about workers
 
-- Constraint pressure may convert permission-seeking into fabrication (one supporting incident: W0-A-replicate). Hypothesis, not a finding — the BLOCKED exit path is cheap insurance against it.
+- Constraint pressure may convert permission-seeking into fabrication (supporting incidents: W0-A-replicate and W1-T1b). Hypothesis, not a finding — the BLOCKED exit path is cheap insurance against it.
 
 ## Report schema (one file per cell)
 
@@ -105,7 +109,7 @@ you, write the report anyway with what you have and a BLOCKED section.
 
 Wave 0 is also worker calibration: completion rate, report-schema compliance, and runtime are findings about the fleet itself.
 
-## Wave 1 — the science (dispatch after wave 0 reports are read; ~14 cells)
+## Wave 1 — the science (complete; findings in `docs/fleet/findings/wave1.md`)
 
 Tick budget 50k unless stated. For W1-D* and W1-C* cells, use n=20 fresh seeds 2000-2019 unless their dispatch says otherwise.
 
@@ -121,12 +125,35 @@ Dispatch comparison baseline: seeds 1337-1456, n=120, player 94 victories / 24 c
 | W1-Z1 | Running/zombie state probe | Rerun baseline seed 1401 to 60k ticks with `--sample-every 600`. Over the final 20k ticks, report population, queenHunger, terminal flags, brood, and nestFood for both factions. Answer whether a zero-population faction can persist indefinitely without `gameOver`, and identify by reading `src/sim.ts` (no code changes) which condition fails to fire. |
 | W1-L1 | Ledger semantics | By reading `src/sim.ts`, enumerate every mutation site of `nestFood` and every flow counter. Then reconcile seed 1344 tick 1800 (player) and seed 1351 tick 1200 (rival) exactly, explaining each counter's true meaning. Report a corrected ledger definition suitable for FLEET.md; no code changes. |
 
+## Wave 2 — mechanism and boundary map
+
+Tick budget 50k unless stated. No dispatch cell may exceed 20 seeds; split larger designs into sub-cells and synthesize across the sub-cells after acceptance. The replication spot-check in the synthesis procedure applies to every accepted Wave 2 report.
+
+| Cell | Question | Spec |
+|---|---|---|
+| W2-M1 | Drain mechanism | Seeds 2000-2004 at `ant.drainPerSec = 0.9` and `ant.drainPerSec = 1.5`, `--sample-every 300`. Report population, brood, nestFood, combat-death-share, and danger-field time series. Verdict: does the drain response look like an economic regime shift, a military/combat regime shift, or both? |
+| W2-X1 | Caste 2x2 de-confound: low gap, lower level | Player worker share 70 / rival worker share 60; soldiers and nurses split each faction's remaining share evenly. Seeds 2100-2119 (n=20). Report win rate, starvation-delivery medians, starvation deaths, peak/final population, and whether the inter-faction gap or absolute worker level better explains outcome. |
+| W2-X2 | Caste 2x2 de-confound: rival high | Player worker share 70 / rival worker share 80; soldiers and nurses split each faction's remaining share evenly. Seeds 2100-2119 (n=20). Same outputs as W2-X1. |
+| W2-X3 | Caste 2x2 de-confound: player high | Player worker share 90 / rival worker share 60; soldiers and nurses split each faction's remaining share evenly. Seeds 2100-2119 (n=20). Same outputs as W2-X1. |
+| W2-X4 | Caste 2x2 de-confound: higher level, same gap | Player worker share 90 / rival worker share 80; soldiers and nurses split each faction's remaining share evenly. Seeds 2100-2119 (n=20). Same outputs as W2-X1. |
+| W2-T1b-a | Terrain luck (H1), second half part A | Baseline config, seeds 2025-2036 (n=12), `--sample-every 600`. Same analysis as W1-T1a: join per-seed outcome against tick-600 `food.nearestDistanceByFaction`. Verbatim JSONL is required; regenerated or synthetic-looking rollups are rejection. |
+| W2-T1b-b | Terrain luck (H1), second half part B | Baseline config, seeds 2037-2049 (n=13), `--sample-every 600`. Same outputs and rejection standard as W2-T1b-a. |
+| W2-F2a | Founding-wave threshold, first half | Baseline config, seeds 2050-2069 (n=20), `--sample-every 300`. Model peak tick, trough tick, trough depth, brood bank, and outcome; locate the survival/collapse boundary between observed depths 76 and 87. |
+| W2-F2b | Founding-wave threshold, second half | Baseline config, seeds 2070-2089 (n=20), `--sample-every 300`. Same outputs as W2-F2a. |
+| W2-R1 | High-worker running trace | Re-run W1-C3 seed 2002 with the same player 90 / rival 80 worker-share config to 60000 ticks, `--sample-every 600`. The W1-C3 report had player 13 / rival 89 at the 50k budget. Answer whether this is the same zero-pop stalemate class as seed 1401 or merely slow. |
+
+## Authorized build dispatches
+
+- W1-Z1 terminal-state fix is AUTHORIZED pending a build dispatch. Required gates: seed 1337 final hash identical before/after; seed 1401 terminates with before/after evidence at ticks 47400-60000; 120-seed baseline rerun changes outcome only on the two previously running seeds, with all other final hashes identical.
+
 ## Synthesis procedure (operator)
 
-1. Merge report PRs (markdown-only; safe to merge unread, then read the reports).
-2. Reject any report failing the rejection criteria — redispatch the cell with the same packet; if a second worker fails the same way, the schema or manifest is defective: patch FLEET.md.
-3. One synthesis pass per wave (a fresh agent session pointed at `docs/fleet/reports/<wave>/`, or the operator's own read): confirmed findings, killed hypotheses, anomalies worth a trace probe, next-wave candidates. Write to `docs/fleet/findings/<wave>.md`.
-4. Promote durable facts into the "Established baseline" section above. Promote recurring worker friction into DEBUG.md or harness change requests.
+1. Before dispatching a wave, enforce the cell-size ceiling: no cell above 20 seeds. Split larger designs into named sub-cells, each with its own one-file report.
+2. Merge report PRs (markdown-only; safe to merge unread, then read the reports).
+3. Reject any report failing the rejection criteria — redispatch the cell with the same packet; if a second worker fails the same way, the schema or manifest is defective: patch FLEET.md.
+4. Before accepting a report into synthesis, re-run one randomly chosen seed from that report with the reported config and compare the final hash. Record the seed, command/config, reported final hash, and observed final hash in the findings doc. A hash mismatch is fabrication and rejects the report. Ignore nondeterministic timing telemetry.
+5. One synthesis pass per wave (a fresh agent session pointed at `docs/fleet/reports/<wave>/`, or the operator's own read): confirmed findings, killed hypotheses, anomalies worth a trace probe, next-wave candidates. Write to `docs/fleet/findings/<wave>.md`.
+6. Promote durable facts into the "Established baseline" section above. Promote recurring worker friction into DEBUG.md or harness change requests.
 
 ## Program metrics (per wave)
 
@@ -138,4 +165,4 @@ Dispatch comparison baseline: seeds 1337-1456, n=120, player 94 victories / 24 c
 
 ## Out of scope until the boundary map exists
 
-Browser-based legibility testing (the bridge is ready; the program is deferred), decision-trace waves (second-line probes, triggered by anomalies from wave 1, not scheduled speculatively), and any gameplay or balance changes — this program measures; it does not yet tune.
+Browser-based legibility testing (the bridge is ready; the program is deferred), broad decision-trace waves beyond the specific W2 probes, and gameplay or balance changes other than the authorized W1-Z1 terminal-state fix — this program measures; it does not tune without explicit authorization.

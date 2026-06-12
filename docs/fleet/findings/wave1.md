@@ -78,7 +78,7 @@ For W1-Z1 and W1-L1, the synthesis also sanity-checks the named code paths in `s
 - The founding cohort wave is real in W1-F1. Every seed 2000-2009 peaks between ticks 6000 and 8700 and bottoms between ticks 12000 and 13800. The two deepest drops, seed 2000 depth 90 and seed 2008 depth 87, are exactly the two player collapses in that sample.
 - The seed-1401 zombie state is confirmed. W1-Z1 shows seed 1401 remains `running` through tick 60000 with player population 0 and rival population 76. The table shows player population first reaches 0 at tick 47400, while player `terminal` remains false and player `nestFood` remains 7.5 through tick 60000.
 - The code explanation for the zombie state matches the source. In `src/sim.ts`, `countFactionAnts(world, factionValue) <= 0` is checked only inside `if (terminalTimer > 0)` in `updateQueenState`. If a faction reaches zero ants while `nestFood > 0`, the terminal cascade is never started.
-- The flow ledger is now explained. W1-L1 identifies uncounted nest refills and spider trophy food as the missing terms. For `(seed 1344, tick 1800, player)`, `30 startFood + 237 foodDelivered - 102 broodConsumed - 40.5 nestFood = 124.5`, exactly 249 refills at `TUNING.ant.refillCost = 0.5`. For `(seed 1351, tick 1200, rival)`, the reported row reconciles to 103 refills by the same formula.
+- The flow ledger is now explained. W1-L1 identifies uncounted nest refills and spider trophy food as the missing terms. For `(seed 1344, tick 1800, player)`, `30 startFood + 237 foodDelivered - 102 broodConsumed - 40.5 nestFood = 124.5`, exactly 249 refills at `TUNING.ant.refillCost = 0.5`. For `(seed 1351, tick 1200, rival)`, the reported row reconciles to 103 refills by the same formula. Promoted ledger equation for audited probes: `startFood + foodDelivered - broodConsumed - refills * 0.5 - nestFood = 0`; `queenConsumed` currently reads 0, so queen-consumption semantics remain a counter gap.
 
 ## Killed or weakened assumptions
 
@@ -95,16 +95,20 @@ For W1-Z1 and W1-L1, the synthesis also sanity-checks the named code paths in `s
 - Complete the partial drain cells if the drain boundary matters quantitatively. W1-D3 and W1-D6 are accepted as honest partials, but `n=3` is not enough to locate the curve around default or 1.5x default.
 - Redispatch W1-T1b only if H1 is still needed for a Wave 1 terrain conclusion. The redispatch should accept honest partials but must require actual emitted JSONL lines and no regenerated rollup.
 - Trace W1-C3 seed 2002, the high-worker running seed. It is a different running pattern than Z1: the report's seed summary has player 13 and rival 89 at the tick budget, not a zero-population player.
-- Promote W1-L1's corrected ledger definition into FLEET.md or the debug docs before more flow-counter waves. The useful next counters are `nestRefillConsumed` and `spiderTrophyFood`, or an explicit note that the current counters are not a conservation ledger.
-- After any future terminal-condition fix, rerun seed 1401 to 60000 ticks and require a before/after claim at `(seed 1401, tick 47400-60000, player population, terminal, nestFood, outcome)`.
+- W1-L1's corrected ledger definition has been promoted into `docs/fleet/FLEET.md`. The useful future counters are `nestRefillConsumed` and `spiderTrophyFood`, or an explicit note that the current counters are not a conservation ledger.
+- W1-Z1's terminal-state fix is now authorized for a build dispatch. Required gates are seed 1337 final hash identical, seed 1401 terminates with before/after evidence at ticks 47400-60000, and the 120-seed baseline rerun changes outcome only on the two running seeds with all other final hashes identical.
 
-## Next-wave candidates
+## Wave 2 handoff
 
-- A focused drain mechanism wave: compare W1-D1 and W1-D5 with snapshots every 300-600 ticks on the same seeds, especially seed 2000, and report population, brood, nestFood, refill estimates, and nearest-food distance.
-- A completed terrain wave: rerun W1-T1b or run a full combined H1 batch with a real parser that emits tick-600 features and final outcomes from one reproducible command path.
-- A founding-wave threshold wave: extend W1-F1 beyond 10 seeds and model peak tick, trough tick, depth, and outcome. Use seeds around the observed boundary: depths near 66-76 survived, 87-90 collapsed.
-- A terminal-state bug probe: keep this as measurement unless gameplay fixes are explicitly authorized, but the minimal acceptance test is seed 1401 with player zero-pop no longer persisting indefinitely.
-- A ledger-instrumentation wave: add counters only if instrumentation work is authorized; otherwise continue using W1-L1's corrected equation manually.
+The concrete Wave 2 manifest now lives in `docs/fleet/FLEET.md`. It replaces the earlier candidate list with:
+
+- W2-M1: focused drain mechanism, seeds 2000-2004 at drain 0.9 and 1.5, `--sample-every 300`, with population/brood/nestFood/combat-death-share/danger-field time series and an economic-vs-military regime verdict.
+- W2-X1..X4: caste 2x2 de-confound, player worker share `{70,90}` x rival worker share `{60,80}`, seeds 2100-2119 per cell, asking whether inter-faction gap rather than absolute level drives win rate.
+- W2-T1b-a/b: terrain second half, seeds 2025-2049 split into n=12 and n=13 sub-cells, with verbatim JSONL required.
+- W2-F2a/b: founding-wave threshold, seeds 2050-2089 split into two n=20 sub-cells, locating the boundary between depths 76 and 87.
+- W2-R1: trace W1-C3 seed 2002 under the high-worker config to determine whether it is the same stalemate class as seed 1401 or merely slow.
+
+Wave 2 acceptance must include the new replication spot-check: re-run one randomly chosen seed per accepted report and compare final hashes; mismatch means fabrication and rejection.
 
 ## Program metrics
 
