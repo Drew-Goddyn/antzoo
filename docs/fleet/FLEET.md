@@ -128,9 +128,9 @@ Dispatch comparison baseline: seeds 1337-1456, n=120, player 94 victories / 24 c
 | W1-Z1 | Running/zombie state probe | Rerun baseline seed 1401 to 60k ticks with `--sample-every 600`. Over the final 20k ticks, report population, queenHunger, terminal flags, brood, and nestFood for both factions. Answer whether a zero-population faction can persist indefinitely without `gameOver`, and identify by reading `src/sim.ts` (no code changes) which condition fails to fire. |
 | W1-L1 | Ledger semantics | By reading `src/sim.ts`, enumerate every mutation site of `nestFood` and every flow counter. Then reconcile seed 1344 tick 1800 (player) and seed 1351 tick 1200 (rival) exactly, explaining each counter's true meaning. Report a corrected ledger definition suitable for FLEET.md; no code changes. |
 
-## Wave 2 — mechanism and boundary map
+## Wave 2 — mechanism and boundary map (complete; findings in `docs/fleet/findings/wave2.md`)
 
-Tick budget 50k unless stated. No dispatch cell may exceed 20 seeds; split larger designs into sub-cells and synthesize across the sub-cells after acceptance. The replication spot-check in the synthesis procedure applies to every accepted Wave 2 report.
+Historical dispatch manifest below. Tick budget 50k unless stated. No dispatch cell may exceed 20 seeds; split larger designs into sub-cells and synthesize across the sub-cells after acceptance. The replication spot-check in the synthesis procedure applies to every accepted Wave 2 report.
 
 | Cell | Question | Spec |
 |---|---|---|
@@ -157,6 +157,7 @@ Tick budget 50k unless stated. No dispatch cell may exceed 20 seeds; split large
 4. Before accepting a report into synthesis, re-run one randomly chosen seed from that report with the reported config and compare the final hash. Record the seed, command/config, reported final hash, and observed final hash in the findings doc. A hash mismatch is fabrication and rejects the report. Ignore nondeterministic timing telemetry.
 5. One synthesis pass per wave (a fresh agent session pointed at `docs/fleet/reports/<wave>/`, or the operator's own read): confirmed findings, killed hypotheses, anomalies worth a trace probe, next-wave candidates. Write to `docs/fleet/findings/<wave>.md`.
 6. Promote durable facts into the "Established baseline" section above. Promote recurring worker friction into DEBUG.md or harness change requests.
+7. Mark the synthesized wave section complete and link its findings doc; leave its manifest table as the historical dispatch record.
 
 ## Program metrics (per wave)
 
