@@ -1,0 +1,7 @@
+{
+  "name": "w3-d110-unattended",
+  "tuning": {
+    "ant.drainPerSec": 1.32
+  },
+  "timeline": []
+}

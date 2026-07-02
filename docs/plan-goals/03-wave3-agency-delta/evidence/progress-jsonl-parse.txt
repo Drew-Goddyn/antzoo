@@ -1,0 +1,1 @@
+PASS docs/plan-goals/03-wave3-agency-delta/progress.jsonl parsed 6 records with required keys

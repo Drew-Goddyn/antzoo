@@ -1,0 +1,10 @@
+{
+  "name": "w3-r75-d110-unattended",
+  "tuning": {
+    "rival.workerRatio": 75,
+    "rival.soldierRatio": 12.5,
+    "rival.nurseRatio": 12.5,
+    "ant.drainPerSec": 1.32
+  },
+  "timeline": []
+}

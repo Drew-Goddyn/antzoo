@@ -1,0 +1,9 @@
+{
+  "name": "w3-r75-unattended",
+  "tuning": {
+    "rival.workerRatio": 75,
+    "rival.soldierRatio": 12.5,
+    "rival.nurseRatio": 12.5
+  },
+  "timeline": []
+}
