@@ -21,7 +21,7 @@ Created from `/Users/Drew/projects/antzoo` on 2026-07-02. Repo snapshot at plann
 - Store scratch reasoning under that goal's `notes/` directory when it needs to survive context compaction.
 - Append corrective events instead of rewriting, deleting, or summarizing previous `progress.jsonl` lines.
 - A child dispatch that stops at "PR open" is not the same thing as this parent plan-goal being complete. Dependent plan-goals should wait until the required artifact is merged into the current working branch, or until Drew explicitly authorizes continuing from an unmerged branch/commit.
-- Distinguish fleet workers from repo builders. Existing fleet worker cells may still be one-report-file tasks, but these plan-goals are broader repo-builder handoffs and may edit the files named by their own `PLAN.md`.
+- Distinguish bounded evidence-loop cells from repo-builder goals. Existing report cells may still be one-report-file tasks, but these plan-goals are broader repo-builder handoffs and may edit the files named by their own `PLAN.md`.
 
 ## Execution Contract For All Plan-Goals
 
@@ -40,6 +40,18 @@ For every goal:
 9. End every goal with `GOAL_OUTCOME.md` containing status, files changed, commands run, evidence artifacts created, claims now safe to make, claims still unsafe, reviewer checklist, and next recommended goal.
 10. A future reviewer must be able to answer: what changed, how was it verified, and what remains unproven?
 
+## Runtime-Neutral Worker Policy
+
+Historical Antzoo docs mention Jules, fleet.ms, workers, dispatches, and the fleet because those were implementation details of earlier evidence collection. For these plan-goals, treat those words as follows:
+
+- Jules and fleet.ms are historical context, not current dependencies.
+- The default executor is sequential Codex `/goal`.
+- "Fleet", "worker", and "dispatch" mean runtime-neutral bounded evidence loops: task, reproducible command/evidence, honest `BLOCKED` path, verifier spot-check, synthesis, and optional game change.
+- Subagents or separate Codex threads are temporary senses, not a standing organization. Use them only for bounded read-heavy review, verification, browser/play observation, or non-overlapping experiments.
+- Do not build orchestration infrastructure, dashboards, schedulers, worker registries, or fleet-management systems unless a goal's `PLAN.md` proves they are necessary to satisfy that goal.
+- The durable asset is the evidence contract, not the execution platform.
+- The next era must spend knowledge, not merely accumulate reports.
+
 ## progress.jsonl Schema
 
 Each line must be valid JSON with this shape:
@@ -52,7 +64,7 @@ Do not use `complete` status until `GOAL_OUTCOME.md` exists.
 
 ## GOAL_OUTCOME.md Template
 
-Each goal must write `GOAL_OUTCOME.md` in its own bundle before stopping:
+Each goal must write `GOAL_OUTCOME.md` in its own bundle before stopping. The reusable template also lives at `docs/plan-goals/templates/GOAL_OUTCOME.md`.
 
 ```md
 # Goal outcome - <goal id>
@@ -123,8 +135,20 @@ Only run independent goals in parallel when their write sets do not overlap. In 
 Hard gates:
 
 - Goals `02` through `08` must first verify whether goal `01` is complete. If it is not complete, they may only do preparatory work that does not depend on current baseline numbers.
-- Goals that dispatch new fleet experiment cells must wait for goal `02`, because the old report schema still encourages report bloat.
+- Goals that start new runtime-neutral experiment cells must wait for goal `02`, because the old report schema still encourages report bloat.
 - Goals that compare player agency or benchmark scores must cite `baseline v2`, not the pre-fix 78.3% baseline, unless they are explicitly doing historical analysis.
+
+## Review Checklist
+
+Use this checklist before marking any plan-goal complete:
+
+- `progress.jsonl` is parseable and uses the required schema.
+- Evidence artifacts named by `PLAN.md` and `GOAL_OUTCOME.md` exist.
+- No forbidden files changed, or the plan was explicitly updated first with reason, risk, allowed files, required validation, and rollback or revert strategy.
+- Required gates actually ran, or `BLOCKED` is explicit with exact remaining evidence.
+- Docs match current repo state.
+- Claims now safe and claims still unsafe are both named.
+- The goal stops at its own boundary and does not begin the next goal.
 
 ## Seed Ledger
 

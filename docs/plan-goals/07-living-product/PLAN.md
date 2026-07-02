@@ -37,6 +37,14 @@ This goal is complete when all of the following are true:
 
 Append execution events to `progress.jsonl`. Do not rewrite prior lines.
 
+## progress.jsonl Schema
+
+Each line must be valid JSON with the keys `ts`, `status`, `goal`, `summary`, `files`, `commands`, `evidence`, `claims`, and `remaining`. Use the canonical schema in `docs/plan-goals/README.md`. Do not use `complete` status until `GOAL_OUTCOME.md` exists.
+
+## Runtime Policy
+
+The default executor is sequential Codex `/goal`. Historical words such as fleet, worker, or dispatch mean runtime-neutral bounded evidence loops, not a dependency on Jules or any standing worker organization. Subagents or separate Codex threads may only be used for bounded review, verification, browser/play observation, or non-overlapping UI/test work.
+
 ## Ground Truth To Verify First
 
 - Read `AGENTS.md`, `docs/roadmap.md`, `docs/debug-surface/DEBUG.md`, `src/App.tsx`, `src/render.ts`, `src/debug/events.ts`, `src/debug/snapshot.ts`, and `src/types.ts`.
@@ -51,6 +59,32 @@ Append execution events to `progress.jsonl`. Do not rewrite prior lines.
 - Do not split RNG streams or change cosmetic RNG behavior unless explicitly authorized by a simulation plan.
 - Keep UI dense, readable, and faithful to the existing app. Do not add decorative cards or explanatory marketing copy.
 - Human taste is a gate. A metric win with worse charm is a failed product change.
+- Do not widen scope silently. If scope must change, update this `PLAN.md` first with the reason, risk, allowed files, required validation, and rollback or revert strategy.
+
+## Protected Files
+
+Forbidden unless `PLAN.md` is updated first with rationale and validation:
+
+- broad gameplay/balance changes
+- unrelated `scripts/**`
+- unrelated `scenarios/**`
+- `package-lock.json`
+- historical `docs/fleet/reports/**`
+- generated run output outside this goal's `evidence/`
+
+Allowed by default:
+
+- targeted UI/debug/event files needed by the selected product slice
+- documentation for the release slice
+- `docs/plan-goals/07-living-product/**`
+
+## No Orchestration Rabbit Hole
+
+Do not build dashboards, schedulers, worker registries, telemetry backends, account systems, or fleet-management systems. Ship a small player-facing product slice.
+
+## Knowledge-Spending Requirement
+
+This goal must close the loop `repo finding -> player-facing intervention -> verification -> human-visible effect`. Docs, reports, or UI plumbing alone do not count as game improvement unless a player can see and use the resulting feature.
 
 ## Stages
 
@@ -68,6 +102,8 @@ Append execution events to `progress.jsonl`. Do not rewrite prior lines.
    - Record Drew's play acceptance or rejection.
 5. Verification:
    - Run full validation.
+6. Outcome:
+   - Write `GOAL_OUTCOME.md` using the template in `docs/plan-goals/templates/GOAL_OUTCOME.md`.
 
 ## Verification
 
@@ -80,6 +116,10 @@ git diff --check
 ```
 
 Run `npm run dev -- --port 5173` for browser QA and capture evidence.
+
+## Stop Behavior
+
+When this goal is complete, stop. Do not begin goal 08. Write `GOAL_OUTCOME.md` and include the next-goal recommendation.
 
 ## Final Report
 

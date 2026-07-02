@@ -41,6 +41,14 @@ This goal is complete when all of the following are true:
 
 Append execution events to `progress.jsonl`. Do not rewrite prior lines.
 
+## progress.jsonl Schema
+
+Each line must be valid JSON with the keys `ts`, `status`, `goal`, `summary`, `files`, `commands`, `evidence`, `claims`, and `remaining`. Use the canonical schema in `docs/plan-goals/README.md`. Do not use `complete` status until `GOAL_OUTCOME.md` exists.
+
+## Runtime Policy
+
+The default executor is sequential Codex `/goal`. Historical words such as fleet, worker, or dispatch mean runtime-neutral bounded evidence loops, not a dependency on Jules or any standing worker organization. Subagents or separate Codex threads may only be used for bounded read-heavy review or verification.
+
 ## Ground Truth To Verify First
 
 - Read `docs/debug-surface/AUDIT.md`, `docs/debug-surface/DEBUG.md`, `docs/fleet/findings/wave0.md`, `docs/fleet/findings/wave1.md`, `docs/fleet/findings/wave2.md`, and `docs/fleet/reports/wave0/W0-A-replicate.md`.
@@ -56,6 +64,25 @@ Append execution events to `progress.jsonl`. Do not rewrite prior lines.
 - If an asserted hash no longer matches because a valid prior goal changed the proof contract, stop and update this PLAN or record a blocker. Do not silently rewrite the proof to fit current output.
 - Proof hashes are not cross-version absolutes; record the commit/build context for the assertions.
 - Keep proof output direct: PASS/FAIL lines and enough context for failure triage.
+- Do not widen scope silently. If scope must change, update this `PLAN.md` first with the reason, risk, allowed files, required validation, and rollback or revert strategy.
+
+## Protected Files
+
+Forbidden unless `PLAN.md` is updated first with rationale and validation:
+
+- `src/**`
+- unrelated `scripts/**`
+- `scenarios/**`
+- historical `docs/fleet/reports/**`
+- generated run output outside this goal's `evidence/`
+
+Allowed by default:
+
+- `docs/proof/RECEIPTS.md`
+- `scripts/proof.ts`
+- `package.json`
+- `README.md`
+- `docs/plan-goals/05-proof-receipts/**`
 
 ## Stages
 
@@ -74,6 +101,8 @@ Append execution events to `progress.jsonl`. Do not rewrite prior lines.
 5. Verification:
    - Run required commands.
    - Save verbatim proof output in evidence.
+6. Outcome:
+   - Write `GOAL_OUTCOME.md` using the template in `docs/plan-goals/templates/GOAL_OUTCOME.md`.
 
 ## Verification
 
@@ -85,6 +114,10 @@ npm test
 npm run typecheck
 git diff --check
 ```
+
+## Stop Behavior
+
+When this goal is complete, stop. Do not begin goal 08. Write `GOAL_OUTCOME.md` and include the next-goal recommendation.
 
 ## Final Report
 

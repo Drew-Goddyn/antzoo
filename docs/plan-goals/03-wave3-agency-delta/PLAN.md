@@ -42,6 +42,14 @@ This goal is complete when all of the following are true:
 
 Append execution events to `progress.jsonl`. Do not rewrite prior lines.
 
+## progress.jsonl Schema
+
+Each line must be valid JSON with the keys `ts`, `status`, `goal`, `summary`, `files`, `commands`, `evidence`, `claims`, and `remaining`. Use the canonical schema in `docs/plan-goals/README.md`. Do not use `complete` status until `GOAL_OUTCOME.md` exists.
+
+## Runtime Policy
+
+The default executor is sequential Codex `/goal`. Historical words such as fleet, worker, or dispatch mean runtime-neutral bounded evidence loops, not a dependency on Jules or any standing worker organization. Subagents or separate Codex threads may only be used for bounded read-heavy review, verification, browser/play observation, or non-overlapping experiment cells.
+
 ## Ground Truth To Verify First
 
 - Read `AGENTS.md`, `docs/roadmap.md`, `docs/fleet/FLEET.md`, `docs/debug-surface/DEBUG.md`, `src/tuning.ts`, `src/debug/scenario.ts`, and `scripts/run.ts`.
@@ -59,6 +67,33 @@ Append execution events to `progress.jsonl`. Do not rewrite prior lines.
 - Do not optimize away charm: visual trough drama, trail bloom, rival activity, and HUD foreshadowing are non-target guardrails.
 - Hash changes across tuning configs are expected; compare hashes only within same seed/config replicates.
 - Rescue scenarios must use only `applyTool` actions for the two food drops and one lure, plus optional `snapshot` actions. Do not use `patchTuning`, `stressSpawn`, `dropCarcass`, or assertions inside the rescue scenario.
+- Do not widen scope silently. If scope must change, update this `PLAN.md` first with the reason, risk, allowed files, required validation, and rollback or revert strategy.
+
+## Protected Files
+
+Forbidden unless `PLAN.md` is updated first with rationale and validation:
+
+- broad `src/**` changes unrelated to the authorized tuning/scenario work
+- `scripts/**`
+- `package.json`
+- `package-lock.json`
+- historical `docs/fleet/reports/**`
+- generated run output outside this goal's `evidence/`
+
+Allowed by default:
+
+- `scenarios/rescue-protocol.json`
+- Wave 3 reports/artifacts explicitly authorized by `docs/fleet/FLEET.md`
+- accepted final tuning/default changes only after held-out validation and human play sign-off
+- `docs/plan-goals/03-wave3-agency-delta/**`
+
+## No Orchestration Rabbit Hole
+
+Do not build dashboards, schedulers, worker registries, fleet-management systems, or subagent coordination infrastructure. Use bounded runs and evidence artifacts, not a platform project.
+
+## Knowledge-Spending Requirement
+
+This goal must close the loop `repo finding -> proposed intervention -> controlled change -> verification -> human-visible effect`. Docs, reports, or measurement-only cells do not count as game improvement unless they lead to an accepted tuning/default change or an honest `BLOCKED` outcome explaining why no candidate can be shipped.
 
 ## Stages
 
@@ -82,6 +117,8 @@ Append execution events to `progress.jsonl`. Do not rewrite prior lines.
 6. Verification:
    - Run `npm test`.
    - Run `git diff --check`.
+7. Outcome:
+   - Write `GOAL_OUTCOME.md` using the template in `docs/plan-goals/templates/GOAL_OUTCOME.md`.
 
 ## Verification
 
@@ -93,6 +130,10 @@ git diff --check
 ```
 
 Use `npm run typecheck` or `npm run build` if the implementation touches TypeScript outside scenario/report docs.
+
+## Stop Behavior
+
+When this goal is complete, stop. Do not begin goal 04 or goal 06. Write `GOAL_OUTCOME.md` and include the next-goal recommendation.
 
 ## Final Report
 

@@ -39,6 +39,14 @@ This goal is complete when all of the following are true:
 
 Append execution events to `progress.jsonl`. Do not rewrite prior lines.
 
+## progress.jsonl Schema
+
+Each line must be valid JSON with the keys `ts`, `status`, `goal`, `summary`, `files`, `commands`, `evidence`, `claims`, and `remaining`. Use the canonical schema in `docs/plan-goals/README.md`. Do not use `complete` status until `GOAL_OUTCOME.md` exists.
+
+## Runtime Policy
+
+The default executor is sequential Codex `/goal`. Historical words such as fleet, worker, or dispatch mean runtime-neutral bounded evidence loops, not a dependency on Jules or any standing worker organization. Subagents or separate Codex threads may only be used for bounded review, verification, or browser/play observation.
+
 ## Ground Truth To Verify First
 
 - Read `docs/debug-surface/DEBUG.md`, especially Browser bridge and Playwright gate.
@@ -54,6 +62,33 @@ Append execution events to `progress.jsonl`. Do not rewrite prior lines.
 - Do not let the agent use `patchTuning`, `resetWorld`, hidden source inspection, or unlimited stepping as a shortcut.
 - Predictions must be written before stepping, then scored after. Do not score predictions retroactively.
 - Screenshots are evidence, not decoration. Save paths and ticks when used.
+- Do not widen scope silently. If scope must change, update this `PLAN.md` first with the reason, risk, allowed files, required validation, and rollback or revert strategy.
+
+## Protected Files
+
+Forbidden unless `PLAN.md` is updated first with rationale and validation:
+
+- `src/**`
+- `scripts/**`
+- `scenarios/**`
+- `package.json`
+- `package-lock.json`
+- historical `docs/fleet/reports/**`
+- generated run output outside this goal's `evidence/`
+
+Allowed by default:
+
+- `docs/fleet/browser/MILESTONE-1.md`
+- browser shepherd reports/artifacts explicitly authorized by the milestone spec
+- `docs/plan-goals/04-browser-shepherd/**`
+
+## No Orchestration Rabbit Hole
+
+Do not build dashboards, schedulers, worker registries, fleet-management systems, or a browser automation platform. This goal proves one constrained browser-legibility protocol.
+
+## Knowledge-Spending Requirement
+
+This goal must connect the browser bridge to real play understanding: constrained observation, prediction, intervention, replay verification, and comparison against baseline. A spec alone is not game improvement; it only completes this goal if paired with the required pilot or an honest `BLOCKED` outcome naming missing evidence.
 
 ## Stages
 
@@ -73,6 +108,8 @@ Append execution events to `progress.jsonl`. Do not rewrite prior lines.
 5. Verification:
    - Run `git diff --check`.
    - Run `npm test` only if implementation touches debug/browser bridge code.
+6. Outcome:
+   - Write `GOAL_OUTCOME.md` using the template in `docs/plan-goals/templates/GOAL_OUTCOME.md`.
 
 ## Verification
 
@@ -89,6 +126,10 @@ npm run dev -- --port 5173
 ```
 
 Then run the Playwright browser bridge check from `docs/debug-surface/DEBUG.md`.
+
+## Stop Behavior
+
+When this goal is complete, stop. Do not begin goal 05 or goal 08. Write `GOAL_OUTCOME.md` and include the next-goal recommendation.
 
 ## Final Report
 

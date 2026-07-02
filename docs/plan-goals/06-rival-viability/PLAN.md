@@ -37,6 +37,14 @@ This goal is complete when all of the following are true:
 
 Append execution events to `progress.jsonl`. Do not rewrite prior lines.
 
+## progress.jsonl Schema
+
+Each line must be valid JSON with the keys `ts`, `status`, `goal`, `summary`, `files`, `commands`, `evidence`, `claims`, and `remaining`. Use the canonical schema in `docs/plan-goals/README.md`. Do not use `complete` status until `GOAL_OUTCOME.md` exists.
+
+## Runtime Policy
+
+The default executor is sequential Codex `/goal`. Historical words such as fleet, worker, or dispatch mean runtime-neutral bounded evidence loops, not a dependency on Jules or any standing worker organization. Subagents or separate Codex threads may only be used for bounded review, verification, browser/play observation, or non-overlapping experiments.
+
 ## Ground Truth To Verify First
 
 - Read `docs/roadmap.md`, `docs/fleet/FLEET.md`, `docs/fleet/findings/wave1.md`, `docs/fleet/findings/wave2.md`, `docs/debug-surface/DEBUG.md`, `src/sim.ts`, `src/tuning.ts`, and `src/debug/snapshot.ts`.
@@ -51,6 +59,26 @@ Append execution events to `progress.jsonl`. Do not rewrite prior lines.
 - Any new observable required by the fix ships in the same change.
 - Instrumentation must be additive, hash-excluded where debug-only, and RNG-free.
 - Avoid broad refactors of `src/sim.ts`; keep the fix scoped to the diagnosed cause.
+- Do not widen scope silently. If scope must change, update this `PLAN.md` first with the reason, risk, allowed files, required validation, and rollback or revert strategy.
+
+## Protected Files
+
+Forbidden unless `PLAN.md` is updated first with rationale and validation:
+
+- broad `src/**` changes unrelated to the diagnosed rival failure
+- unrelated `scripts/**`
+- unrelated `scenarios/**`
+- `package.json`
+- `package-lock.json`
+- historical `docs/fleet/reports/**`
+- generated run output outside this goal's `evidence/`
+
+Allowed by default:
+
+- targeted `src/**` or tuning changes authorized by the rival intervention manifest
+- same-change observables needed by the fix
+- `docs/fleet/FLEET.md`
+- `docs/plan-goals/06-rival-viability/**`
 
 ## Stages
 
@@ -68,6 +96,8 @@ Append execution events to `progress.jsonl`. Do not rewrite prior lines.
    - Run `npm test`.
    - Run `npm run typecheck` if TypeScript changed outside tests.
    - Schedule or complete a new baseline if sim-code changed default behavior.
+6. Outcome:
+   - Write `GOAL_OUTCOME.md` using the template in `docs/plan-goals/templates/GOAL_OUTCOME.md`.
 
 ## Verification
 
@@ -80,6 +110,10 @@ git diff --check
 ```
 
 Also run any targeted sim commands named by the intervention manifest.
+
+## Stop Behavior
+
+When this goal is complete, stop. Do not begin goal 07 or goal 08. Write `GOAL_OUTCOME.md` and include the next-goal recommendation.
 
 ## Final Report
 

@@ -50,6 +50,14 @@ This goal is complete only when all required gates below are satisfied or explic
 
 Append execution events to `progress.jsonl` using the schema in `docs/plan-goals/README.md`. Do not rewrite prior lines.
 
+## progress.jsonl Schema
+
+Each line must be valid JSON with the keys `ts`, `status`, `goal`, `summary`, `files`, `commands`, `evidence`, `claims`, and `remaining`. Use the canonical schema in `docs/plan-goals/README.md`. Do not use `complete` status until `GOAL_OUTCOME.md` exists.
+
+## Runtime Policy
+
+The default executor is sequential Codex `/goal`. Historical words such as fleet, worker, or dispatch mean bounded evidence loops, not a dependency on Jules or any standing worker organization. Subagents or separate Codex threads may only be used for bounded read-heavy review or verification. Do not build orchestration infrastructure for this goal.
+
 ## Ground Truth To Verify First
 
 - Run `git status --short --branch` and record branch/dirty state.
@@ -65,6 +73,7 @@ Append execution events to `progress.jsonl` using the schema in `docs/plan-goals
 - Do not change tests or gates to fit the evidence.
 - Timing fields are not determinism evidence.
 - If a full 120-seed run cannot finish, write an honest partial report and keep the goal incomplete.
+- Do not widen scope silently. If scope must change, update this `PLAN.md` first with the reason, risk, allowed files, required validation, and rollback or revert strategy.
 
 ## Protected Files
 
