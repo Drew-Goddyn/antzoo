@@ -1,0 +1,70 @@
+
+> antzoo@1.0.0 test
+> tsx scripts/test-debug.ts
+
+PASS T0 rng
+PASS T0 time
+PASS T0 stepCount
+PASS T0 ants.x
+PASS T0 ants.y
+PASS T0 ants.heading
+PASS T0 ants.energy
+PASS T0 ants.stepsSincePickup
+PASS T0 ants.timerA
+PASS T0 ants.timerB
+PASS T0 ants.mode
+PASS T0 ants.carrying
+PASS T0 ants.flags
+PASS T0 ants.caste
+PASS T0 ants.faction
+PASS T0 spatial
+PASS T0 grid.pherFood.player
+PASS T0 grid.pherFood.rival
+PASS T0 grid.pherHome.player
+PASS T0 grid.pherHome.rival
+PASS T0 grid.pherDanger
+PASS T0 grid.lure
+PASS T0 grid.moisture
+PASS T0 grid.foodAmt
+PASS T0 grid.bookkeeping
+PASS T0 nestFood.player
+PASS T0 nestFood.rival
+PASS T0 queen/brood.player
+PASS T0 queen/brood.rival
+PASS T0 rival struct
+PASS T0 spider
+PASS T0 bushes
+PASS T0 carcass
+PASS T0 corpses
+PASS T0 obstacles
+PASS T0 combatMarks
+PASS T0 tuning ant.drainPerSec
+PASS T0 tuning ui.hudHz
+PASS T0 debug-only field
+PASS T0 debug ant id
+PASS T0 debug ant birthTick
+PASS T0 debug ant distanceTraveled
+PASS T0 debug ant ticksInMode
+PASS T0 debug ant deliveries
+PASS T0 debug ant ticksSinceLastDelivery
+PASS T0 debug ant ticksSinceFoodPerceived
+PASS T0 debug trace active
+PASS T0 debug trace beyondR
+PASS T0 debug trace record
+PASS T0 debug flow foodDelivered
+PASS T0 debug flow queenConsumed
+PASS T0 debug flow broodConsumed
+PASS T0 debug flow snackEnergyGained
+PASS T0 debug flow drainTotal
+PASS T0 debug flow rollup ratio sources
+PASS T0 debug obituary aggregates
+PASS T1 same seed hashes at 1k/10k/50k
+PASS T1 different seeds diverge by 1k
+PASS T2 sample-every 100 vs no sampling final hash
+PASS T3 death accounting - top causes: starvation=347, spider=21, terminal_cull=10
+PASS T3 id uniqueness over 50k
+PASS T5 traced run matches untraced hash
+PASS T5 trace rows captured - rows=4096
+real 297.19
+user 238.19
+sys 8.16

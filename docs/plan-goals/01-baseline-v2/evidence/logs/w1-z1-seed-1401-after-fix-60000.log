@@ -1,0 +1,7 @@
+
+> antzoo@1.0.0 sim
+> tsx scripts/run.ts --seed 1401 --ticks 60000 --sample-every 600 --out docs/plan-goals/01-baseline-v2/evidence/w1-z1-seed-1401-after-fix-60000.jsonl
+
+real 47.08
+user 42.67
+sys 0.79

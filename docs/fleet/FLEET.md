@@ -6,13 +6,16 @@
 
 Use a pool of autonomous workers (up to 15 concurrent, ~100 dispatches/day) to run headless experiments against the antzoo simulation and return structured reports. Every claim reduces to `(seed, config, tick, observable)`. The operator reads reports and verdicts, never code. Worker confusion is a defect in this document or in DEBUG.md — the fix is always a doc patch plus redispatch, never per-worker coaching.
 
-## Established baseline (Wave 0 + promoted Wave 1/Wave 2 facts, 50k tick budget)
+## Established baseline (baseline v2 + promoted Wave 1/Wave 2 facts, 50k tick budget)
 
-- Accepted combined baseline (W0-A, W0-A2, W0-A3; seeds 1337-1456, n=120): player 94 victories / 24 collapses / 2 running, 78.3% win rate, SE 0.038. Decisive endings dominate, but `running` at 50k is a real outcome (2/120). W1-Z1 confirms at least one running case is an unwinnable zero-population stalemate.
+- Current baseline v2 (post-W1-Z1-fix; seeds 1337-1456, n=120, 50k ticks): player 94 victories / 25 collapses / 1 running, 78.3% win rate. Use this for current default-config comparisons. Evidence: `docs/plan-goals/01-baseline-v2/evidence/baseline-v2/baseline-v2-1337-1456.jsonl` and `docs/plan-goals/01-baseline-v2/evidence/baseline-v2/baseline-v2-summary.md`.
+- Historical Wave 0 combined baseline (W0-A, W0-A2, W0-A3; same seeds, n=120) was player 94 victories / 24 collapses / 2 running. It is now historical, not the current comparison baseline.
+- Baseline v2 leaves one 50k-budget running seed: seed 1355, with player population 1, rival population 57, and final hash `bd357fd9cfd137d9`. This is not the seed-1401 zero-population stalemate class.
+- The W1-Z1 fix did not produce a byte-for-byte final-hash match for every non-running Wave 0 seed. Final hashes differ for seeds 1369, 1401, 1417, 1453, and 1455. Only seed 1401 changes the historical batch-level outcome count. Treat these as real baseline-v2 differences unless a later audit proves a historical-report artifact.
 - Ledger subsets (W0-C, W0-C2, W0-C3; seeds 1337-1351, n=15): player 12 victories / 3 collapses. These support flow-counter analysis but do not replace the combined baseline above.
-- Mortality: starvation dominates both factions. Across accepted n=40 baseline batches, median starvation deaths/run range from player 168.5-183 and rival 136-142.5. Spider and combat remain noise.
-- Starvation obituaries: across accepted n=40 baseline batches, player starvation median deliveries is 3 and rival starvation median deliveries is 0 in every accepted batch. Player median starvation age is roughly 9.70k-9.83k ticks; rival median starvation age is roughly 8.12k-9.51k ticks.
-- Population: accepted n=40 baseline batches have player peak median 198-202.5 and rival peak median 165-166; final population medians are player 40-48 and rival 0.
+- Baseline v2 mortality: starvation still dominates both factions. Median starvation deaths/run are player 174 and rival 140.5; spider and combat remain noise.
+- Baseline v2 starvation obituaries: player starvation median deliveries is 3 and rival starvation median deliveries is 0. Player starvation median age is 9,774 ticks; rival starvation median age is 9,305.75 ticks.
+- Baseline v2 population: player peak median is 199 and rival peak median is 165; final population medians are player 45 and rival 0.
 - Scenario patching: W0-B-rerun patches `ant.drainPerSec` from default 1.2 to 1.5 for seeds 1337-1346. Patched final hashes differ from baseline for all 10 seeds, and repeated patched runs match per-seed final hashes exactly.
 - Flow counters: W0-C/W0-C2/W0-C3 show `foodDelivered` is not conserved by `queenConsumed + broodConsumed + nestFood`; W0-C2/W0-C3 raw tables have 60/60 nonzero differences. Drain/snack ratios are roughly 5-6x for player and 12-14x for rival at rollup scale.
 - Corrected nest-food ledger from W1-L1: for the audited probes, `startFood + foodDelivered - broodConsumed - refills * 0.5 - nestFood = 0`. `queenConsumed` currently reads 0 in those probes, so queen-consumption semantics remain a counter gap rather than a conserved ledger term.
@@ -21,7 +24,7 @@ Use a pool of autonomous workers (up to 15 concurrent, ~100 dispatches/day) to r
 - Caste composition is an interaction, not a one-axis worker-gap rule. Accepted Wave 2 cells found 70/60 worker shares at 14/20 player wins, 70/80 at 5/12 partial, 90/60 at 19/20, and 90/80 at 10/20. Absolute player capacity, rival capacity, and inter-faction gap all matter.
 - Terrain matters, but tick-600 nearest-food distance alone is too weak to carry H1. In accepted W2-T1b-a/b second-half baseline seeds 2025-2049, player wins had median nearest-distance delta 62.49 and rival wins had median delta 71.35; the two huge negative deltas split outcomes (`seed=2028` rival win at -932.60, `seed=2038` player win at -915.36).
 - Founding-wave depth is a live risk signal, not a hard scalar threshold. W1-F1 suggested a boundary between drops of 76 and 87, but accepted W2-F2a/b evidence had collapses at depths 87, 124, 127, 131, and 149, while victories survived depths up to 143. Depth must be paired with recovery, brood bank, terrain/food access, and rival pressure.
-- Seed 1401 is a confirmed stalemate mechanism, not merely a slow game. W1-Z1 shows player population reaches zero at tick 47400 and remains zero through tick 60000 while `terminal` stays false. In `src/sim.ts`, the zero-population check is nested under `terminalTimer > 0`; once a faction has zero ants without entering that timer path, neither faction can ever win.
+- Seed 1401 was a confirmed stalemate mechanism, not merely a slow game. W1-Z1 showed player population reaching zero at tick 47400 and remaining zero through tick 60000 while `terminal` stayed false. The landed W1-Z1 fix now makes the same seed terminate at tick 46872 with player `gameOver` and rival `victory`. Evidence: `docs/fleet/findings/w1z1-fix-gates.md`.
 - Throughput/capacity: W0 reports show median ticks/sec in the ~188-238 range where reported, with inconsistent wall clocks and some report omissions. Use actual reported wall clock per worker/cell until capacity is remeasured cleanly.
 
 Open hypotheses after wave 2: (H1) terrain still matters, but nearest-food distance needs richer early-delivery, food-cluster, obstruction, and pathing features; (H2) founding-wave collapse is a multi-factor recovery problem, with trough depth as one risk signal; (H3) caste outcomes depend on the interaction between player capacity, rival capacity, and worker-share gap; (H4) the drain mechanism appears economic/starvation-first but needs larger-n mechanism replication before quantifying the curve; (H5) W1-C3 seed 2002 remains unresolved because W2-R1 used the wrong config and must be rerun with all six W1-C3 ratio keys.
@@ -145,9 +148,9 @@ Historical dispatch manifest below. Tick budget 50k unless stated. No dispatch c
 | W2-F2b | Founding-wave threshold, second half | Baseline config, seeds 2070-2089 (n=20), `--sample-every 300`. Same outputs as W2-F2a. |
 | W2-R1 | High-worker running trace | Re-run W1-C3 seed 2002 with the same player 90 / rival 80 worker-share config to 60000 ticks, `--sample-every 600`. The W1-C3 report had player 13 / rival 89 at the 50k budget. Answer whether this is the same zero-pop stalemate class as seed 1401 or merely slow. |
 
-## Authorized build dispatches
+## Build dispatch history
 
-- W1-Z1 terminal-state fix is AUTHORIZED pending a build dispatch. Required gates: seed 1337 final hash identical before/after; seed 1401 terminates with before/after evidence at ticks 47400-60000; 120-seed baseline rerun changes outcome only on the two previously running seeds, with all other final hashes identical.
+- W1-Z1 terminal-state fix is landed and closed out. Gate evidence: seed 1337 remains unchanged at final hash `5101d7c52c007c01`; seed 1401 now terminates at tick 46872 instead of running through 60000; baseline v2 is recorded for seeds 1337-1456. The stricter planned hash gate did not fully hold: five final hashes differ from Wave 0 rollups, while only seed 1401 changes the historical batch-level outcome count. Evidence: `docs/fleet/findings/w1z1-fix-gates.md`.
 
 ## Synthesis procedure (operator)
 
@@ -169,4 +172,4 @@ Historical dispatch manifest below. Tick budget 50k unless stated. No dispatch c
 
 ## Out of scope until the boundary map exists
 
-Browser-based legibility testing (the bridge is ready; the program is deferred), broad decision-trace waves beyond the specific W2 probes, and gameplay or balance changes other than the authorized W1-Z1 terminal-state fix — this program measures; it does not tune without explicit authorization.
+Browser-based legibility testing (the bridge is ready; the program is deferred), broad decision-trace waves beyond the specific W2 probes, and gameplay or balance changes beyond the landed W1-Z1 terminal-state fix — this program measures; it does not tune without explicit authorization.

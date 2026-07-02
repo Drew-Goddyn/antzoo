@@ -47,6 +47,12 @@ The final `summary` record includes `seed`, `replicate`, global `outcome`, per-f
 
 Timing fields (`ticksPerSecond`, `ticksPerSecondQuartiles`, `perf.ticksPerSecond`, and wall-clock report runtime) are nondeterministic performance telemetry. Determinism comparisons must use final hashes and outcome fields only, never timing fields or byte-identical full records.
 
+Numeric determinism claims are currently V8 claims: the local gates verify Node
+and Chrome behavior, and both use V8. JavaScript-engine Math behavior such as
+`Math.sin`, `Math.cos`, and `Math.pow` is not IEEE-pinned across engines, so do
+not claim cross-engine bit reproducibility unless that engine has been
+explicitly verified.
+
 Batch `seed_summary` and `cross_seed_rollup` records include:
 
 | Path | Meaning |
@@ -339,3 +345,4 @@ Actions execute when `world.stepCount` reaches `at`, before the next simulation 
 - Cosmetic FX currently consumes the gameplay RNG stream because particle spawning calls `nextRand`. Replays are deterministic within a build, but cosmetic changes can shift downstream gameplay RNG across versions. The RNG streams must not be split.
 - Browser execution is capped by `TUNING.time.maxStepsPerFrame`; headless execution is uncapped.
 - Numeric state contains `Float32Array` values. Hashing uses the stored bytes for typed arrays, so Float32 quantization is part of the reproducibility contract.
+- Cross-engine numeric behavior is not part of the current reproducibility contract. The verified surfaces are V8 Node and V8 Chrome unless another engine is named with its own evidence.
