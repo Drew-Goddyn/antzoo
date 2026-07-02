@@ -2,6 +2,8 @@
 
 Operator artifact: this plan is intentionally stored in the Antzoo repo under `docs/plan-goals/` for portability. It should be committed with the roadmap execution docs.
 
+This goal is not complete when the agent is convinced. It is complete when the repo contains the evidence that would convince a skeptical future reader.
+
 ## [GOAL]
 
 Make the rival colony a real contested presence by diagnosing why accepted evidence shows rival starvation deliveries and final population collapse, then shipping the smallest evidence-backed behavior or tuning intervention that makes rival trails, deliveries, and survival visible without breaking determinism or player agency.
@@ -21,6 +23,7 @@ This goal is complete when all of the following are true:
 - Browser/play evidence shows rival trails or food pressure visibly bloom in at least one before/after comparison.
 - Any `src/`, tuning, debug, snapshot, trace, or CLI changes pass full `npm test`.
 - A fresh baseline is scheduled or completed if sim-code changes alter default behavior.
+- `GOAL_OUTCOME.md` exists in this bundle with status `COMPLETE`, `BLOCKED`, `PARTIAL`, or `ABORTED`, and it names claims still unsafe.
 
 ## Shared Plan Bundle
 
@@ -28,6 +31,7 @@ This goal is complete when all of the following are true:
 - Source of truth: `/Users/Drew/projects/antzoo/docs/plan-goals/06-rival-viability/PLAN.md`
 - Launcher: `/Users/Drew/projects/antzoo/docs/plan-goals/06-rival-viability/LAUNCHER.txt`
 - Progress ledger: `/Users/Drew/projects/antzoo/docs/plan-goals/06-rival-viability/progress.jsonl`
+- Goal outcome: `/Users/Drew/projects/antzoo/docs/plan-goals/06-rival-viability/GOAL_OUTCOME.md`
 - Evidence directory: `/Users/Drew/projects/antzoo/docs/plan-goals/06-rival-viability/evidence/`
 - Notes directory: `/Users/Drew/projects/antzoo/docs/plan-goals/06-rival-viability/notes/`
 
@@ -88,3 +92,4 @@ Report:
 - Browser/play evidence.
 - Validation commands and results.
 - Whether a new baseline is complete or the next required goal.
+- `GOAL_OUTCOME.md` status and path.

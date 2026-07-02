@@ -2,6 +2,8 @@
 
 Operator artifact: this plan is intentionally stored in the Antzoo repo under `docs/plan-goals/` for portability. It should be committed with the roadmap execution docs.
 
+This goal is not complete when the agent is convinced. It is complete when the repo contains the evidence that would convince a skeptical future reader.
+
 ## [GOAL]
 
 Update Antzoo's fleet operating contract from measurement-only mode into evidence-backed intervention mode by revising `docs/fleet/FLEET.md` for report format v2, Wave 3 authorization, seed hygiene, and spending-era guardrails without changing simulation code.
@@ -19,6 +21,7 @@ This goal is complete when all of the following are true:
 - The rescue protocol and candidate cells are specified clearly enough that a worker can run them without asking permission.
 - No `src/`, `scripts/`, `scenarios/`, generated output, or fleet report files are changed by this goal.
 - `git diff --check` passes.
+- `GOAL_OUTCOME.md` exists in this bundle with status `COMPLETE`, `BLOCKED`, `PARTIAL`, or `ABORTED`, and it names claims still unsafe.
 
 ## Shared Plan Bundle
 
@@ -26,6 +29,7 @@ This goal is complete when all of the following are true:
 - Source of truth: `/Users/Drew/projects/antzoo/docs/plan-goals/02-fleet-spending-era/PLAN.md`
 - Launcher: `/Users/Drew/projects/antzoo/docs/plan-goals/02-fleet-spending-era/LAUNCHER.txt`
 - Progress ledger: `/Users/Drew/projects/antzoo/docs/plan-goals/02-fleet-spending-era/progress.jsonl`
+- Goal outcome: `/Users/Drew/projects/antzoo/docs/plan-goals/02-fleet-spending-era/GOAL_OUTCOME.md`
 - Evidence directory: `/Users/Drew/projects/antzoo/docs/plan-goals/02-fleet-spending-era/evidence/`
 - Notes directory: `/Users/Drew/projects/antzoo/docs/plan-goals/02-fleet-spending-era/notes/`
 
@@ -83,3 +87,4 @@ Report:
 - The chosen full rival ratio tuple for the 75% worker target, or the manifest language requiring the next builder to choose it explicitly.
 - `git diff --check` result.
 - Any dependency from goal 01 that remains incomplete.
+- `GOAL_OUTCOME.md` status and path.

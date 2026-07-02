@@ -2,6 +2,8 @@
 
 Operator artifact: this plan is intentionally stored in the Antzoo repo under `docs/plan-goals/` for portability. It should be committed with the roadmap execution docs.
 
+This goal is not complete when the agent is convinced. It is complete when the repo contains the evidence that would convince a skeptical future reader.
+
 ## [GOAL]
 
 Prove that an agent can play Antzoo through the browser bridge rather than only batch-running headless experiments, using a constrained intervention budget, falsifiable predictions, replayable evidence, and outcome comparison against baseline v2.
@@ -23,6 +25,7 @@ This goal is complete when all of the following are true:
 - A pilot run on 10 held-out seeds exists after baseline v2 is known, showing shepherded win rate > unattended baseline v2, prediction accuracy > a persistence baseline, and one replay reproducing the same final hash.
 - Browser bridge smoke test passes using the `DEBUG.md` Playwright gate or equivalent.
 - No simulation or tuning changes are made unless a later explicit plan authorizes them.
+- `GOAL_OUTCOME.md` exists in this bundle with status `COMPLETE`, `BLOCKED`, `PARTIAL`, or `ABORTED`, and it names claims still unsafe.
 
 ## Shared Plan Bundle
 
@@ -30,6 +33,7 @@ This goal is complete when all of the following are true:
 - Source of truth: `/Users/Drew/projects/antzoo/docs/plan-goals/04-browser-shepherd/PLAN.md`
 - Launcher: `/Users/Drew/projects/antzoo/docs/plan-goals/04-browser-shepherd/LAUNCHER.txt`
 - Progress ledger: `/Users/Drew/projects/antzoo/docs/plan-goals/04-browser-shepherd/progress.jsonl`
+- Goal outcome: `/Users/Drew/projects/antzoo/docs/plan-goals/04-browser-shepherd/GOAL_OUTCOME.md`
 - Evidence directory: `/Users/Drew/projects/antzoo/docs/plan-goals/04-browser-shepherd/evidence/`
 - Notes directory: `/Users/Drew/projects/antzoo/docs/plan-goals/04-browser-shepherd/notes/`
 
@@ -96,3 +100,4 @@ Report:
 - Prediction accuracy method and result.
 - Replay hash reproduction result.
 - Any restrictions that made the pilot impossible.
+- `GOAL_OUTCOME.md` status and path.

@@ -2,6 +2,8 @@
 
 Operator artifact: this plan is intentionally stored in the Antzoo repo under `docs/plan-goals/` for portability. It should be committed with the roadmap execution docs.
 
+This goal is not complete when the agent is convinced. It is complete when the repo contains the evidence that would convince a skeptical future reader.
+
 ## [GOAL]
 
 Turn Antzoo from a trusted simulation into a small living product by shipping player-facing readability, replay, and story features that expose existing simulation evidence without compromising determinism or replacing human taste with metrics.
@@ -21,6 +23,7 @@ This goal is complete when all of the following are true:
 - `npm run build`, `npm test`, and `git diff --check` pass.
 - Browser screenshots or screen recordings show the feature working at desktop and a narrow/mobile viewport if the UI is responsive.
 - The final report states which roadmap product promise is now true and which remains future work.
+- `GOAL_OUTCOME.md` exists in this bundle with status `COMPLETE`, `BLOCKED`, `PARTIAL`, or `ABORTED`, and it names claims still unsafe.
 
 ## Shared Plan Bundle
 
@@ -28,6 +31,7 @@ This goal is complete when all of the following are true:
 - Source of truth: `/Users/Drew/projects/antzoo/docs/plan-goals/07-living-product/PLAN.md`
 - Launcher: `/Users/Drew/projects/antzoo/docs/plan-goals/07-living-product/LAUNCHER.txt`
 - Progress ledger: `/Users/Drew/projects/antzoo/docs/plan-goals/07-living-product/progress.jsonl`
+- Goal outcome: `/Users/Drew/projects/antzoo/docs/plan-goals/07-living-product/GOAL_OUTCOME.md`
 - Evidence directory: `/Users/Drew/projects/antzoo/docs/plan-goals/07-living-product/evidence/`
 - Notes directory: `/Users/Drew/projects/antzoo/docs/plan-goals/07-living-product/notes/`
 
@@ -87,3 +91,4 @@ Report:
 - Human play sign-off status.
 - Validation results.
 - Remaining roadmap product items.
+- `GOAL_OUTCOME.md` status and path.

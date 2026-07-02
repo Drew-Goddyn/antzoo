@@ -16,19 +16,96 @@ Created from `/Users/Drew/projects/antzoo` on 2026-07-02. Repo snapshot at plann
 - `PLAN.md` is the source of truth for that goal.
 - `LAUNCHER.txt` is a pasteable `/goal` launcher. Keep it short; do not turn it into a second plan.
 - `progress.jsonl` is append-only execution state. Each line must be one valid JSON object.
+- `GOAL_OUTCOME.md` is the required final outcome artifact for each goal. A goal is not complete until this exists with status `COMPLETE`, `BLOCKED`, `PARTIAL`, or `ABORTED`.
 - Store bulky logs, screenshots, run outputs, and raw proof under that goal's `evidence/` directory when creating evidence.
 - Store scratch reasoning under that goal's `notes/` directory when it needs to survive context compaction.
 - Append corrective events instead of rewriting, deleting, or summarizing previous `progress.jsonl` lines.
 - A child dispatch that stops at "PR open" is not the same thing as this parent plan-goal being complete. Dependent plan-goals should wait until the required artifact is merged into the current working branch, or until Drew explicitly authorizes continuing from an unmerged branch/commit.
 - Distinguish fleet workers from repo builders. Existing fleet worker cells may still be one-report-file tasks, but these plan-goals are broader repo-builder handoffs and may edit the files named by their own `PLAN.md`.
 
-Recommended `progress.jsonl` shape:
+## Execution Contract For All Plan-Goals
+
+A plan-goal is complete only when the repo contains durable evidence that a future agent or human can inspect without trusting the completing agent's prose.
+
+For every goal:
+
+1. Treat that goal's `PLAN.md` as the source of truth.
+2. Verify current repo facts before editing.
+3. Append progress to `progress.jsonl` after each meaningful checkpoint.
+4. Store command outputs, derived summaries, diffs, scripts, and review artifacts under that goal's `evidence/` directory unless the plan explicitly names another durable location.
+5. Do not mark a gate complete unless the exact evidence artifact exists.
+6. Do not rewrite historical reports unless the plan explicitly allows it.
+7. Do not widen scope silently. If scope must change, update `PLAN.md` first with the reason, risk, allowed files, required validation, and rollback or revert strategy.
+8. Prefer `BLOCKED` with exact remaining evidence over partial, guessed, or synthesized completion.
+9. End every goal with `GOAL_OUTCOME.md` containing status, files changed, commands run, evidence artifacts created, claims now safe to make, claims still unsafe, reviewer checklist, and next recommended goal.
+10. A future reviewer must be able to answer: what changed, how was it verified, and what remains unproven?
+
+## progress.jsonl Schema
+
+Each line must be valid JSON with this shape:
 
 ```json
-{"timestamp":"2026-07-02T06:54:25-07:00","stage":"verify","event":"targeted-test","command":"npm test","result":"passed","evidence":["evidence/2026-07-02-npm-test.txt"],"remaining_uncertainty":"none for local debug gate","next_action":"continue to final report"}
+{"ts":"2026-07-02T06:54:25-07:00","status":"started|checkpoint|decision|evidence|blocked|complete","goal":"01-baseline-v2","summary":"short human-readable update","files":["paths touched or inspected"],"commands":["commands run, if any"],"evidence":["evidence artifact paths"],"claims":["claims this entry supports"],"remaining":["known remaining work or uncertainty"]}
 ```
 
-Use `source` instead of `command` when the event comes from a document, URL, issue, PR, log, or manual observation. Use `blocker` only when genuine user input or an external state change is required.
+Do not use `complete` status until `GOAL_OUTCOME.md` exists.
+
+## GOAL_OUTCOME.md Template
+
+Each goal must write `GOAL_OUTCOME.md` in its own bundle before stopping:
+
+```md
+# Goal outcome - <goal id>
+
+Status: COMPLETE | BLOCKED | PARTIAL | ABORTED
+
+## One-sentence result
+
+<What actually changed?>
+
+## Files changed
+
+| File | Why changed | Evidence |
+|---|---|---|
+
+## Evidence artifacts
+
+| Artifact | What it proves | Limitations |
+|---|---|---|
+
+## Commands run
+
+| Command | Result | Artifact/log |
+|---|---|---|
+
+## Claims now safe to make
+
+- <Claim> - supported by <artifact>
+
+## Claims still unsafe
+
+- <Claim> - missing <evidence>
+
+## Deviations from PLAN.md
+
+- None
+- Or: <what changed and why>
+
+## Reviewer checklist
+
+- [ ] PLAN.md definition of done satisfied
+- [ ] progress.jsonl parseable
+- [ ] evidence artifacts present
+- [ ] no forbidden files changed
+- [ ] tests/gates actually ran
+- [ ] no historical reports rewritten unless authorized
+- [ ] docs now match repo state
+- [ ] remaining uncertainty named
+
+## Recommended next goal
+
+<next bundle or pause/review>
+```
 
 ## Execution Order
 

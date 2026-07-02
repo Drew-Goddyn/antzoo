@@ -2,6 +2,8 @@
 
 Operator artifact: this plan is intentionally stored in the Antzoo repo under `docs/plan-goals/` for portability. It should be committed with the roadmap execution docs.
 
+This goal is not complete when the agent is convinced. It is complete when the repo contains the evidence that would convince a skeptical future reader.
+
 ## [GOAL]
 
 Package Antzoo as a deterministic agent benchmark v0 by defining a fixed harness, seed suites, scoring rules, replay verification, and reference baselines that reward real play understanding without drifting away from the game.
@@ -24,6 +26,7 @@ This goal is complete when all of the following are true:
 - The benchmark explicitly says it measures performance in Antzoo's deterministic toy ecology, not claims about real ants.
 - `npm test`, `npm run typecheck`, and `git diff --check` pass for any harness/script changes.
 - The final report explains how the benchmark remains aligned with actual play, not only score optimization.
+- `GOAL_OUTCOME.md` exists in this bundle with status `COMPLETE`, `BLOCKED`, `PARTIAL`, or `ABORTED`, and it names claims still unsafe.
 
 ## Shared Plan Bundle
 
@@ -31,6 +34,7 @@ This goal is complete when all of the following are true:
 - Source of truth: `/Users/Drew/projects/antzoo/docs/plan-goals/08-antzoo-bench/PLAN.md`
 - Launcher: `/Users/Drew/projects/antzoo/docs/plan-goals/08-antzoo-bench/LAUNCHER.txt`
 - Progress ledger: `/Users/Drew/projects/antzoo/docs/plan-goals/08-antzoo-bench/progress.jsonl`
+- Goal outcome: `/Users/Drew/projects/antzoo/docs/plan-goals/08-antzoo-bench/GOAL_OUTCOME.md`
 - Evidence directory: `/Users/Drew/projects/antzoo/docs/plan-goals/08-antzoo-bench/evidence/`
 - Notes directory: `/Users/Drew/projects/antzoo/docs/plan-goals/08-antzoo-bench/notes/`
 
@@ -89,3 +93,4 @@ Report:
 - Reference run results and replay hash evidence.
 - Validation commands and results.
 - Caveats that prevent overclaiming.
+- `GOAL_OUTCOME.md` status and path.

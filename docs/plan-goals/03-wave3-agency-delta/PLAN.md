@@ -2,6 +2,8 @@
 
 Operator artifact: this plan is intentionally stored in the Antzoo repo under `docs/plan-goals/` for portability. It should be committed with the roadmap execution docs.
 
+This goal is not complete when the agent is convinced. It is complete when the repo contains the evidence that would convince a skeptical future reader.
+
 ## [GOAL]
 
 Make player agency matter in Antzoo by shipping the first evidence-backed Wave 3 tuning intervention: unattended default play becomes riskier, a competent rescue protocol reliably improves outcomes, determinism gates pass, and human play sign-off confirms the new game feels better rather than merely different.
@@ -26,6 +28,7 @@ This goal is complete when all of the following are true:
 - Candidate configs are evaluated through scenario/CLI patching before changing default tuning. Default tuning values are changed only after the final candidate passes held-out validation and human play sign-off.
 - `npm test` passes after any tuning, simulation, debug, snapshot, trace, or CLI change.
 - Drew's human play sign-off is recorded for old vs new builds: 3 sessions each, including good intervention, deliberate neglect, and last-second rescue.
+- `GOAL_OUTCOME.md` exists in this bundle with status `COMPLETE`, `BLOCKED`, `PARTIAL`, or `ABORTED`, and it names claims still unsafe.
 
 ## Shared Plan Bundle
 
@@ -33,6 +36,7 @@ This goal is complete when all of the following are true:
 - Source of truth: `/Users/Drew/projects/antzoo/docs/plan-goals/03-wave3-agency-delta/PLAN.md`
 - Launcher: `/Users/Drew/projects/antzoo/docs/plan-goals/03-wave3-agency-delta/LAUNCHER.txt`
 - Progress ledger: `/Users/Drew/projects/antzoo/docs/plan-goals/03-wave3-agency-delta/progress.jsonl`
+- Goal outcome: `/Users/Drew/projects/antzoo/docs/plan-goals/03-wave3-agency-delta/GOAL_OUTCOME.md`
 - Evidence directory: `/Users/Drew/projects/antzoo/docs/plan-goals/03-wave3-agency-delta/evidence/`
 - Notes directory: `/Users/Drew/projects/antzoo/docs/plan-goals/03-wave3-agency-delta/notes/`
 
@@ -101,3 +105,4 @@ Report:
 - Human play sign-off summary.
 - `npm test` and `git diff --check` results.
 - Any target missed and whether the goal is blocked rather than complete.
+- `GOAL_OUTCOME.md` status and path.

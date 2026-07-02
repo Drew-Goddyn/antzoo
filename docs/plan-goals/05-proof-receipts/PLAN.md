@@ -2,6 +2,8 @@
 
 Operator artifact: this plan is intentionally stored in the Antzoo repo under `docs/plan-goals/` for portability. It should be committed with the roadmap execution docs.
 
+This goal is not complete when the agent is convinced. It is complete when the repo contains the evidence that would convince a skeptical future reader.
+
 ## [GOAL]
 
 Create Antzoo's canonical proof artifact by writing concise receipts for the repo's trust claims and adding an executable `npm run proof` gate that replays representative deterministic evidence locally.
@@ -25,6 +27,7 @@ This goal is complete when all of the following are true:
 - `npm run proof`, `npm test`, `npm run typecheck`, and `git diff --check` pass.
 - No `src/` simulation changes are made.
 - Determinism claims are scoped to same build/config and V8 Node/Chrome unless the proof script verifies additional engines.
+- `GOAL_OUTCOME.md` exists in this bundle with status `COMPLETE`, `BLOCKED`, `PARTIAL`, or `ABORTED`, and it names claims still unsafe.
 
 ## Shared Plan Bundle
 
@@ -32,6 +35,7 @@ This goal is complete when all of the following are true:
 - Source of truth: `/Users/Drew/projects/antzoo/docs/plan-goals/05-proof-receipts/PLAN.md`
 - Launcher: `/Users/Drew/projects/antzoo/docs/plan-goals/05-proof-receipts/LAUNCHER.txt`
 - Progress ledger: `/Users/Drew/projects/antzoo/docs/plan-goals/05-proof-receipts/progress.jsonl`
+- Goal outcome: `/Users/Drew/projects/antzoo/docs/plan-goals/05-proof-receipts/GOAL_OUTCOME.md`
 - Evidence directory: `/Users/Drew/projects/antzoo/docs/plan-goals/05-proof-receipts/evidence/`
 - Notes directory: `/Users/Drew/projects/antzoo/docs/plan-goals/05-proof-receipts/notes/`
 
@@ -91,3 +95,4 @@ Report:
 - `npm run proof` output summary.
 - Full validation results.
 - Any claim that could not be sourced or rerun.
+- `GOAL_OUTCOME.md` status and path.

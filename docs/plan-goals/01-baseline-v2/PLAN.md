@@ -2,6 +2,8 @@
 
 Operator artifact: this plan is intentionally stored in the Antzoo repo under `docs/plan-goals/` for portability. It should be committed with the roadmap execution docs.
 
+This goal is not complete when the agent is convinced. It is complete when the repo contains the evidence that would convince a skeptical future reader.
+
 ## [GOAL]
 
 Close the W1-Z1 fix record and publish a post-fix baseline v2 for default Antzoo behavior by updating only documentation and evidence files, with all behavioral claims backed by per-seed outcomes, final hashes, and passing required gates.
@@ -17,6 +19,24 @@ This goal is complete when all of the following are true:
 - `docs/debug-surface/DEBUG.md` includes the V8-only numeric determinism caveat from `docs/roadmap.md`: JS engine Math behavior is not IEEE-pinned across engines, so current determinism is verified on V8 Node/Chrome.
 - No `src/`, `scripts/`, `scenarios/`, generated output, or gameplay/tuning files are changed by this goal.
 - `npm test` passes, or the final report explains the exact failure and why the docs should not be considered complete.
+- `GOAL_OUTCOME.md` exists in this bundle with status `COMPLETE`, `BLOCKED`, `PARTIAL`, or `ABORTED`, and it names claims still unsafe.
+
+## Definition Of Done Gate Matrix
+
+This goal is complete only when all required gates below are satisfied or explicitly `BLOCKED` with exact remaining evidence.
+
+| Gate | Required? | Evidence artifact | Completion rule |
+|---|---:|---|---|
+| Current repo fact scan | Yes | `evidence/current-state.md` | Records current W1-Z1 fix status, FLEET.md status text, DEBUG.md caveat status, and relevant commits/files inspected. |
+| W1-Z1 seed 1337 parity | Yes | `evidence/w1-z1-gates.md` or command log | Shows seed 1337 final hash unchanged before/after fix, or cites already durable evidence if present. |
+| W1-Z1 seed 1401 termination | Yes | `evidence/w1-z1-gates.md` or command log | Shows seed 1401 now terminates and records tick/outcome. |
+| Post-fix baseline v2 rerun | Yes | `evidence/baseline-v2/` | Runs or locates durable 120-seed post-fix evidence and records outcome changes vs previous baseline. |
+| FLEET.md updated | Yes | diff plus `GOAL_OUTCOME.md` | Established baseline and W1-Z1 status accurately reflect current repo. |
+| DEBUG.md V8 caveat | Yes | diff plus `GOAL_OUTCOME.md` | Adds JS-engine/V8 determinism caveat without overstating cross-engine reproducibility. |
+| npm test | Yes | `evidence/npm-test.log` | Passes. |
+| git diff --check | Yes | `evidence/git-diff-check.log` | Passes. |
+| progress.jsonl valid | Yes | parse command/output | Every line is parseable JSON using the schema in `docs/plan-goals/README.md`. |
+| GOAL_OUTCOME.md | Yes | `GOAL_OUTCOME.md` | Summarizes what changed, what is now safe to claim, and what remains unsafe. |
 
 ## Shared Plan Bundle
 
@@ -24,10 +44,11 @@ This goal is complete when all of the following are true:
 - Source of truth: `/Users/Drew/projects/antzoo/docs/plan-goals/01-baseline-v2/PLAN.md`
 - Launcher: `/Users/Drew/projects/antzoo/docs/plan-goals/01-baseline-v2/LAUNCHER.txt`
 - Progress ledger: `/Users/Drew/projects/antzoo/docs/plan-goals/01-baseline-v2/progress.jsonl`
+- Goal outcome: `/Users/Drew/projects/antzoo/docs/plan-goals/01-baseline-v2/GOAL_OUTCOME.md`
 - Evidence directory: `/Users/Drew/projects/antzoo/docs/plan-goals/01-baseline-v2/evidence/`
 - Notes directory: `/Users/Drew/projects/antzoo/docs/plan-goals/01-baseline-v2/notes/`
 
-Append execution events to `progress.jsonl`. Do not rewrite prior lines.
+Append execution events to `progress.jsonl` using the schema in `docs/plan-goals/README.md`. Do not rewrite prior lines.
 
 ## Ground Truth To Verify First
 
@@ -44,6 +65,39 @@ Append execution events to `progress.jsonl`. Do not rewrite prior lines.
 - Do not change tests or gates to fit the evidence.
 - Timing fields are not determinism evidence.
 - If a full 120-seed run cannot finish, write an honest partial report and keep the goal incomplete.
+
+## Protected Files
+
+This goal is documentation/evidence closeout only.
+
+Forbidden unless `PLAN.md` is updated first with rationale and validation:
+
+- `src/**`
+- `scripts/**`
+- `scenarios/**`
+- `package.json`
+- `package-lock.json`
+- historical `docs/fleet/reports/**`
+- generated run output outside this goal's `evidence/`
+
+Allowed by default:
+
+- `docs/fleet/FLEET.md`
+- `docs/debug-surface/DEBUG.md`
+- `docs/plan-goals/01-baseline-v2/**`
+- new evidence artifacts under `docs/plan-goals/01-baseline-v2/evidence/**`
+
+## False Completion Traps
+
+Do not count any of these as completion:
+
+- Updating `FLEET.md` to say baseline v2 exists without durable seed-level or rollup evidence.
+- Claiming the W1-Z1 fix is closed because source code changed, without gate evidence.
+- Treating the old n=120 baseline as post-fix baseline v2.
+- Relying on prose in historical reports when command output or hashes are required.
+- Running only `npm test` and calling the baseline complete.
+- Recording a summary without enough seed/config/hash/outcome detail for future replication.
+- Hiding an expensive or timed-out run by summarizing partial results as complete.
 
 ## Stages
 
@@ -63,6 +117,9 @@ Append execution events to `progress.jsonl`. Do not rewrite prior lines.
    - Run `npm test`.
    - Run `git diff --check`.
    - Append results and evidence paths to `progress.jsonl`.
+5. Outcome:
+   - Write `GOAL_OUTCOME.md` using the template in `docs/plan-goals/README.md`.
+   - Include a recommendation for whether to proceed to goal 02, repair goal 01, run a reviewer audit, or pause for human inspection.
 
 ## Verification
 
@@ -75,6 +132,10 @@ git diff --check
 
 If the baseline run is too large for the session, do not fake completion. Append a `BLOCKED` event with the partial seed count and the exact next command.
 
+## Stop Behavior
+
+When this goal is complete, stop. Do not begin goal 02. Write `GOAL_OUTCOME.md` and include the next-goal recommendation.
+
 ## Final Report
 
 Report:
@@ -84,3 +145,4 @@ Report:
 - Whether only the previously running seeds changed outcome.
 - `npm test` and `git diff --check` results.
 - Any remaining uncertainty or blocker.
+- `GOAL_OUTCOME.md` status and path.
