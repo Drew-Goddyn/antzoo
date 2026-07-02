@@ -1,10 +1,14 @@
 # antzoo fleet program
 
-**Status: ACTIVE.** This is the operating document for the experiment fleet. Commit at `docs/fleet/FLEET.md`. The implementation-era docs (`docs/debug-surface/BRIEF.md`, `DISPATCH.md`) are complete and historical; the workers' technical manual is `docs/debug-surface/DEBUG.md`.
+**Status: ACTIVE - knowledge-spending era.** This is the operating document for the experiment fleet. Commit at `docs/fleet/FLEET.md`. The implementation-era docs (`docs/debug-surface/BRIEF.md`, `DISPATCH.md`) are complete and historical; the workers' technical manual is `docs/debug-surface/DEBUG.md`.
 
 ## Mission
 
-Use a pool of autonomous workers (up to 15 concurrent, ~100 dispatches/day) to run headless experiments against the antzoo simulation and return structured reports. Every claim reduces to `(seed, config, tick, observable)`. The operator reads reports and verdicts, never code. Worker confusion is a defect in this document or in DEBUG.md — the fix is always a doc patch plus redispatch, never per-worker coaching.
+Use bounded evidence loops to make Antzoo more playable and more knowable. The current loop is: repo finding -> proposed intervention -> controlled change -> verification -> human-visible effect. Every claim reduces to `(seed, config, tick, observable)`. The operator reads reports and verdicts, never code. Worker confusion is a defect in this document or in DEBUG.md - the fix is always a doc patch plus redispatch, never per-worker coaching.
+
+Measurement-era work accumulates findings: a report, synthesis, or baseline audit that changes what the repo believes. Knowledge-spending-era work spends findings: it proposes a concrete intervention, changes only the authorized surface, verifies the change against controlled evidence, and names what a player or viewer should feel or see. Docs and reports alone do not count as game improvement; they are useful only when they make the next controlled game change auditable.
+
+Runtime terms are platform-neutral. "Fleet", "worker", and "dispatch" mean a bounded evidence-loop cell with a task, command, evidence artifact, honest BLOCKED path, and verifier spot-check. Jules/fleet.ms are historical implementations, not dependencies. Do not create orchestration infrastructure, dashboards, schedulers, worker registries, or fleet-management software.
 
 ## Established baseline (baseline v2 + promoted Wave 1/Wave 2 facts, 50k tick budget)
 
@@ -39,7 +43,9 @@ Open hypotheses after wave 2: (H1) terrain still matters, but nearest-food dista
 
 ## Worker contract
 
-Workers receive one instruction packet, have full repo access, and run experiments via the headless CLI. Workers **never modify code, tests, or docs other than adding their report**. Deliverable: a PR adding exactly one file, `docs/fleet/reports/<wave>/<cell-id>.md`. PR comments from the operator should be unnecessary; if one is needed, the packet was defective.
+Workers receive one instruction packet, have full repo access, and run experiments via the headless CLI. A report cell **never modifies code, tests, scenarios, tuning, historical reports, or docs other than adding its report and its raw artifacts**. Deliverable: a PR adding `docs/fleet/reports/<wave>/<cell-id>.md` plus any raw result files required by the report schema under `docs/fleet/artifacts/<wave>/<cell-id>/`. PR comments from the operator should be unnecessary; if one is needed, the packet was defective.
+
+Repo-builder goals are different from report cells. They may edit authorized repo files only when a checked-in plan or manifest names the allowed files, the validation gates, and the rollback or BLOCKED path. A report cell can recommend an intervention; it cannot spend the knowledge by changing the game.
 
 Standing authorization: You have standing approval for the entire assigned cell as specified. Never pause to ask whether to proceed, confirm scope, or seek permission; the operator is not watching the session and silence is not an answer. Exactly two valid endings exist: (a) the completed report PR, or (b) a report PR with a BLOCKED section and honest partial results. Both count as success. Asking mid-session counts as neither. If you feel the urge to ask "should I continue?", the answer is yes — it was answered at dispatch time.
 
@@ -62,32 +68,51 @@ The worker contract and report schema are platform-neutral. Any future worker pl
 
 - Constraint pressure may convert permission-seeking into fabrication (supporting incidents: W0-A-replicate and W1-T1b). Hypothesis, not a finding — the BLOCKED exit path is cheap insurance against it.
 
-## Report schema (one file per cell)
+## Report schema v2 (one concise report plus raw artifacts)
 
-Report files must be plain UTF-8 Markdown with no binary bytes. The `cross_seed_rollup` and `seed_summary` JSONL lines must be copied verbatim and uncompacted; do not reformat, summarize, truncate, wrap, or regenerate them.
+Report files must be plain UTF-8 Markdown with no binary bytes. Keep the report to two readable pages when possible. Raw result JSONL belongs in gzip-compressed artifacts under `docs/fleet/artifacts/<wave>/<cell-id>/`; list every artifact's SHA-256 in the report. The fabrication tripwire is the per-seed final-hash table plus the mandatory replication spot-check, not large pasted JSONL blocks. One small `cross_seed_rollup` line may be copied into the report when it clarifies the reading; `seed_summary` lines should live in the raw artifacts.
 
 ```markdown
-# Cell <cell-id> — <one-line description>
+# Cell <cell-id> - <one-line description>
+
 - command: <exact command(s) run, copy-pasteable>
-- config: <every patched tuning key with absolute value AND the default it replaced>
 - seeds: <list>  n=<count>
 - runtime: <wall clock>
 
-## Results (verbatim)
-<cross_seed_rollup line copied verbatim and uncompacted>
-<all seed_summary lines copied verbatim and uncompacted>
+## Config
+
+| Key | Default | Value used | Why |
+|---|---:|---:|---|
+| <tuning key> | <default> | <new or default> | <one phrase> |
+
+For any caste-ratio config, list all companion ratio keys for that faction. Do not report only `workerRatio`; ratios are relative weights.
+
+## Artifacts
+
+| Artifact | SHA-256 | Contents |
+|---|---|---|
+| docs/fleet/artifacts/<wave>/<cell-id>/<name>.jsonl.gz | <sha256> | raw CLI JSONL for <condition> |
+
+## Per-seed results
+
+| Seed | Condition | Outcome | Final tick | Final hash | Wave metrics |
+|---:|---|---|---:|---|---|
+| <seed> | <unattended/rescue/config> | <player victory/collapse/running> | <tick> | <hash> | <cell-specific values> |
 
 ## Reading
+
 - win_rate: x/n (player), with note if any run hit the tick budget still "running"
-- vs baseline: deathsByCause medians, obituary medians (deliveries, ticksSinceFoodPerceived), peak/final population — only the deltas that matter
+- vs baseline v2: only the deaths, obituary, peak/final population, flow, or wave-specific deltas that matter
 - anomalies: each as (seed, tick, field, observed, expected)
+- spending implication: what intervention this supports, rejects, or leaves ambiguous
 
 ## Verdict
+
 <one sentence answering the cell's question>
-Confidence: <high/medium/low> — <why, in one clause>
+Confidence: <high/medium/low> - <why, in one clause>
 ```
 
-Rejection criteria (operator side): prose claims without verbatim rollup lines; compacted or regenerated result JSONL; binary bytes; patched keys without recorded defaults; claims missing (seed, tick) citations; missing n.
+Rejection criteria (operator side): prose claims without per-seed final hashes; missing or mismatched raw artifact SHA-256; compacted, regenerated, or synthetic-looking result data; binary bytes in the report; patched keys without recorded defaults; caste configs missing companion ratio keys; claims missing `(seed, tick, field)` citations; missing n.
 
 ## Dispatch template
 
@@ -97,12 +122,14 @@ Before sending a dispatch, replace every angle-bracket placeholder. Wave slugs a
 Read docs/fleet/FLEET.md and docs/debug-surface/DEBUG.md in full. You are
 running cell <CELL-ID> from the wave manifest in FLEET.md. Execute exactly
 that cell: its config, its seeds, its tick budget. Produce a PR adding only
-docs/fleet/reports/<wave>/<CELL-ID>.md, following the report schema in
+docs/fleet/reports/<wave>/<CELL-ID>.md and raw artifacts under
+docs/fleet/artifacts/<wave>/<CELL-ID>/, following report schema v2 in
 FLEET.md exactly. Do not modify any other file. If a tuning key named in the
 manifest does not exist verbatim, locate the real key in src/tuning.ts that
 implements the stated intent, use it, and record both the key and its default
-in your report. Every claim cites (seed, tick, field). If anything blocks
-you, write the report anyway with what you have and a BLOCKED section.
+in your report. If a caste ratio changes, record all companion ratio keys.
+Every claim cites (seed, tick, field). If anything blocks you, write the
+report anyway with what you have and a BLOCKED section.
 ```
 
 ## Wave 0 — calibration (3 cells, dispatch concurrently)
@@ -119,7 +146,7 @@ Wave 0 is also worker calibration: completion rate, report-schema compliance, an
 
 Tick budget 50k unless stated. For W1-D* and W1-C* cells, use n=20 fresh seeds 2000-2019 unless their dispatch says otherwise.
 
-Dispatch comparison baseline: seeds 1337-1456, n=120, player 94 victories / 24 collapses / 2 running, 78.3% win rate, SE 0.038. Use the per-report rollup medians in `docs/fleet/findings/wave0.md` when a cell needs detailed mortality, population, or flow comparisons.
+Historical Wave 1 dispatch comparison baseline (pre-W1-Z1-fix): seeds 1337-1456, n=120, player 94 victories / 24 collapses / 2 running, 78.3% win rate, SE 0.038. It is historical context only; current comparisons use baseline v2 above. Use the per-report rollup medians in `docs/fleet/findings/wave0.md` only when a historical Wave 1 cell needs detailed mortality, population, or flow comparisons.
 
 | Cell | Question | Spec |
 |---|---|---|
@@ -148,18 +175,52 @@ Historical dispatch manifest below. Tick budget 50k unless stated. No dispatch c
 | W2-F2b | Founding-wave threshold, second half | Baseline config, seeds 2070-2089 (n=20), `--sample-every 300`. Same outputs as W2-F2a. |
 | W2-R1 | High-worker running trace | Re-run W1-C3 seed 2002 with the same player 90 / rival 80 worker-share config to 60000 ticks, `--sample-every 600`. The W1-C3 report had player 13 / rival 89 at the 50k budget. Answer whether this is the same zero-pop stalemate class as seed 1401 or merely slow. |
 
+## Wave 3 - The God Matters (authorized spending-era manifest)
+
+Wave 3 spends the Wave 1/Wave 2 findings on the first agency intervention. The goal is not "more reports"; the goal is a controlled tuning candidate that makes neglect riskier, makes competent rescue matter, preserves determinism, and produces a human-visible effect.
+
+Target metric: `AgencyDelta = WinRate(scripted rescue protocol) - WinRate(unattended)`. A final candidate is acceptable only if held-out evidence shows unattended player wins in the 55-65% band, scripted-rescue player wins at least 85%, median `finalTick` within 20% of baseline v2, `running` outcomes no worse than baseline v2, and unattended rival final-population median above 0. Human play sign-off is required before changing default tuning values.
+
+Seed ledger:
+
+| Range | Status | Rule |
+|---|---|---|
+| 1337-1456 | Burned by Wave 0 and baseline v2 | Historical proof and baseline comparison only. |
+| 2000-2119 | Burned by Wave 1/Wave 2 | Replication, diagnostics, and historical proof only. |
+| 3000-3049 | Wave 3 tuning | Use for candidate discovery and confirmation; no cell may use more than 20 seeds. |
+| 4000-4049 | Wave 3 held-out | Final candidate only, touched exactly once, split into sub-cells of at most 20 seeds. |
+| 4050-4099 | Fallback held-out | Use only if a second final candidate is explicitly authorized after recording the first held-out result. |
+
+Rescue protocol: use a stimulus-only scenario with no tuning changes and no assertions. The current player nest is derived from source as `(TUNING.world.w * 0.5, TUNING.world.h * 0.5) = (2048, 1152)`. The rescue arm applies `food` at tick 6000 to `(1928, 1152)`, `lure` at tick 9000 to `(2048, 1032)`, and `food` at tick 12000 to `(2168, 1152)`. These coordinates are near the player nest during the documented founding trough window. The unattended arm runs the same seed/config with no scenario. Goal 03 may commit the reusable scenario file; until then, runners may supply an equivalent temporary scenario and must record it in the report artifact.
+
+Candidate tuning uses scenario/CLI patching first. Default tuning values may change only after final held-out acceptance, `npm test`, and Drew's play sign-off. Candidate cells must report both unattended and rescue arms with the same seeds and config.
+
+| Cell | Purpose | Seeds | Config | Required wave metrics |
+|---|---|---|---|---|
+| W3-A0 | Baseline agency anchor | 3000-3019 | Default config | AgencyDelta, outcome, finalTick, finalHash, player/rival final population, player/rival peak population, starvation deaths, starvation median deliveries, and any running seed. |
+| W3-R75 | Stronger rival candidate | 3000-3019 | `rival.workerRatio` 60 -> 75, `rival.soldierRatio` 20 -> 12.5, `rival.nurseRatio` 20 -> 12.5; player ratios remain default 80/10/10. The 75/12.5/12.5 tuple preserves total relative weight 100 and splits the non-worker remainder evenly to isolate rival worker capacity. | Same as W3-A0, plus rival deliveries and whether the rival visibly remains contested rather than hollow. |
+| W3-D110 | Drain-pressure candidate | 3000-3019 | `ant.drainPerSec` 1.2 -> 1.32 | Same as W3-A0, plus starvation timing and whether rescue still reverses the trough. |
+| W3-R75-D110 | Combined candidate | 3000-3019 | W3-R75 tuple plus `ant.drainPerSec` 1.32 | Same as W3-A0, plus whether combined pressure becomes punishing rather than dramatic. |
+| W3-CF1 / W3-CF2 | Confirmation for at most two candidates chosen after first synthesis | 3020-3039 | Exact selected candidate config(s), unchanged | Same metrics as the selected candidate; this is confirmation, not redesign. |
+| W3-TB | Optional tie-break only if synthesis records an ambiguity | 3040-3049 | One exact config named by synthesis | Minimal decisive metrics named by synthesis; do not use this as a hidden iteration loop. |
+| W3-HO-A / W3-HO-B / W3-HO-C | Final held-out acceptance | 4000-4019, 4020-4039, 4040-4049 | One final candidate only | Same metrics as candidate cells, plus acceptance/failure call against the target bands. |
+
+Caste-ratio guardrail: any future caste-ratio config must specify every ratio key for the affected faction, not just `workerRatio`. W2-R1 was rejected because "same worker-share config" left companion ratios ambiguous. For a rival 75% worker target, the authorized tuple is `rival.workerRatio=75`, `rival.soldierRatio=12.5`, `rival.nurseRatio=12.5` unless a later manifest update records a different full tuple and why.
+
+Failure criteria: no config hits both unattended and rescue target bands; held-out results deviate by more than 15 percentage points from tuning evidence; rescue becomes the only viable path to victory with unattended wins below 40%; running outcomes increase above baseline v2; or the visual play read says the change is less charming even if the metric moves. Stop and synthesize the failure rather than iterating silently.
+
 ## Build dispatch history
 
 - W1-Z1 terminal-state fix is landed and closed out. Gate evidence: seed 1337 remains unchanged at final hash `5101d7c52c007c01`; seed 1401 now terminates at tick 46872 instead of running through 60000; baseline v2 is recorded for seeds 1337-1456. The stricter planned hash gate did not fully hold: five final hashes differ from Wave 0 rollups, while only seed 1401 changes the historical batch-level outcome count. Evidence: `docs/fleet/findings/w1z1-fix-gates.md`.
 
 ## Synthesis procedure (operator)
 
-1. Before dispatching a wave, enforce the cell-size ceiling: no cell above 20 seeds. Split larger designs into named sub-cells, each with its own one-file report.
-2. Merge report PRs (markdown-only; safe to merge unread, then read the reports).
+1. Before dispatching a wave, enforce the cell-size ceiling: no cell above 20 seeds. Split larger designs into named sub-cells, each with its own concise report and raw artifacts.
+2. Merge report PRs only when they are report/artifact changes matching the manifest. Repo-builder goals use their own checked-in plan and gates.
 3. Reject any report failing the rejection criteria — redispatch the cell with the same packet; if a second worker fails the same way, the schema or manifest is defective: patch FLEET.md.
 4. Before accepting a report into synthesis, re-run one randomly chosen seed from that report with the reported config and compare the final hash. Record the seed, command/config, reported final hash, and observed final hash in the findings doc. A hash mismatch is fabrication and rejects the report. Ignore nondeterministic timing telemetry.
-5. One synthesis pass per wave (a fresh agent session pointed at `docs/fleet/reports/<wave>/`, or the operator's own read): confirmed findings, killed hypotheses, anomalies worth a trace probe, next-wave candidates. Write to `docs/fleet/findings/<wave>.md`.
-6. Promote durable facts into the "Established baseline" section above. Promote recurring worker friction into DEBUG.md or harness change requests.
+5. One synthesis pass per wave (a fresh agent session pointed at `docs/fleet/reports/<wave>/` and `docs/fleet/artifacts/<wave>/`, or the operator's own read): confirmed findings, killed hypotheses, anomalies worth a trace probe, and the next proposed intervention or an honest stop. Write to `docs/fleet/findings/<wave>.md`.
+6. Promote durable facts into the "Established baseline" section above. Promote recurring worker friction into DEBUG.md or harness change requests. Promote game changes only after controlled verification and human-visible effect, not merely because a report exists.
 7. Mark the synthesized wave section complete and link its findings doc; leave its manifest table as the historical dispatch record.
 
 ## Program metrics (per wave)
@@ -170,6 +231,6 @@ Historical dispatch manifest below. Tick budget 50k unless stated. No dispatch c
 - Report acceptance rate on first submission.
 - Novel findings per cell (vs duplicates/noise).
 
-## Out of scope until the boundary map exists
+## Out of scope without written authorization
 
-Browser-based legibility testing (the bridge is ready; the program is deferred), broad decision-trace waves beyond the specific W2 probes, and gameplay or balance changes beyond the landed W1-Z1 terminal-state fix — this program measures; it does not tune without explicit authorization.
+Browser-based legibility testing, proof-receipt packaging, rival-viability fixes, and living-product UI work are separate plan-goals. Wave 3 authorizes candidate tuning evidence only; it does not authorize default tuning changes until final held-out evidence, required gates, and human play sign-off exist.

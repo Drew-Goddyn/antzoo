@@ -1,0 +1,3 @@
+Command: node progress parser
+Parsed 5 progress entries from docs/plan-goals/02-fleet-spending-era/progress.jsonl
+Exit code: 0

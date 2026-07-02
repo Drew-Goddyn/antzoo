@@ -1,0 +1,2 @@
+Command: git diff --check (after git add -N for new files)
+Exit code: 0

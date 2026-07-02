@@ -1,0 +1,8 @@
+## main...origin/main
+ M docs/fleet/FLEET.md
+ M docs/plan-goals/02-fleet-spending-era/progress.jsonl
+?? docs/plan-goals/02-fleet-spending-era/evidence/current-state.md
+?? docs/plan-goals/02-fleet-spending-era/evidence/fleet-readback.md
+?? docs/plan-goals/02-fleet-spending-era/evidence/git-diff-check.txt
+?? docs/plan-goals/02-fleet-spending-era/evidence/git-status-before-outcome.txt
+?? docs/plan-goals/02-fleet-spending-era/evidence/progress-jsonl-parse.txt
