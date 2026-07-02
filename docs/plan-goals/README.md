@@ -2,9 +2,9 @@
 
 These are in-repo operator artifacts for executing `docs/roadmap.md` over many Codex sessions. They intentionally live under `docs/plan-goals/` instead of the default external `.codex-plan-goals` bundle because the user asked for portability and durability inside the Antzoo repo.
 
-Created from `/Users/Drew/projects/antzoo` on 2026-07-02. Repo snapshot at planning time:
+Created on 2026-07-02. Repo snapshot at planning time:
 
-- Canonical checkout: `/Users/Drew/projects/antzoo`
+- Repository root: determine in the active clone with `git rev-parse --show-toplevel`
 - Branch: `main`
 - HEAD: `1609f7e14ea1f02bbc7d3bb8d8b973bcc1f1a253`
 - Remote: `https://github.com/drew-goddyn/antzoo.git`
@@ -17,6 +17,7 @@ Created from `/Users/Drew/projects/antzoo` on 2026-07-02. Repo snapshot at plann
 - `LAUNCHER.txt` is a pasteable `/goal` launcher. Keep it short; do not turn it into a second plan.
 - `progress.jsonl` is append-only execution state. Each line must be one valid JSON object.
 - `GOAL_OUTCOME.md` is the required final outcome artifact for each goal. A goal is not complete until this exists with status `COMPLETE`, `BLOCKED`, `PARTIAL`, or `ABORTED`.
+- Active plan-goal instructions and launchers must not contain local absolute paths. Use repo-relative paths plus `git rev-parse --show-toplevel`.
 - Store bulky logs, screenshots, run outputs, and raw proof under that goal's `evidence/` directory when creating evidence.
 - Store scratch reasoning under that goal's `notes/` directory when it needs to survive context compaction.
 - Append corrective events instead of rewriting, deleting, or summarizing previous `progress.jsonl` lines.

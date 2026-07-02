@@ -40,13 +40,15 @@ This goal is complete only when all required gates below are satisfied or explic
 
 ## Shared Plan Bundle
 
-- Bundle root: `/Users/Drew/projects/antzoo/docs/plan-goals/01-baseline-v2`
-- Source of truth: `/Users/Drew/projects/antzoo/docs/plan-goals/01-baseline-v2/PLAN.md`
-- Launcher: `/Users/Drew/projects/antzoo/docs/plan-goals/01-baseline-v2/LAUNCHER.txt`
-- Progress ledger: `/Users/Drew/projects/antzoo/docs/plan-goals/01-baseline-v2/progress.jsonl`
-- Goal outcome: `/Users/Drew/projects/antzoo/docs/plan-goals/01-baseline-v2/GOAL_OUTCOME.md`
-- Evidence directory: `/Users/Drew/projects/antzoo/docs/plan-goals/01-baseline-v2/evidence/`
-- Notes directory: `/Users/Drew/projects/antzoo/docs/plan-goals/01-baseline-v2/notes/`
+Work from the current Git repository root, determined by `git rev-parse --show-toplevel`.
+
+- Bundle root: `docs/plan-goals/01-baseline-v2`
+- Source of truth: `docs/plan-goals/01-baseline-v2/PLAN.md`
+- Launcher: `docs/plan-goals/01-baseline-v2/LAUNCHER.txt`
+- Progress ledger: `docs/plan-goals/01-baseline-v2/progress.jsonl`
+- Goal outcome: `docs/plan-goals/01-baseline-v2/GOAL_OUTCOME.md`
+- Evidence directory: `docs/plan-goals/01-baseline-v2/evidence/`
+- Notes directory: `docs/plan-goals/01-baseline-v2/notes/`
 
 Append execution events to `progress.jsonl` using the schema in `docs/plan-goals/README.md`. Do not rewrite prior lines.
 

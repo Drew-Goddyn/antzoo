@@ -25,13 +25,15 @@ This goal is complete when all of the following are true:
 
 ## Shared Plan Bundle
 
-- Bundle root: `/Users/Drew/projects/antzoo/docs/plan-goals/02-fleet-spending-era`
-- Source of truth: `/Users/Drew/projects/antzoo/docs/plan-goals/02-fleet-spending-era/PLAN.md`
-- Launcher: `/Users/Drew/projects/antzoo/docs/plan-goals/02-fleet-spending-era/LAUNCHER.txt`
-- Progress ledger: `/Users/Drew/projects/antzoo/docs/plan-goals/02-fleet-spending-era/progress.jsonl`
-- Goal outcome: `/Users/Drew/projects/antzoo/docs/plan-goals/02-fleet-spending-era/GOAL_OUTCOME.md`
-- Evidence directory: `/Users/Drew/projects/antzoo/docs/plan-goals/02-fleet-spending-era/evidence/`
-- Notes directory: `/Users/Drew/projects/antzoo/docs/plan-goals/02-fleet-spending-era/notes/`
+Work from the current Git repository root, determined by `git rev-parse --show-toplevel`.
+
+- Bundle root: `docs/plan-goals/02-fleet-spending-era`
+- Source of truth: `docs/plan-goals/02-fleet-spending-era/PLAN.md`
+- Launcher: `docs/plan-goals/02-fleet-spending-era/LAUNCHER.txt`
+- Progress ledger: `docs/plan-goals/02-fleet-spending-era/progress.jsonl`
+- Goal outcome: `docs/plan-goals/02-fleet-spending-era/GOAL_OUTCOME.md`
+- Evidence directory: `docs/plan-goals/02-fleet-spending-era/evidence/`
+- Notes directory: `docs/plan-goals/02-fleet-spending-era/notes/`
 
 Append execution events to `progress.jsonl`. Do not rewrite prior lines.
 
