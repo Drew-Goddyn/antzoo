@@ -181,6 +181,8 @@ Wave 3 spends the Wave 1/Wave 2 findings on the first agency intervention. The g
 
 Target metric: `AgencyDelta = WinRate(scripted rescue protocol) - WinRate(unattended)`. A final candidate is acceptable only if held-out evidence shows unattended player wins in the 55-65% band, scripted-rescue player wins at least 85%, median `finalTick` within 20% of baseline v2, `running` outcomes no worse than baseline v2, and unattended rival final-population median above 0. Human play sign-off is required before changing default tuning values.
 
+Intervention-claim rule: no intervention claim counts unless it beats a placebo or null perturbation on paired per-seed analysis, with mechanism deltas reported. Raw win-rate deltas alone are insufficient in a chaotic deterministic simulation. Future intervention cells must report paired flips, mechanism deltas, and a placebo/null comparison whenever the intervention itself perturbs trajectory; headline win rate is only one column in the synthesis, not the synthesis.
+
 Seed ledger:
 
 | Range | Status | Rule |
