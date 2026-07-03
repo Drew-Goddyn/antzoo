@@ -262,7 +262,7 @@ function createDotTexture(radius: number, color: string): Texture {
 
 export async function createRenderer(container: HTMLElement, minimapCanvas: HTMLCanvasElement, world: World): Promise<Renderer> {
   const app = new Application();
-  await app.init({ resizeTo: container, antialias: true, background: "#0d0a07", autoStart: false });
+  await app.init({ resizeTo: container, antialias: true, background: TUNING.colors.soilDark, autoStart: false });
   app.canvas.style.display = "block";
   app.canvas.style.width = "100%";
   app.canvas.style.height = "100%";
