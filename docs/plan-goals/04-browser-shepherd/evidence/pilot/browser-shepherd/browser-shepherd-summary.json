@@ -1,0 +1,325 @@
+{
+  "seeds": [
+    3000,
+    3001,
+    3002,
+    3003,
+    3004
+  ],
+  "maxTicks": 50000,
+  "stepLimit": 1200,
+  "budget": {
+    "food": 5,
+    "lure": 2,
+    "boulder": 1,
+    "castePolicy": 1
+  },
+  "castePolicy": "authorized by milestone but unused in this pilot",
+  "results": [
+    {
+      "seed": 3000,
+      "outcome": "victory",
+      "finalTick": 13215,
+      "finalHash": "101fdfb349427467",
+      "playerFinalPop": 161,
+      "rivalFinalPop": 0,
+      "playerFoodDelivered": 1195,
+      "rivalFoodDelivered": 264,
+      "playerStarvationDeaths": 105,
+      "rivalStarvationDeaths": 104,
+      "interventions": [
+        {
+          "tick": 0,
+          "kind": "lure",
+          "x": 2048,
+          "y": 1032,
+          "rationale": "player pathing disadvantage: playerDelivered=0, rivalDelivered=0, nearestFood=164.05/2.83"
+        },
+        {
+          "tick": 9600,
+          "kind": "food",
+          "x": 1928,
+          "y": 1152,
+          "rationale": "player stress: nestFood=9.5, nearestFood=180.04, pop=182, rivalPop=98"
+        },
+        {
+          "tick": 10800,
+          "kind": "food",
+          "x": 2168,
+          "y": 1152,
+          "rationale": "player stress: nestFood=0.5, nearestFood=100.08, pop=178, rivalPop=80"
+        },
+        {
+          "tick": 12000,
+          "kind": "food",
+          "x": 2048,
+          "y": 1032,
+          "rationale": "player stress: nestFood=4.5, nearestFood=108.66, pop=165, rivalPop=59"
+        },
+        {
+          "tick": 13200,
+          "kind": "food",
+          "x": 2048,
+          "y": 1272,
+          "rationale": "player stress: nestFood=1, nearestFood=100.08, pop=161, rivalPop=1"
+        }
+      ]
+    },
+    {
+      "seed": 3001,
+      "outcome": "victory",
+      "finalTick": 24023,
+      "finalHash": "dd94e786e64e024e",
+      "playerFinalPop": 14,
+      "rivalFinalPop": 0,
+      "playerFoodDelivered": 1432,
+      "rivalFoodDelivered": 712,
+      "playerStarvationDeaths": 251,
+      "rivalStarvationDeaths": 134,
+      "interventions": [
+        {
+          "tick": 1200,
+          "kind": "food",
+          "x": 1928,
+          "y": 1152,
+          "rationale": "player stress: nestFood=0.5, nearestFood=164.05, pop=164, rivalPop=158"
+        },
+        {
+          "tick": 2400,
+          "kind": "food",
+          "x": 2168,
+          "y": 1152,
+          "rationale": "player stress: nestFood=2.5, nearestFood=100.08, pop=182, rivalPop=158"
+        },
+        {
+          "tick": 3600,
+          "kind": "food",
+          "x": 2048,
+          "y": 1032,
+          "rationale": "player stress: nestFood=0, nearestFood=100.72, pop=206, rivalPop=168"
+        },
+        {
+          "tick": 4800,
+          "kind": "food",
+          "x": 2048,
+          "y": 1272,
+          "rationale": "player stress: nestFood=0.5, nearestFood=117.71, pop=222, rivalPop=171"
+        },
+        {
+          "tick": 6000,
+          "kind": "food",
+          "x": 1868,
+          "y": 1092,
+          "rationale": "player stress: nestFood=1, nearestFood=117.71, pop=209, rivalPop=137"
+        }
+      ]
+    },
+    {
+      "seed": 3002,
+      "outcome": "victory",
+      "finalTick": 13188,
+      "finalHash": "5fa601cbb7befa33",
+      "playerFinalPop": 185,
+      "rivalFinalPop": 0,
+      "playerFoodDelivered": 1275,
+      "rivalFoodDelivered": 265,
+      "playerStarvationDeaths": 79,
+      "rivalStarvationDeaths": 105,
+      "interventions": [
+        {
+          "tick": 1200,
+          "kind": "food",
+          "x": 1928,
+          "y": 1152,
+          "rationale": "player stress: nestFood=10, nearestFood=195.06, pop=160, rivalPop=158"
+        },
+        {
+          "tick": 6000,
+          "kind": "food",
+          "x": 2168,
+          "y": 1152,
+          "rationale": "player stress: nestFood=0.5, nearestFood=223.79, pop=188, rivalPop=122"
+        },
+        {
+          "tick": 7200,
+          "kind": "food",
+          "x": 2048,
+          "y": 1032,
+          "rationale": "player stress: nestFood=0.5, nearestFood=140.06, pop=197, rivalPop=121"
+        },
+        {
+          "tick": 8400,
+          "kind": "food",
+          "x": 2048,
+          "y": 1272,
+          "rationale": "player stress: nestFood=1.5, nearestFood=125.6, pop=199, rivalPop=108"
+        },
+        {
+          "tick": 9600,
+          "kind": "food",
+          "x": 1868,
+          "y": 1092,
+          "rationale": "player stress: nestFood=2, nearestFood=117.71, pop=197, rivalPop=90"
+        },
+        {
+          "tick": 12000,
+          "kind": "lure",
+          "x": 2048,
+          "y": 1032,
+          "rationale": "player pathing disadvantage: playerDelivered=1226, rivalDelivered=256, nearestFood=200.88/74.03"
+        }
+      ]
+    },
+    {
+      "seed": 3003,
+      "outcome": "victory",
+      "finalTick": 22213,
+      "finalHash": "67f0060d5ccd4aed",
+      "playerFinalPop": 12,
+      "rivalFinalPop": 0,
+      "playerFoodDelivered": 1260,
+      "rivalFoodDelivered": 519,
+      "playerStarvationDeaths": 207,
+      "rivalStarvationDeaths": 147,
+      "interventions": [
+        {
+          "tick": 1200,
+          "kind": "food",
+          "x": 1928,
+          "y": 1152,
+          "rationale": "player stress: nestFood=1, nearestFood=200.88, pop=160, rivalPop=156"
+        },
+        {
+          "tick": 2400,
+          "kind": "food",
+          "x": 2168,
+          "y": 1152,
+          "rationale": "player stress: nestFood=2, nearestFood=100.08, pop=171, rivalPop=157"
+        },
+        {
+          "tick": 3600,
+          "kind": "food",
+          "x": 2048,
+          "y": 1032,
+          "rationale": "player stress: nestFood=6.5, nearestFood=100.72, pop=190, rivalPop=160"
+        },
+        {
+          "tick": 4800,
+          "kind": "food",
+          "x": 2048,
+          "y": 1272,
+          "rationale": "player stress: nestFood=0.5, nearestFood=100.08, pop=206, rivalPop=163"
+        },
+        {
+          "tick": 6000,
+          "kind": "food",
+          "x": 1868,
+          "y": 1092,
+          "rationale": "player stress: nestFood=4, nearestFood=100.08, pop=185, rivalPop=122"
+        },
+        {
+          "tick": 15600,
+          "kind": "lure",
+          "x": 2048,
+          "y": 1032,
+          "rationale": "player pathing disadvantage: playerDelivered=1189, rivalDelivered=484, nearestFood=258.55/112.18"
+        },
+        {
+          "tick": 19200,
+          "kind": "lure",
+          "x": 2048,
+          "y": 1272,
+          "rationale": "player pathing disadvantage: playerDelivered=1239, rivalDelivered=513, nearestFood=192.42/14.14"
+        }
+      ]
+    },
+    {
+      "seed": 3004,
+      "outcome": "gameOver",
+      "finalTick": 24847,
+      "finalHash": "3c3f41841086abbc",
+      "playerFinalPop": 0,
+      "rivalFinalPop": 51,
+      "playerFoodDelivered": 1281,
+      "rivalFoodDelivered": 793,
+      "playerStarvationDeaths": 204,
+      "rivalStarvationDeaths": 130,
+      "interventions": [
+        {
+          "tick": 1200,
+          "kind": "food",
+          "x": 1928,
+          "y": 1152,
+          "rationale": "player stress: nestFood=2, nearestFood=197.99, pop=162, rivalPop=156"
+        },
+        {
+          "tick": 2400,
+          "kind": "food",
+          "x": 2168,
+          "y": 1152,
+          "rationale": "player stress: nestFood=6, nearestFood=100.08, pop=175, rivalPop=156"
+        },
+        {
+          "tick": 3600,
+          "kind": "food",
+          "x": 2048,
+          "y": 1032,
+          "rationale": "player stress: nestFood=0, nearestFood=100.08, pop=191, rivalPop=156"
+        },
+        {
+          "tick": 4800,
+          "kind": "food",
+          "x": 2048,
+          "y": 1272,
+          "rationale": "player stress: nestFood=1, nearestFood=100.08, pop=203, rivalPop=157"
+        },
+        {
+          "tick": 6000,
+          "kind": "food",
+          "x": 1868,
+          "y": 1092,
+          "rationale": "player stress: nestFood=0.5, nearestFood=100.08, pop=195, rivalPop=112"
+        },
+        {
+          "tick": 22800,
+          "kind": "lure",
+          "x": 2048,
+          "y": 1032,
+          "rationale": "player pathing disadvantage: playerDelivered=1277, rivalDelivered=748, nearestFood=193.08/38.05"
+        },
+        {
+          "tick": 24000,
+          "kind": "lure",
+          "x": 2048,
+          "y": 1272,
+          "rationale": "player pathing disadvantage: playerDelivered=1280, rivalDelivered=777, nearestFood=193.08/38.05"
+        }
+      ]
+    }
+  ],
+  "predictionScores": {
+    "shepherd": {
+      "hit": 66,
+      "partial": 13,
+      "miss": 5
+    },
+    "persistence": {
+      "hit": 56,
+      "miss": 28
+    }
+  },
+  "replay": {
+    "seed": 3000,
+    "interventionTicks": [
+      "0:lure@2048,1032",
+      "9600:food@1928,1152",
+      "10800:food@2168,1152",
+      "12000:food@2048,1032",
+      "13200:food@2048,1272"
+    ],
+    "firstFinalHash": "101fdfb349427467",
+    "replayFinalHash": "101fdfb349427467",
+    "match": true,
+    "replayFinalTick": 13215
+  }
+}

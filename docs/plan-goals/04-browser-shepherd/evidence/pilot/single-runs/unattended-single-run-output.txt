@@ -1,0 +1,20 @@
+
+> antzoo@1.0.0 sim
+> tsx scripts/run.ts --seed 3000 --ticks 50000 --out docs/plan-goals/04-browser-shepherd/evidence/pilot/single-runs/unattended-3000.jsonl
+
+
+> antzoo@1.0.0 sim
+> tsx scripts/run.ts --seed 3001 --ticks 50000 --out docs/plan-goals/04-browser-shepherd/evidence/pilot/single-runs/unattended-3001.jsonl
+
+
+> antzoo@1.0.0 sim
+> tsx scripts/run.ts --seed 3002 --ticks 50000 --out docs/plan-goals/04-browser-shepherd/evidence/pilot/single-runs/unattended-3002.jsonl
+
+
+> antzoo@1.0.0 sim
+> tsx scripts/run.ts --seed 3003 --ticks 50000 --out docs/plan-goals/04-browser-shepherd/evidence/pilot/single-runs/unattended-3003.jsonl
+
+
+> antzoo@1.0.0 sim
+> tsx scripts/run.ts --seed 3004 --ticks 50000 --out docs/plan-goals/04-browser-shepherd/evidence/pilot/single-runs/unattended-3004.jsonl
+

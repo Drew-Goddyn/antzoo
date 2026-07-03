@@ -1,0 +1,99 @@
+- main:
+  - generic "Ant colony simulation"
+  - generic "God tools":
+    - button "Food" [pressed]
+    - button "Lure"
+    - button "Boulder"
+    - button "Dig"
+    - button "Wash"
+    - button "Carcass"
+  - generic: Ants
+  - strong: "150"
+  - generic: Nest food
+  - strong: "30.0"
+  - generic: Deaths
+  - strong: "0"
+  - generic: Food/min
+  - strong: "0.00"
+  - generic: FPS
+  - strong: "60"
+  - strong: Spring
+  - generic: 2:00
+  - generic: Year 1
+  - generic: Survived 0
+  - generic: Peak 150
+  - generic: W 128
+  - generic: S 13
+  - generic: N 9
+  - generic: Brood
+  - strong: 0/5
+  - generic: Queen
+  - strong: fed
+  - generic "World minimap"
+  - button "Close tuning drawer" [expanded] [active]:
+  - complementary "Live tuning controls":
+    - strong: Tuning
+    - generic: live
+    - generic "Tuning presets":
+      - button "Balanced"
+      - button "Harsh"
+      - button "Abundance"
+    - generic "Caste ratio policy":
+      - strong: Ratios
+      - generic: 100%
+      - generic: Worker
+      - strong: 80%
+      - slider "Worker 80%": "80"
+      - generic: Soldier
+      - strong: 10%
+      - slider "Soldier 10%": "10"
+      - generic: Nurse
+      - strong: 10%
+      - slider "Nurse 10%": "10"
+    - generic: pher.evapFood
+    - strong: "0.9985"
+    - slider "pher.evapFood 0.9985": "0.9985"
+    - generic: pher.evapHome
+    - strong: "0.9985"
+    - slider "pher.evapHome 0.9985": "0.9985"
+    - generic: pher.evapDanger
+    - strong: "0.9995"
+    - slider "pher.evapDanger 0.9995": "0.9995"
+    - generic: pher.diffuseLerp
+    - strong: "0.10"
+    - slider "pher.diffuseLerp 0.10": "0.1"
+    - generic: pher.depositFood
+    - strong: "0.30"
+    - slider "pher.depositFood 0.30": "0.3"
+    - generic: pher.pickupDecay
+    - strong: "0.9970"
+    - slider "pher.pickupDecay 0.9970": "0.997"
+    - generic: sense.dist
+    - strong: "12"
+    - slider "sense.dist 12": "12"
+    - generic: sense.angleDeg
+    - strong: "28"
+    - slider "sense.angleDeg 28": "28"
+    - generic: ant.drainPerSec
+    - strong: "1.2"
+    - slider "ant.drainPerSec 1.2": "1.2"
+    - generic: ant.starveAt
+    - strong: "25"
+    - slider "ant.starveAt 25": "25"
+    - generic: spawn.cost
+    - strong: "8"
+    - slider "spawn.cost 8": "8"
+    - generic: spawn.intervalSec
+    - strong: "0.6"
+    - slider "spawn.intervalSec 0.6": "0.6"
+    - generic: ants.max
+    - strong: "1200"
+    - slider "ants.max 1200": "1200"
+  - button "Play"
+  - button "Reset"
+  - generic "Simulation speed":
+    - button "x1" [pressed]
+    - button "x2"
+    - button "x4"
+    - button "x8"
+  - img "Population and nest food over time"

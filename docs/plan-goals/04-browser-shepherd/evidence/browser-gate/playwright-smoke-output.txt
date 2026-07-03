@@ -1,0 +1,9 @@
+{
+  "version": "debug-surface-stage4",
+  "tick": 5000,
+  "hash": "632028e9736dd465",
+  "population": 190,
+  "hasEventsArray": true,
+  "deathsByCauseIsObject": true,
+  "schemaVersion": 1
+}

@@ -1,0 +1,5808 @@
+{
+  "seed": 3002,
+  "start": {
+    "tick": 0,
+    "hash": "de991534f49aad04",
+    "player": {
+      "population": 150,
+      "workers": 130,
+      "soldiers": 9,
+      "nurses": 11,
+      "nestFood": 30,
+      "broodProgress": 0,
+      "queenHunger": 0,
+      "gameOver": false,
+      "terminal": false,
+      "totalDeaths": 0,
+      "starvationDeaths": 0,
+      "foodDelivered": 0,
+      "nearestFood": 195.06
+    },
+    "rival": {
+      "population": 150,
+      "workers": 88,
+      "soldiers": 27,
+      "nurses": 35,
+      "nestFood": 30,
+      "broodProgress": 0,
+      "queenHunger": 0,
+      "gameOver": false,
+      "terminal": false,
+      "totalDeaths": 0,
+      "starvationDeaths": 0,
+      "foodDelivered": 0,
+      "nearestFood": 130.51
+    }
+  },
+  "rows": [
+    {
+      "beforeTick": 0,
+      "step": 1200,
+      "observation": "P pop 150, R pop 150, P food 30, nearest P/R 195.06/130.51, P/R delivered 0/0",
+      "shepherdPrediction": "stable chunk: player remains non-terminal and population direction stays flat",
+      "persistencePrediction": "population direction remains flat and terminal status remains running",
+      "plannedAction": "none",
+      "screenshot": "",
+      "afterTick": 1200,
+      "result": "P pop 150->160, P food 30->10, P delivered 0->68, phase running->running",
+      "shepherdScore": "partial",
+      "persistenceScore": "miss",
+      "budgetLeft": "food 5, lure 2, boulder 1, policy 1"
+    },
+    {
+      "beforeTick": 1200,
+      "step": 1200,
+      "observation": "P pop 160, R pop 158, P food 10, nearest P/R 195.06/135.56, P/R delivered 68/20",
+      "shepherdPrediction": "food action should keep player non-terminal and produce a player food-delivery increase or nest-food recovery signal within 1200 ticks",
+      "persistencePrediction": "population direction remains up and terminal status remains running",
+      "plannedAction": "food at 1928,1152: player stress: nestFood=10, nearestFood=195.06, pop=160, rivalPop=158",
+      "screenshot": "docs/plan-goals/04-browser-shepherd/evidence/pilot/browser-shepherd/seed-3002/tick-1200-food.png",
+      "afterTick": 2400,
+      "result": "P pop 160->172, P food 10->22, P delivered 68->219, phase running->running",
+      "shepherdScore": "hit",
+      "persistenceScore": "hit",
+      "budgetLeft": "food 4, lure 2, boulder 1, policy 1"
+    },
+    {
+      "beforeTick": 2400,
+      "step": 1200,
+      "observation": "P pop 172, R pop 157, P food 22, nearest P/R 100.08/149.37, P/R delivered 219/64",
+      "shepherdPrediction": "stable chunk: player remains non-terminal and population direction stays up",
+      "persistencePrediction": "population direction remains up and terminal status remains running",
+      "plannedAction": "none",
+      "screenshot": "",
+      "afterTick": 3600,
+      "result": "P pop 172->186, P food 22->53.5, P delivered 219->431, phase running->running",
+      "shepherdScore": "hit",
+      "persistenceScore": "hit",
+      "budgetLeft": "food 4, lure 2, boulder 1, policy 1"
+    },
+    {
+      "beforeTick": 3600,
+      "step": 1200,
+      "observation": "P pop 186, R pop 161, P food 53.5, nearest P/R 140.06/149.26, P/R delivered 431/120",
+      "shepherdPrediction": "stable chunk: player remains non-terminal and population direction stays up",
+      "persistencePrediction": "population direction remains up and terminal status remains running",
+      "plannedAction": "none",
+      "screenshot": "",
+      "afterTick": 4800,
+      "result": "P pop 186->199, P food 53.5->27, P delivered 431->541, phase running->running",
+      "shepherdScore": "hit",
+      "persistenceScore": "hit",
+      "budgetLeft": "food 4, lure 2, boulder 1, policy 1"
+    },
+    {
+      "beforeTick": 4800,
+      "step": 1200,
+      "observation": "P pop 199, R pop 161, P food 27, nearest P/R 202.15/164.56, P/R delivered 541/166",
+      "shepherdPrediction": "stable chunk: player remains non-terminal and population direction stays up",
+      "persistencePrediction": "population direction remains up and terminal status remains running",
+      "plannedAction": "none",
+      "screenshot": "",
+      "afterTick": 6000,
+      "result": "P pop 199->188, P food 27->0.5, P delivered 541->644, phase running->running",
+      "shepherdScore": "partial",
+      "persistenceScore": "miss",
+      "budgetLeft": "food 4, lure 2, boulder 1, policy 1"
+    },
+    {
+      "beforeTick": 6000,
+      "step": 1200,
+      "observation": "P pop 188, R pop 122, P food 0.5, nearest P/R 223.79/97.53, P/R delivered 644/201",
+      "shepherdPrediction": "food action should keep player non-terminal and produce a player food-delivery increase or nest-food recovery signal within 1200 ticks",
+      "persistencePrediction": "population direction remains down and terminal status remains running",
+      "plannedAction": "food at 2168,1152: player stress: nestFood=0.5, nearestFood=223.79, pop=188, rivalPop=122",
+      "screenshot": "docs/plan-goals/04-browser-shepherd/evidence/pilot/browser-shepherd/seed-3002/tick-6000-food.png",
+      "afterTick": 7200,
+      "result": "P pop 188->197, P food 0.5->0.5, P delivered 644->781, phase running->running",
+      "shepherdScore": "hit",
+      "persistenceScore": "miss",
+      "budgetLeft": "food 3, lure 2, boulder 1, policy 1"
+    },
+    {
+      "beforeTick": 7200,
+      "step": 1200,
+      "observation": "P pop 197, R pop 121, P food 0.5, nearest P/R 140.06/97.53, P/R delivered 781/214",
+      "shepherdPrediction": "food action should keep player non-terminal and produce a player food-delivery increase or nest-food recovery signal within 1200 ticks",
+      "persistencePrediction": "population direction remains up and terminal status remains running",
+      "plannedAction": "food at 2048,1032: player stress: nestFood=0.5, nearestFood=140.06, pop=197, rivalPop=121",
+      "screenshot": "docs/plan-goals/04-browser-shepherd/evidence/pilot/browser-shepherd/seed-3002/tick-7200-food.png",
+      "afterTick": 8400,
+      "result": "P pop 197->199, P food 0.5->1.5, P delivered 781->895, phase running->running",
+      "shepherdScore": "hit",
+      "persistenceScore": "hit",
+      "budgetLeft": "food 2, lure 2, boulder 1, policy 1"
+    },
+    {
+      "beforeTick": 8400,
+      "step": 1200,
+      "observation": "P pop 199, R pop 108, P food 1.5, nearest P/R 125.6/82.02, P/R delivered 895/221",
+      "shepherdPrediction": "food action should keep player non-terminal and produce a player food-delivery increase or nest-food recovery signal within 1200 ticks",
+      "persistencePrediction": "population direction remains up and terminal status remains running",
+      "plannedAction": "food at 2048,1272: player stress: nestFood=1.5, nearestFood=125.6, pop=199, rivalPop=108",
+      "screenshot": "docs/plan-goals/04-browser-shepherd/evidence/pilot/browser-shepherd/seed-3002/tick-8400-food.png",
+      "afterTick": 9600,
+      "result": "P pop 199->197, P food 1.5->2, P delivered 895->1014, phase running->running",
+      "shepherdScore": "hit",
+      "persistenceScore": "miss",
+      "budgetLeft": "food 1, lure 2, boulder 1, policy 1"
+    },
+    {
+      "beforeTick": 9600,
+      "step": 1200,
+      "observation": "P pop 197, R pop 90, P food 2, nearest P/R 117.71/82.02, P/R delivered 1014/228",
+      "shepherdPrediction": "food action should keep player non-terminal and produce a player food-delivery increase or nest-food recovery signal within 1200 ticks",
+      "persistencePrediction": "population direction remains down and terminal status remains running",
+      "plannedAction": "food at 1868,1092: player stress: nestFood=2, nearestFood=117.71, pop=197, rivalPop=90",
+      "screenshot": "docs/plan-goals/04-browser-shepherd/evidence/pilot/browser-shepherd/seed-3002/tick-9600-food.png",
+      "afterTick": 10800,
+      "result": "P pop 197->191, P food 2->0.5, P delivered 1014->1127, phase running->running",
+      "shepherdScore": "hit",
+      "persistenceScore": "hit",
+      "budgetLeft": "food 0, lure 2, boulder 1, policy 1"
+    },
+    {
+      "beforeTick": 10800,
+      "step": 1200,
+      "observation": "P pop 191, R pop 73, P food 0.5, nearest P/R 174.63/82.22, P/R delivered 1127/241",
+      "shepherdPrediction": "without spending budget this chunk, player stress should persist: player remains non-terminal but population direction stays down",
+      "persistencePrediction": "population direction remains down and terminal status remains running",
+      "plannedAction": "none",
+      "screenshot": "",
+      "afterTick": 12000,
+      "result": "P pop 191->188, P food 0.5->0.5, P delivered 1127->1226, phase running->running",
+      "shepherdScore": "hit",
+      "persistenceScore": "hit",
+      "budgetLeft": "food 0, lure 2, boulder 1, policy 1"
+    },
+    {
+      "beforeTick": 12000,
+      "step": 1200,
+      "observation": "P pop 188, R pop 41, P food 0.5, nearest P/R 200.88/74.03, P/R delivered 1226/256",
+      "shepherdPrediction": "lure action should keep player non-terminal and produce a player food-delivery increase or nest-food recovery signal within 1200 ticks",
+      "persistencePrediction": "population direction remains down and terminal status remains running",
+      "plannedAction": "lure at 2048,1032: player pathing disadvantage: playerDelivered=1226, rivalDelivered=256, nearestFood=200.88/74.03",
+      "screenshot": "docs/plan-goals/04-browser-shepherd/evidence/pilot/browser-shepherd/seed-3002/tick-12000-lure.png",
+      "afterTick": 13188,
+      "result": "P pop 188->185, P food 0.5->0, P delivered 1226->1275, phase running->ended",
+      "shepherdScore": "miss",
+      "persistenceScore": "miss",
+      "budgetLeft": "food 0, lure 1, boulder 1, policy 1"
+    }
+  ],
+  "interventions": [
+    {
+      "tick": 1200,
+      "kind": "food",
+      "x": 1928,
+      "y": 1152,
+      "rationale": "player stress: nestFood=10, nearestFood=195.06, pop=160, rivalPop=158",
+      "expectedEffect": "increase or preserve player delivery/nest-food recovery before the next observation",
+      "screenshot": "docs/plan-goals/04-browser-shepherd/evidence/pilot/browser-shepherd/seed-3002/tick-1200-food.png",
+      "hashBefore": "46e5666ec2f2e082",
+      "hashAfter": "895007bf7d9a448f"
+    },
+    {
+      "tick": 6000,
+      "kind": "food",
+      "x": 2168,
+      "y": 1152,
+      "rationale": "player stress: nestFood=0.5, nearestFood=223.79, pop=188, rivalPop=122",
+      "expectedEffect": "increase or preserve player delivery/nest-food recovery before the next observation",
+      "screenshot": "docs/plan-goals/04-browser-shepherd/evidence/pilot/browser-shepherd/seed-3002/tick-6000-food.png",
+      "hashBefore": "282aa6855443b5fd",
+      "hashAfter": "66d4855eec4fd66e"
+    },
+    {
+      "tick": 7200,
+      "kind": "food",
+      "x": 2048,
+      "y": 1032,
+      "rationale": "player stress: nestFood=0.5, nearestFood=140.06, pop=197, rivalPop=121",
+      "expectedEffect": "increase or preserve player delivery/nest-food recovery before the next observation",
+      "screenshot": "docs/plan-goals/04-browser-shepherd/evidence/pilot/browser-shepherd/seed-3002/tick-7200-food.png",
+      "hashBefore": "66d4855eec4fd66e",
+      "hashAfter": "c609ce9ed71fd44e"
+    },
+    {
+      "tick": 8400,
+      "kind": "food",
+      "x": 2048,
+      "y": 1272,
+      "rationale": "player stress: nestFood=1.5, nearestFood=125.6, pop=199, rivalPop=108",
+      "expectedEffect": "increase or preserve player delivery/nest-food recovery before the next observation",
+      "screenshot": "docs/plan-goals/04-browser-shepherd/evidence/pilot/browser-shepherd/seed-3002/tick-8400-food.png",
+      "hashBefore": "c609ce9ed71fd44e",
+      "hashAfter": "d529238ed38c31ce"
+    },
+    {
+      "tick": 9600,
+      "kind": "food",
+      "x": 1868,
+      "y": 1092,
+      "rationale": "player stress: nestFood=2, nearestFood=117.71, pop=197, rivalPop=90",
+      "expectedEffect": "increase or preserve player delivery/nest-food recovery before the next observation",
+      "screenshot": "docs/plan-goals/04-browser-shepherd/evidence/pilot/browser-shepherd/seed-3002/tick-9600-food.png",
+      "hashBefore": "d529238ed38c31ce",
+      "hashAfter": "b6eb4e97f0cba103"
+    },
+    {
+      "tick": 12000,
+      "kind": "lure",
+      "x": 2048,
+      "y": 1032,
+      "rationale": "player pathing disadvantage: playerDelivered=1226, rivalDelivered=256, nearestFood=200.88/74.03",
+      "expectedEffect": "improve player forager routing enough that delivered food rises before terminal collapse",
+      "screenshot": "docs/plan-goals/04-browser-shepherd/evidence/pilot/browser-shepherd/seed-3002/tick-12000-lure.png",
+      "hashBefore": "652db5159fb3c729",
+      "hashAfter": "5fa601cbb7befa33"
+    }
+  ],
+  "final": {
+    "tick": 13188,
+    "hash": "5fa601cbb7befa33",
+    "player": {
+      "population": 185,
+      "workers": 142,
+      "soldiers": 18,
+      "nurses": 25,
+      "nestFood": 0,
+      "broodProgress": 3,
+      "queenHunger": 0.33,
+      "gameOver": true,
+      "terminal": false,
+      "totalDeaths": 83,
+      "starvationDeaths": 79,
+      "foodDelivered": 1275,
+      "nearestFood": 227.19
+    },
+    "rival": {
+      "population": 0,
+      "workers": 0,
+      "soldiers": 0,
+      "nurses": 0,
+      "nestFood": 0,
+      "broodProgress": 2,
+      "queenHunger": 60.02,
+      "gameOver": true,
+      "terminal": true,
+      "totalDeaths": 164,
+      "starvationDeaths": 105,
+      "foodDelivered": 265,
+      "nearestFood": 74.03
+    },
+    "raw": {
+      "meta": {
+        "tick": 13188,
+        "simTime": 219.80000000006706,
+        "seed": 3002,
+        "hash": "5fa601cbb7befa33",
+        "schemaVersion": 1
+      },
+      "factions": {
+        "player": {
+          "population": {
+            "total": 185,
+            "byCaste": {
+              "worker": 142,
+              "soldier": 18,
+              "nurse": 25
+            },
+            "byMode": {
+              "Wander": 115,
+              "Seek": 44,
+              "Carry": 26
+            }
+          },
+          "nestFood": 0,
+          "broodProgress": 3,
+          "queenHunger": 0.3333333333333333,
+          "terminal": false,
+          "gameOver": true,
+          "totalDeaths": 83,
+          "deathsByCause": {
+            "starvation": 79,
+            "spider": 1,
+            "combat": 3,
+            "terminal_cull": 0
+          },
+          "totalDelivered": 1275,
+          "nanRespawns": 0,
+          "energy": {
+            "min": 0.7647676467895508,
+            "mean": 72.092978498098,
+            "p10": 24.065128326416016,
+            "p50": 76.82389068603516
+          },
+          "dispersion": {
+            "meanDistance": 522.5283280042847,
+            "p90Distance": 1284.0259919833034,
+            "countBeyondR": 10,
+            "radius": 1566.5117653918567
+          },
+          "age": {
+            "p50": 12206,
+            "max": 13188
+          },
+          "deliveriesPerAnt": {
+            "mean": 5.621621621621622,
+            "p50": 5
+          },
+          "neverDeliveredShare": 0.2756756756756757,
+          "flow": {
+            "foodDelivered": 1275,
+            "queenConsumed": 0,
+            "broodConsumed": 593,
+            "snackEnergyGained": 11332.854814052582,
+            "drainTotal": 48872.61999804452
+          }
+        },
+        "rival": {
+          "population": {
+            "total": 0,
+            "byCaste": {
+              "worker": 0,
+              "soldier": 0,
+              "nurse": 0
+            },
+            "byMode": {
+              "Wander": 0,
+              "Seek": 0,
+              "Carry": 0
+            }
+          },
+          "nestFood": 0,
+          "broodProgress": 2,
+          "queenHunger": 60.01666666666454,
+          "terminal": true,
+          "gameOver": true,
+          "totalDeaths": 164,
+          "deathsByCause": {
+            "starvation": 105,
+            "spider": 0,
+            "combat": 4,
+            "terminal_cull": 55
+          },
+          "totalDelivered": 265,
+          "nanRespawns": 0,
+          "energy": {
+            "min": null,
+            "mean": null,
+            "p10": null,
+            "p50": null
+          },
+          "dispersion": {
+            "meanDistance": null,
+            "p90Distance": null,
+            "countBeyondR": 0,
+            "radius": 1566.5117653918567
+          },
+          "age": {
+            "p50": 0,
+            "max": 0
+          },
+          "deliveriesPerAnt": {
+            "mean": 0,
+            "p50": 0
+          },
+          "neverDeliveredShare": 0,
+          "flow": {
+            "foodDelivered": 265,
+            "queenConsumed": 0,
+            "broodConsumed": 72,
+            "snackEnergyGained": 2153.747437953949,
+            "drainTotal": 30398.800000570696
+          }
+        }
+      },
+      "fields": {
+        "player": {
+          "pherFood": {
+            "sum": 8247.975504951552,
+            "max": 4.996139049530029,
+            "activeCells": 16423
+          },
+          "pherHome": {
+            "sum": 8989.847959933104,
+            "max": 4.4941630363464355,
+            "activeCells": 75265
+          }
+        },
+        "rival": {
+          "pherFood": {
+            "sum": 6321.427675392246,
+            "max": 4.996139049530029,
+            "activeCells": 10456
+          },
+          "pherHome": {
+            "sum": 152.37551174906548,
+            "max": 0.20712001621723175,
+            "activeCells": 9271
+          }
+        },
+        "shared": {
+          "pherDanger": {
+            "sum": 1872.2946892936016,
+            "max": 5,
+            "activeCells": 17777
+          },
+          "lure": {
+            "sum": 0,
+            "max": 0,
+            "activeCells": 0
+          },
+          "moisture": {
+            "sum": 24207.649019816774,
+            "max": 1,
+            "activeCells": 147455
+          }
+        }
+      },
+      "food": {
+        "totalOnMap": 2000.8913010060787,
+        "activeCellCount": 729,
+        "nearestDistanceByFaction": {
+          "player": 227.19154913860683,
+          "rival": 74.027022093287
+        }
+      },
+      "bushes": {
+        "count": 14,
+        "totalStock": 462.77777767181396,
+        "countRegrowing": 5
+      },
+      "carcass": {
+        "active": true,
+        "amount": 26.542030781507492,
+        "spoiled": true,
+        "age": 80.19999999999673
+      },
+      "actors": {
+        "spider": {
+          "active": false,
+          "hp": 100,
+          "x": 1146.501208605273,
+          "y": 1099.0879153064268
+        },
+        "corpseCount": 63,
+        "obstacleCount": 28
+      },
+      "season": {
+        "season": 1,
+        "label": "Summer",
+        "year": 1,
+        "yearsSurvived": 0,
+        "yearProgress": 0.45791666666680636,
+        "seasonProgress": 0.8316666666672254,
+        "timeToNext": 20.199999999932942,
+        "rain": 0,
+        "rainToast": 0,
+        "peakPopulation": 202,
+        "winterReserveHint": 150,
+        "isWinter": false
+      },
+      "perf": {
+        "ticksPerSecond": null
+      }
+    },
+    "outcome": "victory"
+  },
+  "events": [
+    {
+      "type": "brood_hatch",
+      "tick": 35,
+      "faction": 1,
+      "caste": 0
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 69,
+      "faction": 1,
+      "caste": 0
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 103,
+      "faction": 1,
+      "caste": 0
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 110,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 138,
+      "faction": 1,
+      "caste": 2
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 171,
+      "faction": 1,
+      "caste": 0
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 204,
+      "faction": 1,
+      "caste": 2
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 219,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 328,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 437,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 546,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 650,
+      "faction": 1,
+      "caste": 1
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 655,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 764,
+      "faction": 0,
+      "caste": 1
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 873,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 982,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 1091,
+      "faction": 0,
+      "caste": 1
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 1189,
+      "faction": 1,
+      "caste": 0
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 1201,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 1310,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 1419,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "death",
+      "tick": 1479,
+      "faction": 1,
+      "cause": "combat",
+      "id": 152,
+      "birthTick": 0,
+      "age": 1479,
+      "deliveries": 0,
+      "distanceTraveled": 1479.003173828125,
+      "ticksInMode": [
+        24.649795532226562,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 24.649795532226562,
+      "ticksSinceFoodPerceived": 24.649795532226562
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 1528,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 1563,
+      "faction": 1,
+      "caste": 1
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 1637,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "death",
+      "tick": 1655,
+      "faction": 1,
+      "cause": "combat",
+      "id": 181,
+      "birthTick": 0,
+      "age": 1655,
+      "deliveries": 0,
+      "distanceTraveled": 1654.0042724609375,
+      "ticksInMode": [
+        27.566417694091797,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 27.566417694091797,
+      "ticksSinceFoodPerceived": 27.566417694091797
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 1746,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 1855,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 1964,
+      "faction": 0,
+      "caste": 2
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 2064,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 2164,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 2264,
+      "faction": 0,
+      "caste": 2
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 2357,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 2449,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 2541,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 2633,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 2716,
+      "faction": 1,
+      "caste": 0
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 2726,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 2818,
+      "faction": 0,
+      "caste": 2
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 2904,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 2921,
+      "faction": 1,
+      "caste": 2
+    },
+    {
+      "type": "death",
+      "tick": 2928,
+      "faction": 1,
+      "cause": "combat",
+      "id": 248,
+      "birthTick": 0,
+      "age": 2928,
+      "deliveries": 0,
+      "distanceTraveled": 2927.002685546875,
+      "ticksInMode": [
+        48.78276062011719,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 48.78276062011719,
+      "ticksSinceFoodPerceived": 48.78276062011719
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 2990,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 3075,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 3111,
+      "faction": 1,
+      "caste": 0
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 3161,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 3247,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 3291,
+      "faction": 1,
+      "caste": 0
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 3332,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 3418,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 3504,
+      "faction": 0,
+      "caste": 2
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 3526,
+      "faction": 1,
+      "caste": 0
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 3584,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 3664,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "death",
+      "tick": 3714,
+      "faction": 0,
+      "cause": "combat",
+      "id": 98,
+      "birthTick": 0,
+      "age": 3714,
+      "deliveries": 0,
+      "distanceTraveled": 3712.999755859375,
+      "ticksInMode": [
+        61.88256072998047,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 61.88256072998047,
+      "ticksSinceFoodPerceived": 61.88256072998047
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 3744,
+      "faction": 0,
+      "caste": 2
+    },
+    {
+      "type": "death",
+      "tick": 3815,
+      "faction": 0,
+      "cause": "combat",
+      "id": 139,
+      "birthTick": 0,
+      "age": 3815,
+      "deliveries": 4,
+      "distanceTraveled": 3782.02978515625,
+      "ticksInMode": [
+        18.199893951416016,
+        23.833141326904297,
+        21.53317642211914
+      ],
+      "ticksSinceLastDelivery": 13.23330307006836,
+      "ticksSinceFoodPerceived": 0.8499998450279236
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 3819,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 3894,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 3969,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "death",
+      "tick": 3998,
+      "faction": 0,
+      "cause": "combat",
+      "id": 54,
+      "birthTick": 0,
+      "age": 3998,
+      "deliveries": 0,
+      "distanceTraveled": 3873.999755859375,
+      "ticksInMode": [
+        66.63308715820312,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 66.63308715820312,
+      "ticksSinceFoodPerceived": 66.63308715820312
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 4044,
+      "faction": 0,
+      "caste": 1
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 4119,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 4194,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 4269,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 4344,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 4419,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 4494,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 4569,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 4644,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 4719,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 4794,
+      "faction": 0,
+      "caste": 2
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 4865,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 4935,
+      "faction": 0,
+      "caste": 2
+    },
+    {
+      "type": "death",
+      "tick": 5001,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 287,
+      "birthTick": 0,
+      "age": 5001,
+      "deliveries": 0,
+      "distanceTraveled": 4375.00244140625,
+      "ticksInMode": [
+        83.33665466308594,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 83.33665466308594
+    },
+    {
+      "type": "death",
+      "tick": 5001,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 286,
+      "birthTick": 0,
+      "age": 5001,
+      "deliveries": 0,
+      "distanceTraveled": 4367.482421875,
+      "ticksInMode": [
+        56.99930191040039,
+        26.33310317993164,
+        0
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 0
+    },
+    {
+      "type": "death",
+      "tick": 5001,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 277,
+      "birthTick": 0,
+      "age": 5001,
+      "deliveries": 0,
+      "distanceTraveled": 4374.99951171875,
+      "ticksInMode": [
+        64.41594696044922,
+        18.916549682617188,
+        0
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 0
+    },
+    {
+      "type": "death",
+      "tick": 5001,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 261,
+      "birthTick": 0,
+      "age": 5001,
+      "deliveries": 0,
+      "distanceTraveled": 4375.001953125,
+      "ticksInMode": [
+        83.33665466308594,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 83.33665466308594
+    },
+    {
+      "type": "death",
+      "tick": 5001,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 252,
+      "birthTick": 0,
+      "age": 5001,
+      "deliveries": 0,
+      "distanceTraveled": 4369.87646484375,
+      "ticksInMode": [
+        83.33665466308594,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 83.33665466308594
+    },
+    {
+      "type": "death",
+      "tick": 5001,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 251,
+      "birthTick": 0,
+      "age": 5001,
+      "deliveries": 0,
+      "distanceTraveled": 4374.994140625,
+      "ticksInMode": [
+        83.33665466308594,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 83.33665466308594
+    },
+    {
+      "type": "death",
+      "tick": 5001,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 246,
+      "birthTick": 0,
+      "age": 5001,
+      "deliveries": 0,
+      "distanceTraveled": 4374.99951171875,
+      "ticksInMode": [
+        74.33473205566406,
+        9.00003433227539,
+        0
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 24.31646728515625
+    },
+    {
+      "type": "death",
+      "tick": 5001,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 237,
+      "birthTick": 0,
+      "age": 5001,
+      "deliveries": 0,
+      "distanceTraveled": 4374.95556640625,
+      "ticksInMode": [
+        83.33665466308594,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 83.33665466308594
+    },
+    {
+      "type": "death",
+      "tick": 5001,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 229,
+      "birthTick": 0,
+      "age": 5001,
+      "deliveries": 0,
+      "distanceTraveled": 4374.99951171875,
+      "ticksInMode": [
+        64.11588287353516,
+        19.21654510498047,
+        0
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 0.10000000149011612
+    },
+    {
+      "type": "death",
+      "tick": 5001,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 219,
+      "birthTick": 0,
+      "age": 5001,
+      "deliveries": 0,
+      "distanceTraveled": 4374.998046875,
+      "ticksInMode": [
+        59.349266052246094,
+        23.983139038085938,
+        0
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 0
+    },
+    {
+      "type": "death",
+      "tick": 5001,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 210,
+      "birthTick": 0,
+      "age": 5001,
+      "deliveries": 0,
+      "distanceTraveled": 4359.63037109375,
+      "ticksInMode": [
+        74.1180191040039,
+        9.216697692871094,
+        0
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 0
+    },
+    {
+      "type": "death",
+      "tick": 5001,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 204,
+      "birthTick": 0,
+      "age": 5001,
+      "deliveries": 0,
+      "distanceTraveled": 4375.0029296875,
+      "ticksInMode": [
+        46.316131591796875,
+        37.016273498535156,
+        0
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 0
+    },
+    {
+      "type": "death",
+      "tick": 5001,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 200,
+      "birthTick": 0,
+      "age": 5001,
+      "deliveries": 0,
+      "distanceTraveled": 4374.9970703125,
+      "ticksInMode": [
+        81.70297241210938,
+        1.6333324909210205,
+        0
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 21.316513061523438
+    },
+    {
+      "type": "death",
+      "tick": 5001,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 195,
+      "birthTick": 0,
+      "age": 5001,
+      "deliveries": 0,
+      "distanceTraveled": 4374.99755859375,
+      "ticksInMode": [
+        69.6837387084961,
+        13.64996337890625,
+        0
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 32.066349029541016
+    },
+    {
+      "type": "death",
+      "tick": 5001,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 193,
+      "birthTick": 0,
+      "age": 5001,
+      "deliveries": 0,
+      "distanceTraveled": 4374.99951171875,
+      "ticksInMode": [
+        83.33665466308594,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 83.33665466308594
+    },
+    {
+      "type": "death",
+      "tick": 5001,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 191,
+      "birthTick": 0,
+      "age": 5001,
+      "deliveries": 0,
+      "distanceTraveled": 4375.0029296875,
+      "ticksInMode": [
+        83.33665466308594,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 83.33665466308594
+    },
+    {
+      "type": "death",
+      "tick": 5001,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 189,
+      "birthTick": 0,
+      "age": 5001,
+      "deliveries": 0,
+      "distanceTraveled": 4375.00048828125,
+      "ticksInMode": [
+        83.33665466308594,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 83.33665466308594
+    },
+    {
+      "type": "death",
+      "tick": 5001,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 184,
+      "birthTick": 0,
+      "age": 5001,
+      "deliveries": 0,
+      "distanceTraveled": 4374.77978515625,
+      "ticksInMode": [
+        83.33665466308594,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 83.33665466308594
+    },
+    {
+      "type": "death",
+      "tick": 5001,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 183,
+      "birthTick": 0,
+      "age": 5001,
+      "deliveries": 0,
+      "distanceTraveled": 4375.00244140625,
+      "ticksInMode": [
+        74.33473205566406,
+        9.00003433227539,
+        0
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 37.53293228149414
+    },
+    {
+      "type": "death",
+      "tick": 5001,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 182,
+      "birthTick": 0,
+      "age": 5001,
+      "deliveries": 0,
+      "distanceTraveled": 4375.005859375,
+      "ticksInMode": [
+        60.8492431640625,
+        22.48316192626953,
+        0
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 0
+    },
+    {
+      "type": "death",
+      "tick": 5001,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 180,
+      "birthTick": 0,
+      "age": 5001,
+      "deliveries": 0,
+      "distanceTraveled": 4375.00634765625,
+      "ticksInMode": [
+        83.33665466308594,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 83.33665466308594
+    },
+    {
+      "type": "death",
+      "tick": 5001,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 175,
+      "birthTick": 0,
+      "age": 5001,
+      "deliveries": 0,
+      "distanceTraveled": 4374.99951171875,
+      "ticksInMode": [
+        74.26805114746094,
+        9.066699981689453,
+        0
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 34.76630783081055
+    },
+    {
+      "type": "death",
+      "tick": 5001,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 173,
+      "birthTick": 0,
+      "age": 5001,
+      "deliveries": 0,
+      "distanceTraveled": 4373.6494140625,
+      "ticksInMode": [
+        74.33473205566406,
+        9.00003433227539,
+        0
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 16.84991455078125
+    },
+    {
+      "type": "death",
+      "tick": 5001,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 172,
+      "birthTick": 0,
+      "age": 5001,
+      "deliveries": 0,
+      "distanceTraveled": 4375,
+      "ticksInMode": [
+        83.33665466308594,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 83.33665466308594
+    },
+    {
+      "type": "death",
+      "tick": 5001,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 169,
+      "birthTick": 0,
+      "age": 5001,
+      "deliveries": 0,
+      "distanceTraveled": 4375.00390625,
+      "ticksInMode": [
+        74.2180404663086,
+        9.11669921875,
+        0
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 25.849777221679688
+    },
+    {
+      "type": "death",
+      "tick": 5001,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 165,
+      "birthTick": 0,
+      "age": 5001,
+      "deliveries": 0,
+      "distanceTraveled": 4374.81591796875,
+      "ticksInMode": [
+        65.33280944824219,
+        17.999897003173828,
+        0
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 23.966472625732422
+    },
+    {
+      "type": "death",
+      "tick": 5001,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 158,
+      "birthTick": 0,
+      "age": 5001,
+      "deliveries": 0,
+      "distanceTraveled": 4374.9970703125,
+      "ticksInMode": [
+        83.33665466308594,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 83.33665466308594
+    },
+    {
+      "type": "death",
+      "tick": 5001,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 155,
+      "birthTick": 0,
+      "age": 5001,
+      "deliveries": 0,
+      "distanceTraveled": 4375.0029296875,
+      "ticksInMode": [
+        78.78568267822266,
+        4.550004005432129,
+        0
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 0
+    },
+    {
+      "type": "death",
+      "tick": 5001,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 154,
+      "birthTick": 0,
+      "age": 5001,
+      "deliveries": 0,
+      "distanceTraveled": 4374.68017578125,
+      "ticksInMode": [
+        83.33665466308594,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 83.33665466308594
+    },
+    {
+      "type": "death",
+      "tick": 5001,
+      "faction": 0,
+      "cause": "starvation",
+      "id": 142,
+      "birthTick": 0,
+      "age": 5001,
+      "deliveries": 0,
+      "distanceTraveled": 4374.99755859375,
+      "ticksInMode": [
+        83.33665466308594,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 83.33665466308594
+    },
+    {
+      "type": "death",
+      "tick": 5001,
+      "faction": 0,
+      "cause": "starvation",
+      "id": 138,
+      "birthTick": 0,
+      "age": 5001,
+      "deliveries": 0,
+      "distanceTraveled": 4375.001953125,
+      "ticksInMode": [
+        83.33665466308594,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 83.33665466308594
+    },
+    {
+      "type": "death",
+      "tick": 5001,
+      "faction": 0,
+      "cause": "starvation",
+      "id": 136,
+      "birthTick": 0,
+      "age": 5001,
+      "deliveries": 0,
+      "distanceTraveled": 4375.005859375,
+      "ticksInMode": [
+        83.33665466308594,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 83.33665466308594
+    },
+    {
+      "type": "death",
+      "tick": 5001,
+      "faction": 0,
+      "cause": "starvation",
+      "id": 129,
+      "birthTick": 0,
+      "age": 5001,
+      "deliveries": 0,
+      "distanceTraveled": 4375.0009765625,
+      "ticksInMode": [
+        83.33665466308594,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 83.33665466308594
+    },
+    {
+      "type": "death",
+      "tick": 5001,
+      "faction": 0,
+      "cause": "starvation",
+      "id": 115,
+      "birthTick": 0,
+      "age": 5001,
+      "deliveries": 0,
+      "distanceTraveled": 4374.998046875,
+      "ticksInMode": [
+        83.33665466308594,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 83.33665466308594
+    },
+    {
+      "type": "death",
+      "tick": 5001,
+      "faction": 0,
+      "cause": "starvation",
+      "id": 107,
+      "birthTick": 0,
+      "age": 5001,
+      "deliveries": 0,
+      "distanceTraveled": 4375.00048828125,
+      "ticksInMode": [
+        83.33665466308594,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 83.33665466308594
+    },
+    {
+      "type": "death",
+      "tick": 5001,
+      "faction": 0,
+      "cause": "starvation",
+      "id": 100,
+      "birthTick": 0,
+      "age": 5001,
+      "deliveries": 0,
+      "distanceTraveled": 4374.99658203125,
+      "ticksInMode": [
+        83.33665466308594,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 83.33665466308594
+    },
+    {
+      "type": "death",
+      "tick": 5001,
+      "faction": 0,
+      "cause": "starvation",
+      "id": 93,
+      "birthTick": 0,
+      "age": 5001,
+      "deliveries": 0,
+      "distanceTraveled": 4375.00830078125,
+      "ticksInMode": [
+        83.33665466308594,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 83.33665466308594
+    },
+    {
+      "type": "death",
+      "tick": 5001,
+      "faction": 0,
+      "cause": "starvation",
+      "id": 92,
+      "birthTick": 0,
+      "age": 5001,
+      "deliveries": 0,
+      "distanceTraveled": 4374.9990234375,
+      "ticksInMode": [
+        83.33665466308594,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 83.33665466308594
+    },
+    {
+      "type": "death",
+      "tick": 5001,
+      "faction": 0,
+      "cause": "starvation",
+      "id": 80,
+      "birthTick": 0,
+      "age": 5001,
+      "deliveries": 0,
+      "distanceTraveled": 4374.99853515625,
+      "ticksInMode": [
+        83.33665466308594,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 83.33665466308594
+    },
+    {
+      "type": "death",
+      "tick": 5001,
+      "faction": 0,
+      "cause": "starvation",
+      "id": 76,
+      "birthTick": 0,
+      "age": 5001,
+      "deliveries": 0,
+      "distanceTraveled": 4374.99951171875,
+      "ticksInMode": [
+        83.33665466308594,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 83.33665466308594
+    },
+    {
+      "type": "death",
+      "tick": 5001,
+      "faction": 0,
+      "cause": "starvation",
+      "id": 65,
+      "birthTick": 0,
+      "age": 5001,
+      "deliveries": 0,
+      "distanceTraveled": 4375.00439453125,
+      "ticksInMode": [
+        83.33665466308594,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 83.33665466308594
+    },
+    {
+      "type": "death",
+      "tick": 5001,
+      "faction": 0,
+      "cause": "starvation",
+      "id": 56,
+      "birthTick": 0,
+      "age": 5001,
+      "deliveries": 0,
+      "distanceTraveled": 4374.99853515625,
+      "ticksInMode": [
+        83.33665466308594,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 83.33665466308594
+    },
+    {
+      "type": "death",
+      "tick": 5001,
+      "faction": 0,
+      "cause": "starvation",
+      "id": 52,
+      "birthTick": 0,
+      "age": 5001,
+      "deliveries": 0,
+      "distanceTraveled": 4369.50048828125,
+      "ticksInMode": [
+        83.33665466308594,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 83.33665466308594
+    },
+    {
+      "type": "death",
+      "tick": 5001,
+      "faction": 0,
+      "cause": "starvation",
+      "id": 51,
+      "birthTick": 0,
+      "age": 5001,
+      "deliveries": 0,
+      "distanceTraveled": 4374.79541015625,
+      "ticksInMode": [
+        83.33665466308594,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 83.33665466308594
+    },
+    {
+      "type": "death",
+      "tick": 5001,
+      "faction": 0,
+      "cause": "starvation",
+      "id": 50,
+      "birthTick": 0,
+      "age": 5001,
+      "deliveries": 0,
+      "distanceTraveled": 4375,
+      "ticksInMode": [
+        75.40162658691406,
+        7.933382511138916,
+        0
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 0
+    },
+    {
+      "type": "death",
+      "tick": 5001,
+      "faction": 0,
+      "cause": "starvation",
+      "id": 38,
+      "birthTick": 0,
+      "age": 5001,
+      "deliveries": 0,
+      "distanceTraveled": 4373.93017578125,
+      "ticksInMode": [
+        64.84937286376953,
+        18.48322296142578,
+        0
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 14.59994888305664
+    },
+    {
+      "type": "death",
+      "tick": 5001,
+      "faction": 0,
+      "cause": "starvation",
+      "id": 32,
+      "birthTick": 0,
+      "age": 5001,
+      "deliveries": 0,
+      "distanceTraveled": 4375.00048828125,
+      "ticksInMode": [
+        83.33665466308594,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 83.33665466308594
+    },
+    {
+      "type": "death",
+      "tick": 5001,
+      "faction": 0,
+      "cause": "starvation",
+      "id": 17,
+      "birthTick": 0,
+      "age": 5001,
+      "deliveries": 0,
+      "distanceTraveled": 4375,
+      "ticksInMode": [
+        83.33665466308594,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 83.33665466308594
+    },
+    {
+      "type": "death",
+      "tick": 5001,
+      "faction": 0,
+      "cause": "starvation",
+      "id": 15,
+      "birthTick": 0,
+      "age": 5001,
+      "deliveries": 0,
+      "distanceTraveled": 4375,
+      "ticksInMode": [
+        63.31587219238281,
+        20.01653289794922,
+        0
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 0
+    },
+    {
+      "type": "death",
+      "tick": 5001,
+      "faction": 0,
+      "cause": "starvation",
+      "id": 2,
+      "birthTick": 0,
+      "age": 5001,
+      "deliveries": 0,
+      "distanceTraveled": 4375,
+      "ticksInMode": [
+        83.33665466308594,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 83.33665466308594
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 5002,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 5068,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "death",
+      "tick": 5103,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 303,
+      "birthTick": 103,
+      "age": 5000,
+      "deliveries": 0,
+      "distanceTraveled": 4374.99951171875,
+      "ticksInMode": [
+        77.51874542236328,
+        5.81668758392334,
+        0
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 21.133182525634766
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 5135,
+      "faction": 0,
+      "caste": 1
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 5202,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "death",
+      "tick": 5214,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 296,
+      "birthTick": 0,
+      "age": 5214,
+      "deliveries": 1,
+      "distanceTraveled": 4605.5234375,
+      "ticksInMode": [
+        84.30352783203125,
+        0.40000012516975403,
+        2.1833319664001465
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 83.05326080322266
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 5268,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 5340,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 5408,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "death",
+      "tick": 5448,
+      "faction": 0,
+      "cause": "starvation",
+      "id": 109,
+      "birthTick": 0,
+      "age": 5448,
+      "deliveries": 1,
+      "distanceTraveled": 4833.5947265625,
+      "ticksInMode": [
+        71.1840591430664,
+        16.31658935546875,
+        3.2833309173583984
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 57.665958404541016
+    },
+    {
+      "type": "death",
+      "tick": 5450,
+      "faction": 0,
+      "cause": "starvation",
+      "id": 105,
+      "birthTick": 0,
+      "age": 5450,
+      "deliveries": 1,
+      "distanceTraveled": 4833.1904296875,
+      "ticksInMode": [
+        85.60380554199219,
+        1.66666579246521,
+        3.549997329711914
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 82.80320739746094
+    },
+    {
+      "type": "death",
+      "tick": 5494,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 233,
+      "birthTick": 0,
+      "age": 5494,
+      "deliveries": 1,
+      "distanceTraveled": 2289.359619140625,
+      "ticksInMode": [
+        88.05432891845703,
+        0.76666659116745,
+        2.7333314418792725
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 82.68651580810547
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 5622,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 5718,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "death",
+      "tick": 5751,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 266,
+      "birthTick": 0,
+      "age": 5751,
+      "deliveries": 0,
+      "distanceTraveled": 4840.1640625,
+      "ticksInMode": [
+        47.116119384765625,
+        2.099998712539673,
+        46.616127014160156
+      ],
+      "ticksSinceLastDelivery": 95.83932495117188,
+      "ticksSinceFoodPerceived": 46.616127014160156
+    },
+    {
+      "type": "death",
+      "tick": 5751,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 260,
+      "birthTick": 0,
+      "age": 5751,
+      "deliveries": 0,
+      "distanceTraveled": 4895.09912109375,
+      "ticksInMode": [
+        60.032588958740234,
+        5.566684246063232,
+        30.233043670654297
+      ],
+      "ticksSinceLastDelivery": 95.83932495117188,
+      "ticksSinceFoodPerceived": 30.233043670654297
+    },
+    {
+      "type": "death",
+      "tick": 5751,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 255,
+      "birthTick": 0,
+      "age": 5751,
+      "deliveries": 0,
+      "distanceTraveled": 4768.6640625,
+      "ticksInMode": [
+        67.41658782958984,
+        4.1999993324279785,
+        24.216468811035156
+      ],
+      "ticksSinceLastDelivery": 95.83932495117188,
+      "ticksSinceFoodPerceived": 24.216468811035156
+    },
+    {
+      "type": "death",
+      "tick": 5751,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 249,
+      "birthTick": 0,
+      "age": 5751,
+      "deliveries": 0,
+      "distanceTraveled": 4933.615234375,
+      "ticksInMode": [
+        57.782623291015625,
+        5.983356475830078,
+        32.066349029541016
+      ],
+      "ticksSinceLastDelivery": 95.83932495117188,
+      "ticksSinceFoodPerceived": 32.066349029541016
+    },
+    {
+      "type": "death",
+      "tick": 5751,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 227,
+      "birthTick": 0,
+      "age": 5751,
+      "deliveries": 0,
+      "distanceTraveled": 4873.46044921875,
+      "ticksInMode": [
+        48.032772064208984,
+        4.8833417892456055,
+        42.91618347167969
+      ],
+      "ticksSinceLastDelivery": 95.83932495117188,
+      "ticksSinceFoodPerceived": 42.91618347167969
+    },
+    {
+      "type": "death",
+      "tick": 5751,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 224,
+      "birthTick": 0,
+      "age": 5751,
+      "deliveries": 0,
+      "distanceTraveled": 4883.88818359375,
+      "ticksInMode": [
+        45.98280334472656,
+        20.149864196777344,
+        29.699718475341797
+      ],
+      "ticksSinceLastDelivery": 95.83932495117188,
+      "ticksSinceFoodPerceived": 29.699718475341797
+    },
+    {
+      "type": "death",
+      "tick": 5751,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 174,
+      "birthTick": 0,
+      "age": 5751,
+      "deliveries": 0,
+      "distanceTraveled": 4776.74365234375,
+      "ticksInMode": [
+        47.799442291259766,
+        23.433147430419922,
+        24.599796295166016
+      ],
+      "ticksSinceLastDelivery": 95.83932495117188,
+      "ticksSinceFoodPerceived": 24.599796295166016
+    },
+    {
+      "type": "death",
+      "tick": 5751,
+      "faction": 0,
+      "cause": "starvation",
+      "id": 5,
+      "birthTick": 0,
+      "age": 5751,
+      "deliveries": 0,
+      "distanceTraveled": 4689.53369140625,
+      "ticksInMode": [
+        71.1007080078125,
+        6.7333664894104,
+        17.999897003173828
+      ],
+      "ticksSinceLastDelivery": 95.83932495117188,
+      "ticksSinceFoodPerceived": 17.999897003173828
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 5826,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 5892,
+      "faction": 0,
+      "caste": 1
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 6118,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 6229,
+      "faction": 0,
+      "caste": 2
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 6315,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 6432,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "death",
+      "tick": 6491,
+      "faction": 0,
+      "cause": "starvation",
+      "id": 89,
+      "birthTick": 0,
+      "age": 6491,
+      "deliveries": 1,
+      "distanceTraveled": 5798.58349609375,
+      "ticksInMode": [
+        76.81859588623047,
+        19.39987564086914,
+        11.949989318847656
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 66.3830337524414
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 6512,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 6575,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 6657,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 6726,
+      "faction": 0,
+      "caste": 2
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 6786,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 6851,
+      "faction": 0,
+      "caste": 2
+    },
+    {
+      "type": "death",
+      "tick": 6883,
+      "faction": 0,
+      "cause": "starvation",
+      "id": 64,
+      "birthTick": 0,
+      "age": 6883,
+      "deliveries": 1,
+      "distanceTraveled": 6223.59228515625,
+      "ticksInMode": [
+        48.3661003112793,
+        58.049285888671875,
+        8.283378601074219
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 25.599781036376953
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 6908,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 6988,
+      "faction": 0,
+      "caste": 1
+    },
+    {
+      "type": "death",
+      "tick": 7084,
+      "faction": 0,
+      "cause": "starvation",
+      "id": 119,
+      "birthTick": 0,
+      "age": 7084,
+      "deliveries": 5,
+      "distanceTraveled": 6518.6494140625,
+      "ticksInMode": [
+        75.96841430664062,
+        25.966442108154297,
+        16.116592407226562
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 74.61812591552734
+    },
+    {
+      "type": "death",
+      "tick": 7106,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 294,
+      "birthTick": 0,
+      "age": 7106,
+      "deliveries": 5,
+      "distanceTraveled": 6563.6015625,
+      "ticksInMode": [
+        81.70297241210938,
+        23.149818420410156,
+        13.566631317138672
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 74.36807250976562
+    },
+    {
+      "type": "season_change",
+      "tick": 7201,
+      "season": 1,
+      "label": "Summer",
+      "year": 1
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 7334,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "death",
+      "tick": 7350,
+      "faction": 0,
+      "cause": "starvation",
+      "id": 135,
+      "birthTick": 0,
+      "age": 7350,
+      "deliveries": 2,
+      "distanceTraveled": 6638.42431640625,
+      "ticksInMode": [
+        80.1693115234375,
+        23.66647720336914,
+        18.649887084960938
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 65.83291625976562
+    },
+    {
+      "type": "death",
+      "tick": 7351,
+      "faction": 0,
+      "cause": "starvation",
+      "id": 49,
+      "birthTick": 0,
+      "age": 7351,
+      "deliveries": 1,
+      "distanceTraveled": 6626.94873046875,
+      "ticksInMode": [
+        83.57003784179688,
+        23.466480255126953,
+        15.466602325439453
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 66.01628875732422
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 7466,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "spider_spawn",
+      "tick": 7497,
+      "x": -24,
+      "y": 693.2819082140923,
+      "hp": 100
+    },
+    {
+      "type": "death",
+      "tick": 7603,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 199,
+      "birthTick": 0,
+      "age": 7603,
+      "deliveries": 6,
+      "distanceTraveled": 7082.75390625,
+      "ticksInMode": [
+        76.63522338867188,
+        34.616310119628906,
+        15.449935913085938
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 67.2832260131836
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 7604,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "death",
+      "tick": 7636,
+      "faction": 0,
+      "cause": "starvation",
+      "id": 42,
+      "birthTick": 0,
+      "age": 7636,
+      "deliveries": 6,
+      "distanceTraveled": 7067.9931640625,
+      "ticksInMode": [
+        76.701904296875,
+        29.566387176513672,
+        20.983184814453125
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 74.73481750488281
+    },
+    {
+      "type": "death",
+      "tick": 7683,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 268,
+      "birthTick": 0,
+      "age": 7683,
+      "deliveries": 6,
+      "distanceTraveled": 7142.59033203125,
+      "ticksInMode": [
+        81.80299377441406,
+        28.499736785888672,
+        17.733234405517578
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 75.70169067382812
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 7688,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "death",
+      "tick": 7711,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 295,
+      "birthTick": 0,
+      "age": 7711,
+      "deliveries": 1,
+      "distanceTraveled": 7095.029296875,
+      "ticksInMode": [
+        115.51019287109375,
+        10.216682434082031,
+        2.7833313941955566
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 75.11823272705078
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 7787,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "death",
+      "tick": 7797,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 293,
+      "birthTick": 0,
+      "age": 7797,
+      "deliveries": 2,
+      "distanceTraveled": 7197.78466796875,
+      "ticksInMode": [
+        87.25415802001953,
+        36.566280364990234,
+        6.116691589355469
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 12.916641235351562
+    },
+    {
+      "type": "death",
+      "tick": 7877,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 302,
+      "birthTick": 69,
+      "age": 7808,
+      "deliveries": 6,
+      "distanceTraveled": 7279.3896484375,
+      "ticksInMode": [
+        83.08660125732422,
+        30.33304214477539,
+        16.716583251953125
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 34.83297348022461
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 7880,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "death",
+      "tick": 7896,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 221,
+      "birthTick": 0,
+      "age": 7896,
+      "deliveries": 1,
+      "distanceTraveled": 7260.9638671875,
+      "ticksInMode": [
+        115.22679901123047,
+        13.26663589477539,
+        3.0999977588653564
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 75.26826477050781
+    },
+    {
+      "type": "death",
+      "tick": 7914,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 318,
+      "birthTick": 1189,
+      "age": 6725,
+      "deliveries": 4,
+      "distanceTraveled": 6168.9423828125,
+      "ticksInMode": [
+        59.799259185791016,
+        41.91619873046875,
+        10.366680145263672
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 5.350014686584473
+    },
+    {
+      "type": "death",
+      "tick": 7957,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 203,
+      "birthTick": 0,
+      "age": 7957,
+      "deliveries": 4,
+      "distanceTraveled": 7385.38037109375,
+      "ticksInMode": [
+        101.97396850585938,
+        18.516555786132812,
+        12.116653442382812
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 76.13511657714844
+    },
+    {
+      "type": "death",
+      "tick": 7999,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 288,
+      "birthTick": 0,
+      "age": 7999,
+      "deliveries": 4,
+      "distanceTraveled": 7420.30322265625,
+      "ticksInMode": [
+        93.9555892944336,
+        26.816429138183594,
+        12.533313751220703
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 74.20137023925781
+    },
+    {
+      "type": "death",
+      "tick": 8002,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 187,
+      "birthTick": 0,
+      "age": 8002,
+      "deliveries": 1,
+      "distanceTraveled": 7385.7734375,
+      "ticksInMode": [
+        117.92737579345703,
+        12.233318328857422,
+        3.199997663497925
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 3.616663932800293
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 8012,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "death",
+      "tick": 8025,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 240,
+      "birthTick": 0,
+      "age": 8025,
+      "deliveries": 2,
+      "distanceTraveled": 7246.1162109375,
+      "ticksInMode": [
+        71.91754913330078,
+        36.0996208190918,
+        25.716445922851562
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 0
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 8083,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "death",
+      "tick": 8097,
+      "faction": 0,
+      "cause": "starvation",
+      "id": 132,
+      "birthTick": 0,
+      "age": 8097,
+      "deliveries": 3,
+      "distanceTraveled": 7450.8720703125,
+      "ticksInMode": [
+        82.58649444580078,
+        36.866275787353516,
+        15.483268737792969
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 56.449310302734375
+    },
+    {
+      "type": "spider_kill",
+      "tick": 8153,
+      "x": 0,
+      "y": 922.2474365234375,
+      "victimId": 20,
+      "victimFaction": 0
+    },
+    {
+      "type": "death",
+      "tick": 8153,
+      "faction": 0,
+      "cause": "spider",
+      "id": 20,
+      "birthTick": 0,
+      "age": 8153,
+      "deliveries": 4,
+      "distanceTraveled": 7661.0322265625,
+      "ticksInMode": [
+        79.75255584716797,
+        27.466419219970703,
+        28.666400909423828
+      ],
+      "ticksSinceLastDelivery": 75.65167999267578,
+      "ticksSinceFoodPerceived": 68.03338623046875
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 8156,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "death",
+      "tick": 8198,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 208,
+      "birthTick": 0,
+      "age": 8198,
+      "deliveries": 1,
+      "distanceTraveled": 7579.36669921875,
+      "ticksInMode": [
+        90.20478820800781,
+        43.51617431640625,
+        2.8999979496002197
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 7.783380508422852
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 8254,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "death",
+      "tick": 8270,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 301,
+      "birthTick": 35,
+      "age": 8235,
+      "deliveries": 1,
+      "distanceTraveled": 7412.3583984375,
+      "ticksInMode": [
+        100.20692443847656,
+        10.533344268798828,
+        26.516433715820312
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 75.73503112792969
+    },
+    {
+      "type": "death",
+      "tick": 8330,
+      "faction": 0,
+      "cause": "starvation",
+      "id": 8,
+      "birthTick": 0,
+      "age": 8330,
+      "deliveries": 5,
+      "distanceTraveled": 7674.7841796875,
+      "ticksInMode": [
+        73.06779479980469,
+        39.649566650390625,
+        26.099773406982422
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 62.24922180175781
+    },
+    {
+      "type": "death",
+      "tick": 8332,
+      "faction": 0,
+      "cause": "starvation",
+      "id": 346,
+      "birthTick": 3332,
+      "age": 5000,
+      "deliveries": 0,
+      "distanceTraveled": 4375.0029296875,
+      "ticksInMode": [
+        65.33280944824219,
+        17.999897003173828,
+        0
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 66.28301239013672
+    },
+    {
+      "type": "death",
+      "tick": 8333,
+      "faction": 0,
+      "cause": "starvation",
+      "id": 125,
+      "birthTick": 0,
+      "age": 8333,
+      "deliveries": 7,
+      "distanceTraveled": 7769.7001953125,
+      "ticksInMode": [
+        67.16653442382812,
+        47.8327751159668,
+        23.866474151611328
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 66.96649169921875
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 8370,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "carcass_spawn",
+      "tick": 8376,
+      "x": 2918.4448200962493,
+      "y": 1547.32536343109,
+      "amount": 300
+    },
+    {
+      "type": "death",
+      "tick": 8386,
+      "faction": 0,
+      "cause": "starvation",
+      "id": 343,
+      "birthTick": 3161,
+      "age": 5225,
+      "deliveries": 1,
+      "distanceTraveled": 4619.38427734375,
+      "ticksInMode": [
+        65.34947967529297,
+        20.033199310302734,
+        1.6999990940093994
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 66.43304443359375
+    },
+    {
+      "type": "death",
+      "tick": 8430,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 250,
+      "birthTick": 0,
+      "age": 8430,
+      "deliveries": 3,
+      "distanceTraveled": 7401.38134765625,
+      "ticksInMode": [
+        70.70062255859375,
+        40.482887268066406,
+        29.299724578857422
+      ],
+      "ticksSinceLastDelivery": 95.83932495117188,
+      "ticksSinceFoodPerceived": 20.516525268554688
+    },
+    {
+      "type": "death",
+      "tick": 8430,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 186,
+      "birthTick": 0,
+      "age": 8430,
+      "deliveries": 6,
+      "distanceTraveled": 7889.537109375,
+      "ticksInMode": [
+        94.3890151977539,
+        28.599735260009766,
+        17.49990463256836
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 75.86839294433594
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 8440,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "death",
+      "tick": 8487,
+      "faction": 0,
+      "cause": "starvation",
+      "id": 124,
+      "birthTick": 0,
+      "age": 8487,
+      "deliveries": 3,
+      "distanceTraveled": 7809.82080078125,
+      "ticksInMode": [
+        94.53904724121094,
+        27.499752044677734,
+        19.39987564086914
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 66.81645965576172
+    },
+    {
+      "type": "death",
+      "tick": 8502,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 170,
+      "birthTick": 0,
+      "age": 8502,
+      "deliveries": 1,
+      "distanceTraveled": 7895.578125,
+      "ticksInMode": [
+        120.7113037109375,
+        18.766551971435547,
+        2.216665267944336
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 34.21631622314453
+    },
+    {
+      "type": "death",
+      "tick": 8517,
+      "faction": 0,
+      "cause": "starvation",
+      "id": 13,
+      "birthTick": 0,
+      "age": 8517,
+      "deliveries": 2,
+      "distanceTraveled": 7855.45068359375,
+      "ticksInMode": [
+        74.2180404663086,
+        54.59933853149414,
+        13.11663818359375
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 56.49930953979492
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 8521,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "death",
+      "tick": 8542,
+      "faction": 0,
+      "cause": "starvation",
+      "id": 61,
+      "birthTick": 0,
+      "age": 8542,
+      "deliveries": 5,
+      "distanceTraveled": 7860.845703125,
+      "ticksInMode": [
+        83.52002716064453,
+        31.916351318359375,
+        26.916427612304688
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 66.23300170898438
+    },
+    {
+      "type": "death",
+      "tick": 8571,
+      "faction": 0,
+      "cause": "starvation",
+      "id": 68,
+      "birthTick": 0,
+      "age": 8571,
+      "deliveries": 3,
+      "distanceTraveled": 7874.78466796875,
+      "ticksInMode": [
+        81.56961059570312,
+        39.74956512451172,
+        21.516510009765625
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 65.69955444335938
+    },
+    {
+      "type": "death",
+      "tick": 8587,
+      "faction": 0,
+      "cause": "starvation",
+      "id": 128,
+      "birthTick": 0,
+      "age": 8587,
+      "deliveries": 6,
+      "distanceTraveled": 7936.16796875,
+      "ticksInMode": [
+        87.8209457397461,
+        26.383102416992188,
+        28.899730682373047
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 74.45142364501953
+    },
+    {
+      "type": "death",
+      "tick": 8600,
+      "faction": 0,
+      "cause": "starvation",
+      "id": 331,
+      "birthTick": 2357,
+      "age": 6243,
+      "deliveries": 2,
+      "distanceTraveled": 5630.08251953125,
+      "ticksInMode": [
+        74.36807250976562,
+        21.88317108154297,
+        7.800047397613525
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 75.11823272705078
+    },
+    {
+      "type": "death",
+      "tick": 8601,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 161,
+      "birthTick": 0,
+      "age": 8601,
+      "deliveries": 1,
+      "distanceTraveled": 7789.01708984375,
+      "ticksInMode": [
+        98.32318878173828,
+        19.81653594970703,
+        25.199787139892578
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 14.516616821289062
+    },
+    {
+      "type": "death",
+      "tick": 8623,
+      "faction": 0,
+      "cause": "starvation",
+      "id": 104,
+      "birthTick": 0,
+      "age": 8623,
+      "deliveries": 4,
+      "distanceTraveled": 7983.95361328125,
+      "ticksInMode": [
+        79.902587890625,
+        44.066165924072266,
+        19.733203887939453
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 0
+    },
+    {
+      "type": "death",
+      "tick": 8632,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 259,
+      "birthTick": 0,
+      "age": 8632,
+      "deliveries": 2,
+      "distanceTraveled": 8034.58154296875,
+      "ticksInMode": [
+        120.37789916992188,
+        17.516571044921875,
+        5.966689586639404
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 75.48497772216797
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 8642,
+      "faction": 0,
+      "caste": 2
+    },
+    {
+      "type": "death",
+      "tick": 8682,
+      "faction": 0,
+      "cause": "starvation",
+      "id": 313,
+      "birthTick": 655,
+      "age": 8027,
+      "deliveries": 3,
+      "distanceTraveled": 7368.6728515625,
+      "ticksInMode": [
+        57.73262405395508,
+        58.63261032104492,
+        17.41657257080078
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 58.815940856933594
+    },
+    {
+      "type": "death",
+      "tick": 8735,
+      "faction": 0,
+      "cause": "starvation",
+      "id": 81,
+      "birthTick": 0,
+      "age": 8735,
+      "deliveries": 3,
+      "distanceTraveled": 8014.587890625,
+      "ticksInMode": [
+        93.43881225585938,
+        28.149742126464844,
+        23.983139038085938
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 74.46809387207031
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 8753,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "death",
+      "tick": 8861,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 342,
+      "birthTick": 3111,
+      "age": 5750,
+      "deliveries": 0,
+      "distanceTraveled": 4685.12548828125,
+      "ticksInMode": [
+        52.04937744140625,
+        24.99979019165039,
+        18.783218383789062
+      ],
+      "ticksSinceLastDelivery": 95.83932495117188,
+      "ticksSinceFoodPerceived": 18.783218383789062
+    },
+    {
+      "type": "death",
+      "tick": 8886,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 166,
+      "birthTick": 0,
+      "age": 8886,
+      "deliveries": 3,
+      "distanceTraveled": 8314.7080078125,
+      "ticksInMode": [
+        131.29539489746094,
+        9.166698455810547,
+        7.633378505706787
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 82.2197494506836
+    },
+    {
+      "type": "death",
+      "tick": 8983,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 262,
+      "birthTick": 0,
+      "age": 8983,
+      "deliveries": 6,
+      "distanceTraveled": 8100.19873046875,
+      "ticksInMode": [
+        65.81624603271484,
+        41.34954071044922,
+        42.53285598754883
+      ],
+      "ticksSinceLastDelivery": 95.83932495117188,
+      "ticksSinceFoodPerceived": 24.799793243408203
+    },
+    {
+      "type": "death",
+      "tick": 8999,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 253,
+      "birthTick": 0,
+      "age": 8999,
+      "deliveries": 1,
+      "distanceTraveled": 7798.939453125,
+      "ticksInMode": [
+        80.00260925292969,
+        24.149803161621094,
+        45.816139221191406
+      ],
+      "ticksSinceLastDelivery": 95.83932495117188,
+      "ticksSinceFoodPerceived": 22.266498565673828
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 9091,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "death",
+      "tick": 9104,
+      "faction": 1,
+      "cause": "combat",
+      "id": 283,
+      "birthTick": 0,
+      "age": 9104,
+      "deliveries": 3,
+      "distanceTraveled": 8474.9697265625,
+      "ticksInMode": [
+        96.10604858398438,
+        17.249908447265625,
+        38.36625289916992
+      ],
+      "ticksSinceLastDelivery": 46.38279724121094,
+      "ticksSinceFoodPerceived": 45.43281173706055
+    },
+    {
+      "type": "death",
+      "tick": 9146,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 290,
+      "birthTick": 0,
+      "age": 9146,
+      "deliveries": 0,
+      "distanceTraveled": 4115.12451171875,
+      "ticksInMode": [
+        152.42356872558594,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 152.42356872558594,
+      "ticksSinceFoodPerceived": 152.42356872558594
+    },
+    {
+      "type": "death",
+      "tick": 9152,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 305,
+      "birthTick": 138,
+      "age": 9014,
+      "deliveries": 0,
+      "distanceTraveled": 4056.189453125,
+      "ticksInMode": [
+        150.2407684326172,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 150.2407684326172,
+      "ticksSinceFoodPerceived": 150.2407684326172
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 9295,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "death",
+      "tick": 9300,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 228,
+      "birthTick": 0,
+      "age": 9300,
+      "deliveries": 0,
+      "distanceTraveled": 4184.443359375,
+      "ticksInMode": [
+        154.98960876464844,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 154.98960876464844,
+      "ticksSinceFoodPerceived": 154.98960876464844
+    },
+    {
+      "type": "death",
+      "tick": 9312,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 226,
+      "birthTick": 0,
+      "age": 9312,
+      "deliveries": 0,
+      "distanceTraveled": 4189.87451171875,
+      "ticksInMode": [
+        155.18955993652344,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 155.18955993652344,
+      "ticksSinceFoodPerceived": 155.18955993652344
+    },
+    {
+      "type": "death",
+      "tick": 9319,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 225,
+      "birthTick": 0,
+      "age": 9319,
+      "deliveries": 0,
+      "distanceTraveled": 4193.001953125,
+      "ticksInMode": [
+        155.3061981201172,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 155.3061981201172,
+      "ticksSinceFoodPerceived": 155.3061981201172
+    },
+    {
+      "type": "death",
+      "tick": 9356,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 167,
+      "birthTick": 0,
+      "age": 9356,
+      "deliveries": 2,
+      "distanceTraveled": 8550.7939453125,
+      "ticksInMode": [
+        108.05860137939453,
+        18.849884033203125,
+        29.016395568847656
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 75.53498840332031
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 9418,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "death",
+      "tick": 9451,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 291,
+      "birthTick": 0,
+      "age": 9451,
+      "deliveries": 4,
+      "distanceTraveled": 8897.15625,
+      "ticksInMode": [
+        119.07762145996094,
+        28.16640853881836,
+        10.266681671142578
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 75.8183822631836
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 9487,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "death",
+      "tick": 9524,
+      "faction": 0,
+      "cause": "starvation",
+      "id": 101,
+      "birthTick": 0,
+      "age": 9524,
+      "deliveries": 6,
+      "distanceTraveled": 8829.9921875,
+      "ticksInMode": [
+        65.54952239990234,
+        58.1826171875,
+        34.98297119140625
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 49.16608810424805
+    },
+    {
+      "type": "death",
+      "tick": 9565,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 220,
+      "birthTick": 0,
+      "age": 9565,
+      "deliveries": 0,
+      "distanceTraveled": 4303.744140625,
+      "ticksInMode": [
+        159.4051971435547,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 159.4051971435547,
+      "ticksSinceFoodPerceived": 159.4051971435547
+    },
+    {
+      "type": "death",
+      "tick": 9569,
+      "faction": 0,
+      "cause": "starvation",
+      "id": 363,
+      "birthTick": 4569,
+      "age": 5000,
+      "deliveries": 0,
+      "distanceTraveled": 4375.0009765625,
+      "ticksInMode": [
+        71.86753845214844,
+        11.466663360595703,
+        0
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 71.86753845214844
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 9577,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "death",
+      "tick": 9602,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 215,
+      "birthTick": 0,
+      "age": 9602,
+      "deliveries": 0,
+      "distanceTraveled": 4320.37158203125,
+      "ticksInMode": [
+        160.02171325683594,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 160.02171325683594,
+      "ticksSinceFoodPerceived": 160.02171325683594
+    },
+    {
+      "type": "death",
+      "tick": 9604,
+      "faction": 0,
+      "cause": "starvation",
+      "id": 10,
+      "birthTick": 0,
+      "age": 9604,
+      "deliveries": 7,
+      "distanceTraveled": 9003.62109375,
+      "ticksInMode": [
+        77.06864929199219,
+        53.83268356323242,
+        29.14972686767578
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 57.365962982177734
+    },
+    {
+      "type": "death",
+      "tick": 9607,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 213,
+      "birthTick": 0,
+      "age": 9607,
+      "deliveries": 0,
+      "distanceTraveled": 4322.66748046875,
+      "ticksInMode": [
+        160.1050262451172,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 160.1050262451172,
+      "ticksSinceFoodPerceived": 160.1050262451172
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 9654,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "death",
+      "tick": 9674,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 242,
+      "birthTick": 0,
+      "age": 9674,
+      "deliveries": 2,
+      "distanceTraveled": 8782.1162109375,
+      "ticksInMode": [
+        107.9085693359375,
+        14.799945831298828,
+        38.51625061035156
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 76.06843566894531
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 9710,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "death",
+      "tick": 9719,
+      "faction": 0,
+      "cause": "starvation",
+      "id": 365,
+      "birthTick": 4719,
+      "age": 5000,
+      "deliveries": 0,
+      "distanceTraveled": 4371.19580078125,
+      "ticksInMode": [
+        74.33473205566406,
+        9.00003433227539,
+        0
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 75.08489227294922
+    },
+    {
+      "type": "death",
+      "tick": 9778,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 217,
+      "birthTick": 0,
+      "age": 9778,
+      "deliveries": 3,
+      "distanceTraveled": 9007.0712890625,
+      "ticksInMode": [
+        105.12464141845703,
+        28.566402435302734,
+        29.26639175415039
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 46.49946212768555
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 9786,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "death",
+      "tick": 9805,
+      "faction": 0,
+      "cause": "starvation",
+      "id": 334,
+      "birthTick": 2633,
+      "age": 7172,
+      "deliveries": 3,
+      "distanceTraveled": 6525.10205078125,
+      "ticksInMode": [
+        65.38282012939453,
+        39.09957504272461,
+        15.049942016601562
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 67.19987487792969
+    },
+    {
+      "type": "death",
+      "tick": 9823,
+      "faction": 0,
+      "cause": "starvation",
+      "id": 116,
+      "birthTick": 0,
+      "age": 9823,
+      "deliveries": 3,
+      "distanceTraveled": 9066.7060546875,
+      "ticksInMode": [
+        89.43795776367188,
+        46.082801818847656,
+        28.183074951171875
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 73.13447570800781
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 9857,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 9911,
+      "faction": 0,
+      "caste": 2
+    },
+    {
+      "type": "death",
+      "tick": 9948,
+      "faction": 0,
+      "cause": "starvation",
+      "id": 145,
+      "birthTick": 0,
+      "age": 9948,
+      "deliveries": 6,
+      "distanceTraveled": 9279.9453125,
+      "ticksInMode": [
+        90.6548843383789,
+        43.4661750793457,
+        31.66635513305664
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 68.60017395019531
+    },
+    {
+      "type": "death",
+      "tick": 10000,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 190,
+      "birthTick": 0,
+      "age": 10000,
+      "deliveries": 0,
+      "distanceTraveled": 8998.9580078125,
+      "ticksInMode": [
+        166.65342712402344,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 166.65342712402344,
+      "ticksSinceFoodPerceived": 166.65342712402344
+    },
+    {
+      "type": "death",
+      "tick": 10011,
+      "faction": 0,
+      "cause": "starvation",
+      "id": 41,
+      "birthTick": 0,
+      "age": 10011,
+      "deliveries": 3,
+      "distanceTraveled": 8811.978515625,
+      "ticksInMode": [
+        72.21761322021484,
+        50.082740783691406,
+        44.5328254699707
+      ],
+      "ticksSinceLastDelivery": 95.83932495117188,
+      "ticksSinceFoodPerceived": 13.11663818359375
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 10101,
+      "faction": 0,
+      "caste": 2
+    },
+    {
+      "type": "death",
+      "tick": 10165,
+      "faction": 0,
+      "cause": "starvation",
+      "id": 79,
+      "birthTick": 0,
+      "age": 10165,
+      "deliveries": 2,
+      "distanceTraveled": 9324.107421875,
+      "ticksInMode": [
+        126.24581909179688,
+        21.3831787109375,
+        21.783172607421875
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 39.1995735168457
+    },
+    {
+      "type": "death",
+      "tick": 10171,
+      "faction": 0,
+      "cause": "starvation",
+      "id": 72,
+      "birthTick": 0,
+      "age": 10171,
+      "deliveries": 2,
+      "distanceTraveled": 9379.9208984375,
+      "ticksInMode": [
+        114.96007537841797,
+        27.049758911132812,
+        27.499752044677734
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 65.61620330810547
+    },
+    {
+      "type": "death",
+      "tick": 10190,
+      "faction": 0,
+      "cause": "starvation",
+      "id": 357,
+      "birthTick": 4119,
+      "age": 6071,
+      "deliveries": 2,
+      "distanceTraveled": 5465.859375,
+      "ticksInMode": [
+        65.36614990234375,
+        28.933063507080078,
+        6.883368492126465
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 65.88292694091797
+    },
+    {
+      "type": "death",
+      "tick": 10199,
+      "faction": 0,
+      "cause": "starvation",
+      "id": 111,
+      "birthTick": 0,
+      "age": 10199,
+      "deliveries": 6,
+      "distanceTraveled": 9467.7939453125,
+      "ticksInMode": [
+        64.66600036621094,
+        66.14965057373047,
+        39.149574279785156
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 56.23264694213867
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 10301,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "death",
+      "tick": 10334,
+      "faction": 0,
+      "cause": "starvation",
+      "id": 130,
+      "birthTick": 0,
+      "age": 10334,
+      "deliveries": 4,
+      "distanceTraveled": 9564.9765625,
+      "ticksInMode": [
+        91.0216293334961,
+        47.21611785888672,
+        33.98298645019531
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 74.55144500732422
+    },
+    {
+      "type": "death",
+      "tick": 10339,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 270,
+      "birthTick": 0,
+      "age": 10339,
+      "deliveries": 7,
+      "distanceTraveled": 9639.55078125,
+      "ticksInMode": [
+        87.78760528564453,
+        44.51615905761719,
+        39.99956130981445
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 43.36617660522461
+    },
+    {
+      "type": "death",
+      "tick": 10355,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 300,
+      "birthTick": 0,
+      "age": 10355,
+      "deliveries": 0,
+      "distanceTraveled": 4659.3134765625,
+      "ticksInMode": [
+        172.5686492919922,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 172.5686492919922,
+      "ticksSinceFoodPerceived": 172.5686492919922
+    },
+    {
+      "type": "death",
+      "tick": 10364,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 265,
+      "birthTick": 0,
+      "age": 10364,
+      "deliveries": 0,
+      "distanceTraveled": 4663.34375,
+      "ticksInMode": [
+        172.71861267089844,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 172.71861267089844,
+      "ticksSinceFoodPerceived": 172.71861267089844
+    },
+    {
+      "type": "death",
+      "tick": 10371,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 282,
+      "birthTick": 0,
+      "age": 10371,
+      "deliveries": 4,
+      "distanceTraveled": 9819.2607421875,
+      "ticksInMode": [
+        145.39195251464844,
+        17.41657257080078,
+        10.03335189819336
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 82.13639831542969
+    },
+    {
+      "type": "death",
+      "tick": 10372,
+      "faction": 0,
+      "cause": "starvation",
+      "id": 309,
+      "birthTick": 328,
+      "age": 10044,
+      "deliveries": 7,
+      "distanceTraveled": 9388.9111328125,
+      "ticksInMode": [
+        70.15050506591797,
+        62.849212646484375,
+        34.3996467590332
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 56.565975189208984
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 10411,
+      "faction": 0,
+      "caste": 1
+    },
+    {
+      "type": "death",
+      "tick": 10521,
+      "faction": 0,
+      "cause": "starvation",
+      "id": 146,
+      "birthTick": 0,
+      "age": 10521,
+      "deliveries": 7,
+      "distanceTraveled": 9858.40234375,
+      "ticksInMode": [
+        83.08660125732422,
+        56.16598129272461,
+        36.08295440673828
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 75.11823272705078
+    },
+    {
+      "type": "death",
+      "tick": 10529,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 271,
+      "birthTick": 0,
+      "age": 10529,
+      "deliveries": 5,
+      "distanceTraveled": 9778.5986328125,
+      "ticksInMode": [
+        107.34178161621094,
+        32.91633605957031,
+        35.21630096435547
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 60.149253845214844
+    },
+    {
+      "type": "death",
+      "tick": 10529,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 247,
+      "birthTick": 0,
+      "age": 10529,
+      "deliveries": 0,
+      "distanceTraveled": 4737.63818359375,
+      "ticksInMode": [
+        175.4679412841797,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 175.4679412841797,
+      "ticksSinceFoodPerceived": 175.4679412841797
+    },
+    {
+      "type": "death",
+      "tick": 10557,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 306,
+      "birthTick": 171,
+      "age": 10386,
+      "deliveries": 1,
+      "distanceTraveled": 9140.251953125,
+      "ticksInMode": [
+        130.79551696777344,
+        11.050003051757812,
+        31.266361236572266
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 67.1832046508789
+    },
+    {
+      "type": "death",
+      "tick": 10732,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 207,
+      "birthTick": 0,
+      "age": 10732,
+      "deliveries": 5,
+      "distanceTraveled": 9958.498046875,
+      "ticksInMode": [
+        117.91070556640625,
+        22.18316650390625,
+        38.7662467956543
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 82.13639831542969
+    },
+    {
+      "type": "death",
+      "tick": 10732,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 188,
+      "birthTick": 0,
+      "age": 10732,
+      "deliveries": 0,
+      "distanceTraveled": 4828.990234375,
+      "ticksInMode": [
+        178.85044860839844,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 178.85044860839844,
+      "ticksSinceFoodPerceived": 178.85044860839844
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 10735,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "death",
+      "tick": 10739,
+      "faction": 0,
+      "cause": "starvation",
+      "id": 46,
+      "birthTick": 0,
+      "age": 10739,
+      "deliveries": 10,
+      "distanceTraveled": 10136.5087890625,
+      "ticksInMode": [
+        62.41588592529297,
+        75.40162658691406,
+        41.14954376220703
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 39.082908630371094
+    },
+    {
+      "type": "death",
+      "tick": 10768,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 179,
+      "birthTick": 0,
+      "age": 10768,
+      "deliveries": 0,
+      "distanceTraveled": 4845.17822265625,
+      "ticksInMode": [
+        179.45030212402344,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 179.45030212402344,
+      "ticksSinceFoodPerceived": 179.45030212402344
+    },
+    {
+      "type": "death",
+      "tick": 10798,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 267,
+      "birthTick": 0,
+      "age": 10798,
+      "deliveries": 5,
+      "distanceTraveled": 10243.8544921875,
+      "ticksInMode": [
+        144.72544860839844,
+        20.383193969726562,
+        14.849945068359375
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 82.10305786132812
+    },
+    {
+      "type": "death",
+      "tick": 10798,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 264,
+      "birthTick": 0,
+      "age": 10798,
+      "deliveries": 0,
+      "distanceTraveled": 4858.71728515625,
+      "ticksInMode": [
+        179.95018005371094,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 179.95018005371094,
+      "ticksSinceFoodPerceived": 179.95018005371094
+    },
+    {
+      "type": "death",
+      "tick": 10798,
+      "faction": 0,
+      "cause": "starvation",
+      "id": 113,
+      "birthTick": 0,
+      "age": 10798,
+      "deliveries": 4,
+      "distanceTraveled": 9989.6806640625,
+      "ticksInMode": [
+        100.75704193115234,
+        40.76621627807617,
+        38.432918548583984
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 76.15178680419922
+    },
+    {
+      "type": "death",
+      "tick": 10826,
+      "faction": 0,
+      "cause": "starvation",
+      "id": 378,
+      "birthTick": 5826,
+      "age": 5000,
+      "deliveries": 0,
+      "distanceTraveled": 4374.82421875,
+      "ticksInMode": [
+        74.33473205566406,
+        9.00003433227539,
+        0
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 75.75170135498047
+    },
+    {
+      "type": "death",
+      "tick": 10869,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 192,
+      "birthTick": 0,
+      "age": 10869,
+      "deliveries": 1,
+      "distanceTraveled": 9279.3095703125,
+      "ticksInMode": [
+        133.5781707763672,
+        8.083381652832031,
+        39.48290252685547
+      ],
+      "ticksSinceLastDelivery": 95.83932495117188,
+      "ticksSinceFoodPerceived": 33.61632537841797
+    },
+    {
+      "type": "death",
+      "tick": 10872,
+      "faction": 0,
+      "cause": "starvation",
+      "id": 336,
+      "birthTick": 2726,
+      "age": 8146,
+      "deliveries": 4,
+      "distanceTraveled": 7517.85205078125,
+      "ticksInMode": [
+        68.33345031738281,
+        49.099422454833984,
+        18.33322525024414
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 45.1661491394043
+    },
+    {
+      "type": "death",
+      "tick": 10881,
+      "faction": 0,
+      "cause": "starvation",
+      "id": 11,
+      "birthTick": 0,
+      "age": 10881,
+      "deliveries": 6,
+      "distanceTraveled": 10153.94140625,
+      "ticksInMode": [
+        86.33729553222656,
+        56.31597900390625,
+        38.68291473388672
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 51.349388122558594
+    },
+    {
+      "type": "death",
+      "tick": 10886,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 292,
+      "birthTick": 0,
+      "age": 10886,
+      "deliveries": 0,
+      "distanceTraveled": 4898.34716796875,
+      "ticksInMode": [
+        181.41648864746094,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 181.41648864746094,
+      "ticksSinceFoodPerceived": 181.41648864746094
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 10904,
+      "faction": 0,
+      "caste": 1
+    },
+    {
+      "type": "death",
+      "tick": 10964,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 178,
+      "birthTick": 0,
+      "age": 10964,
+      "deliveries": 0,
+      "distanceTraveled": 4933.421875,
+      "ticksInMode": [
+        182.71617126464844,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 182.71617126464844,
+      "ticksSinceFoodPerceived": 182.71617126464844
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 11060,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "death",
+      "tick": 11071,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 285,
+      "birthTick": 0,
+      "age": 11071,
+      "deliveries": 0,
+      "distanceTraveled": 4981.59912109375,
+      "ticksInMode": [
+        184.4990692138672,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 184.4990692138672,
+      "ticksSinceFoodPerceived": 184.4990692138672
+    },
+    {
+      "type": "death",
+      "tick": 11071,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 289,
+      "birthTick": 0,
+      "age": 11071,
+      "deliveries": 7,
+      "distanceTraveled": 10334.7451171875,
+      "ticksInMode": [
+        108.17529296875,
+        32.11634826660156,
+        44.216163635253906
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 82.36978149414062
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 11133,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "death",
+      "tick": 11145,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 185,
+      "birthTick": 0,
+      "age": 11145,
+      "deliveries": 2,
+      "distanceTraveled": 9610.4658203125,
+      "ticksInMode": [
+        126.16246795654297,
+        7.966716289520264,
+        51.616050720214844
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 82.26976013183594
+    },
+    {
+      "type": "death",
+      "tick": 11145,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 177,
+      "birthTick": 0,
+      "age": 11145,
+      "deliveries": 0,
+      "distanceTraveled": 5014.8955078125,
+      "ticksInMode": [
+        185.7321014404297,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 185.7321014404297,
+      "ticksSinceFoodPerceived": 185.7321014404297
+    },
+    {
+      "type": "death",
+      "tick": 11196,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 245,
+      "birthTick": 0,
+      "age": 11196,
+      "deliveries": 0,
+      "distanceTraveled": 5037.82373046875,
+      "ticksInMode": [
+        186.58189392089844,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 186.58189392089844,
+      "ticksSinceFoodPerceived": 186.58189392089844
+    },
+    {
+      "type": "death",
+      "tick": 11243,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 235,
+      "birthTick": 0,
+      "age": 11243,
+      "deliveries": 12,
+      "distanceTraveled": 10550.4296875,
+      "ticksInMode": [
+        108.24197387695312,
+        45.41614532470703,
+        33.71632385253906
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 82.20307922363281
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 11255,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "death",
+      "tick": 11322,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 168,
+      "birthTick": 0,
+      "age": 11322,
+      "deliveries": 0,
+      "distanceTraveled": 5094.580078125,
+      "ticksInMode": [
+        188.68138122558594,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 188.68138122558594,
+      "ticksSinceFoodPerceived": 188.68138122558594
+    },
+    {
+      "type": "death",
+      "tick": 11341,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 349,
+      "birthTick": 3526,
+      "age": 7815,
+      "deliveries": 7,
+      "distanceTraveled": 7304.35986328125,
+      "ticksInMode": [
+        81.71964263916016,
+        30.649703979492188,
+        17.88323211669922
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 8.100048065185547
+    },
+    {
+      "type": "death",
+      "tick": 11341,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 164,
+      "birthTick": 0,
+      "age": 11341,
+      "deliveries": 0,
+      "distanceTraveled": 5103.08935546875,
+      "ticksInMode": [
+        188.9979705810547,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 188.9979705810547,
+      "ticksSinceFoodPerceived": 188.9979705810547
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 11353,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "death",
+      "tick": 11354,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 345,
+      "birthTick": 3291,
+      "age": 8063,
+      "deliveries": 6,
+      "distanceTraveled": 7525.31640625,
+      "ticksInMode": [
+        81.78632354736328,
+        35.01630401611328,
+        17.583236694335938
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 40.449554443359375
+    },
+    {
+      "type": "death",
+      "tick": 11354,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 162,
+      "birthTick": 0,
+      "age": 11354,
+      "deliveries": 0,
+      "distanceTraveled": 5108.9853515625,
+      "ticksInMode": [
+        189.21458435058594,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 189.21458435058594,
+      "ticksSinceFoodPerceived": 189.21458435058594
+    },
+    {
+      "type": "death",
+      "tick": 11407,
+      "faction": 0,
+      "cause": "starvation",
+      "id": 67,
+      "birthTick": 0,
+      "age": 11407,
+      "deliveries": 7,
+      "distanceTraveled": 10356.53125,
+      "ticksInMode": [
+        55.78265380859375,
+        74.80149841308594,
+        59.51593017578125
+      ],
+      "ticksSinceLastDelivery": 95.83932495117188,
+      "ticksSinceFoodPerceived": 23.083152770996094
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 11433,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "terminal_start",
+      "tick": 11510,
+      "faction": 1
+    },
+    {
+      "type": "death",
+      "tick": 11512,
+      "faction": 0,
+      "cause": "starvation",
+      "id": 384,
+      "birthTick": 6512,
+      "age": 5000,
+      "deliveries": 0,
+      "distanceTraveled": 4374.8779296875,
+      "ticksInMode": [
+        65.33280944824219,
+        17.999897003173828,
+        0
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 67.08318328857422
+    },
+    {
+      "type": "death",
+      "tick": 11539,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 223,
+      "birthTick": 0,
+      "age": 11539,
+      "deliveries": 2,
+      "distanceTraveled": 10741.009765625,
+      "ticksInMode": [
+        152.09031677246094,
+        11.949989318847656,
+        28.266407012939453
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 82.45313262939453
+    },
+    {
+      "type": "death",
+      "tick": 11541,
+      "faction": 1,
+      "cause": "terminal_cull",
+      "id": 307,
+      "birthTick": 204,
+      "age": 11337,
+      "deliveries": 0,
+      "distanceTraveled": 5101.78076171875,
+      "ticksInMode": [
+        188.94798278808594,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 188.94798278808594,
+      "ticksSinceFoodPerceived": 188.94798278808594
+    },
+    {
+      "type": "death",
+      "tick": 11541,
+      "faction": 0,
+      "cause": "starvation",
+      "id": 114,
+      "birthTick": 0,
+      "age": 11541,
+      "deliveries": 7,
+      "distanceTraveled": 10793.408203125,
+      "ticksInMode": [
+        66.73310852050781,
+        81.1528549194336,
+        44.449493408203125
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 0
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 11546,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "death",
+      "tick": 11550,
+      "faction": 0,
+      "cause": "starvation",
+      "id": 375,
+      "birthTick": 5408,
+      "age": 6142,
+      "deliveries": 2,
+      "distanceTraveled": 5495.38330078125,
+      "ticksInMode": [
+        56.3659782409668,
+        35.19963455200195,
+        10.800006866455078
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 57.34929656982422
+    },
+    {
+      "type": "death",
+      "tick": 11572,
+      "faction": 1,
+      "cause": "terminal_cull",
+      "id": 339,
+      "birthTick": 2921,
+      "age": 8651,
+      "deliveries": 0,
+      "distanceTraveled": 3892.8359375,
+      "ticksInMode": [
+        144.19224548339844,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 144.19224548339844,
+      "ticksSinceFoodPerceived": 144.19224548339844
+    },
+    {
+      "type": "death",
+      "tick": 11589,
+      "faction": 0,
+      "cause": "starvation",
+      "id": 325,
+      "birthTick": 1746,
+      "age": 9843,
+      "deliveries": 6,
+      "distanceTraveled": 9240.7548828125,
+      "ticksInMode": [
+        79.75255584716797,
+        61.099239349365234,
+        23.199817657470703
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 74.66813659667969
+    },
+    {
+      "type": "death",
+      "tick": 11602,
+      "faction": 1,
+      "cause": "terminal_cull",
+      "id": 257,
+      "birthTick": 0,
+      "age": 11602,
+      "deliveries": 0,
+      "distanceTraveled": 10441.3046875,
+      "ticksInMode": [
+        193.34690856933594,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 193.34690856933594,
+      "ticksSinceFoodPerceived": 193.34690856933594
+    },
+    {
+      "type": "death",
+      "tick": 11633,
+      "faction": 1,
+      "cause": "terminal_cull",
+      "id": 244,
+      "birthTick": 0,
+      "age": 11633,
+      "deliveries": 3,
+      "distanceTraveled": 11242.318359375,
+      "ticksInMode": [
+        108.37533569335938,
+        24.983123779296875,
+        60.51591491699219
+      ],
+      "ticksSinceLastDelivery": 33.38299560546875,
+      "ticksSinceFoodPerceived": 9.050033569335938
+    },
+    {
+      "type": "death",
+      "tick": 11663,
+      "faction": 1,
+      "cause": "terminal_cull",
+      "id": 243,
+      "birthTick": 0,
+      "age": 11663,
+      "deliveries": 0,
+      "distanceTraveled": 5248.0673828125,
+      "ticksInMode": [
+        194.3633270263672,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 194.3633270263672,
+      "ticksSinceFoodPerceived": 194.3633270263672
+    },
+    {
+      "type": "death",
+      "tick": 11694,
+      "faction": 1,
+      "cause": "terminal_cull",
+      "id": 241,
+      "birthTick": 0,
+      "age": 11694,
+      "deliveries": 10,
+      "distanceTraveled": 11091.0791015625,
+      "ticksInMode": [
+        79.16909790039062,
+        35.616294860839844,
+        80.10263061523438
+      ],
+      "ticksSinceLastDelivery": 8.516708374023438,
+      "ticksSinceFoodPerceived": 0
+    },
+    {
+      "type": "death",
+      "tick": 11724,
+      "faction": 1,
+      "cause": "terminal_cull",
+      "id": 239,
+      "birthTick": 0,
+      "age": 11724,
+      "deliveries": 6,
+      "distanceTraveled": 11400.65234375,
+      "ticksInMode": [
+        104.87458801269531,
+        22.816490173339844,
+        67.69998168945312
+      ],
+      "ticksSinceLastDelivery": 57.6492919921875,
+      "ticksSinceFoodPerceived": 17.099910736083984
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 11732,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "death",
+      "tick": 11755,
+      "faction": 1,
+      "cause": "terminal_cull",
+      "id": 238,
+      "birthTick": 0,
+      "age": 11755,
+      "deliveries": 0,
+      "distanceTraveled": 10579.0947265625,
+      "ticksInMode": [
+        195.8962860107422,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 195.8962860107422,
+      "ticksSinceFoodPerceived": 195.8962860107422
+    },
+    {
+      "type": "death",
+      "tick": 11785,
+      "faction": 1,
+      "cause": "terminal_cull",
+      "id": 236,
+      "birthTick": 0,
+      "age": 11785,
+      "deliveries": 0,
+      "distanceTraveled": 5302.96533203125,
+      "ticksInMode": [
+        196.3961639404297,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 196.3961639404297,
+      "ticksSinceFoodPerceived": 196.3961639404297
+    },
+    {
+      "type": "death",
+      "tick": 11802,
+      "faction": 0,
+      "cause": "starvation",
+      "id": 376,
+      "birthTick": 5622,
+      "age": 6180,
+      "deliveries": 1,
+      "distanceTraveled": 5506.44482421875,
+      "ticksInMode": [
+        65.34947967529297,
+        27.683082580566406,
+        9.966686248779297
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 66.2163314819336
+    },
+    {
+      "type": "death",
+      "tick": 11816,
+      "faction": 1,
+      "cause": "terminal_cull",
+      "id": 256,
+      "birthTick": 0,
+      "age": 11816,
+      "deliveries": 0,
+      "distanceTraveled": 5316.92529296875,
+      "ticksInMode": [
+        196.91270446777344,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 196.91270446777344,
+      "ticksSinceFoodPerceived": 196.91270446777344
+    },
+    {
+      "type": "death",
+      "tick": 11846,
+      "faction": 1,
+      "cause": "terminal_cull",
+      "id": 234,
+      "birthTick": 0,
+      "age": 11846,
+      "deliveries": 0,
+      "distanceTraveled": 5330.4052734375,
+      "ticksInMode": [
+        197.41258239746094,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 197.41258239746094,
+      "ticksSinceFoodPerceived": 197.41258239746094
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 11846,
+      "faction": 0,
+      "caste": 2
+    },
+    {
+      "type": "death",
+      "tick": 11870,
+      "faction": 0,
+      "cause": "starvation",
+      "id": 322,
+      "birthTick": 1528,
+      "age": 10342,
+      "deliveries": 6,
+      "distanceTraveled": 9627.416015625,
+      "ticksInMode": [
+        74.81816864013672,
+        60.16592025756836,
+        37.3829345703125
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 74.4847640991211
+    },
+    {
+      "type": "death",
+      "tick": 11877,
+      "faction": 1,
+      "cause": "terminal_cull",
+      "id": 232,
+      "birthTick": 0,
+      "age": 11877,
+      "deliveries": 0,
+      "distanceTraveled": 5344.37744140625,
+      "ticksInMode": [
+        197.9291229248047,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 197.9291229248047,
+      "ticksSinceFoodPerceived": 197.9291229248047
+    },
+    {
+      "type": "death",
+      "tick": 11907,
+      "faction": 1,
+      "cause": "terminal_cull",
+      "id": 231,
+      "birthTick": 0,
+      "age": 11907,
+      "deliveries": 0,
+      "distanceTraveled": 10715.9248046875,
+      "ticksInMode": [
+        198.4290008544922,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 198.4290008544922,
+      "ticksSinceFoodPerceived": 198.4290008544922
+    },
+    {
+      "type": "death",
+      "tick": 11938,
+      "faction": 1,
+      "cause": "terminal_cull",
+      "id": 230,
+      "birthTick": 0,
+      "age": 11938,
+      "deliveries": 0,
+      "distanceTraveled": 10743.8251953125,
+      "ticksInMode": [
+        198.94554138183594,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 198.94554138183594,
+      "ticksSinceFoodPerceived": 198.94554138183594
+    },
+    {
+      "type": "death",
+      "tick": 11968,
+      "faction": 1,
+      "cause": "terminal_cull",
+      "id": 312,
+      "birthTick": 650,
+      "age": 11318,
+      "deliveries": 0,
+      "distanceTraveled": 10186.4970703125,
+      "ticksInMode": [
+        188.6313934326172,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 188.6313934326172,
+      "ticksSinceFoodPerceived": 188.6313934326172
+    },
+    {
+      "type": "carcass_spoiled",
+      "tick": 11977,
+      "x": 2918.4448200962493,
+      "y": 1547.32536343109,
+      "amount": 94.9362952709198
+    },
+    {
+      "type": "death",
+      "tick": 11987,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 201,
+      "birthTick": 0,
+      "age": 11987,
+      "deliveries": 5,
+      "distanceTraveled": 11245.62890625,
+      "ticksInMode": [
+        140.95970153808594,
+        23.149818420410156,
+        35.66629409790039
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 82.88655853271484
+    },
+    {
+      "type": "death",
+      "tick": 11991,
+      "faction": 0,
+      "cause": "starvation",
+      "id": 73,
+      "birthTick": 0,
+      "age": 11991,
+      "deliveries": 11,
+      "distanceTraveled": 11440.0234375,
+      "ticksInMode": [
+        70.3838882446289,
+        88.33772277832031,
+        41.1162109375
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 64.0825424194336
+    },
+    {
+      "type": "death",
+      "tick": 11993,
+      "faction": 0,
+      "cause": "starvation",
+      "id": 141,
+      "birthTick": 0,
+      "age": 11993,
+      "deliveries": 8,
+      "distanceTraveled": 11365.8212890625,
+      "ticksInMode": [
+        90.82158660888672,
+        74.3013916015625,
+        34.74964141845703
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 23.39981460571289
+    },
+    {
+      "type": "death",
+      "tick": 11999,
+      "faction": 1,
+      "cause": "terminal_cull",
+      "id": 222,
+      "birthTick": 0,
+      "age": 11999,
+      "deliveries": 0,
+      "distanceTraveled": 5399.2822265625,
+      "ticksInMode": [
+        199.9619598388672,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 199.9619598388672,
+      "ticksSinceFoodPerceived": 199.9619598388672
+    },
+    {
+      "type": "death",
+      "tick": 12029,
+      "faction": 1,
+      "cause": "terminal_cull",
+      "id": 218,
+      "birthTick": 0,
+      "age": 12029,
+      "deliveries": 0,
+      "distanceTraveled": 10825.7451171875,
+      "ticksInMode": [
+        200.4618377685547,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 200.4618377685547,
+      "ticksSinceFoodPerceived": 200.4618377685547
+    },
+    {
+      "type": "death",
+      "tick": 12060,
+      "faction": 1,
+      "cause": "terminal_cull",
+      "id": 284,
+      "birthTick": 0,
+      "age": 12060,
+      "deliveries": 0,
+      "distanceTraveled": 10853.658203125,
+      "ticksInMode": [
+        200.97837829589844,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 200.97837829589844,
+      "ticksSinceFoodPerceived": 200.97837829589844
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 12061,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "death",
+      "tick": 12082,
+      "faction": 0,
+      "cause": "starvation",
+      "id": 37,
+      "birthTick": 0,
+      "age": 12082,
+      "deliveries": 13,
+      "distanceTraveled": 11485.8779296875,
+      "ticksInMode": [
+        68.4334716796875,
+        77.18534088134766,
+        55.7326545715332
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 65.88292694091797
+    },
+    {
+      "type": "death",
+      "tick": 12090,
+      "faction": 1,
+      "cause": "terminal_cull",
+      "id": 216,
+      "birthTick": 0,
+      "age": 12090,
+      "deliveries": 0,
+      "distanceTraveled": 10880.69140625,
+      "ticksInMode": [
+        201.47825622558594,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 201.47825622558594,
+      "ticksSinceFoodPerceived": 201.47825622558594
+    },
+    {
+      "type": "death",
+      "tick": 12121,
+      "faction": 1,
+      "cause": "terminal_cull",
+      "id": 214,
+      "birthTick": 0,
+      "age": 12121,
+      "deliveries": 0,
+      "distanceTraveled": 10908.6015625,
+      "ticksInMode": [
+        201.9947967529297,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 201.9947967529297,
+      "ticksSinceFoodPerceived": 201.9947967529297
+    },
+    {
+      "type": "death",
+      "tick": 12151,
+      "faction": 1,
+      "cause": "terminal_cull",
+      "id": 212,
+      "birthTick": 0,
+      "age": 12151,
+      "deliveries": 0,
+      "distanceTraveled": 10935.607421875,
+      "ticksInMode": [
+        202.4946746826172,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 202.4946746826172,
+      "ticksSinceFoodPerceived": 202.4946746826172
+    },
+    {
+      "type": "death",
+      "tick": 12171,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 211,
+      "birthTick": 0,
+      "age": 12171,
+      "deliveries": 3,
+      "distanceTraveled": 11168.0859375,
+      "ticksInMode": [
+        130.39561462402344,
+        17.833232879638672,
+        54.616004943847656
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 82.8365478515625
+    },
+    {
+      "type": "death",
+      "tick": 12180,
+      "faction": 0,
+      "cause": "starvation",
+      "id": 55,
+      "birthTick": 0,
+      "age": 12180,
+      "deliveries": 8,
+      "distanceTraveled": 11565.515625,
+      "ticksInMode": [
+        83.63671875,
+        85.00367736816406,
+        34.349647521972656
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 74.70147705078125
+    },
+    {
+      "type": "death",
+      "tick": 12182,
+      "faction": 1,
+      "cause": "terminal_cull",
+      "id": 209,
+      "birthTick": 0,
+      "age": 12182,
+      "deliveries": 7,
+      "distanceTraveled": 12100.6220703125,
+      "ticksInMode": [
+        130.0790252685547,
+        34.36631393432617,
+        38.582916259765625
+      ],
+      "ticksSinceLastDelivery": 53.932682037353516,
+      "ticksSinceFoodPerceived": 54.91600036621094
+    },
+    {
+      "type": "death",
+      "tick": 12212,
+      "faction": 1,
+      "cause": "terminal_cull",
+      "id": 278,
+      "birthTick": 0,
+      "age": 12212,
+      "deliveries": 0,
+      "distanceTraveled": 10990.5498046875,
+      "ticksInMode": [
+        203.51109313964844,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 203.51109313964844,
+      "ticksSinceFoodPerceived": 203.51109313964844
+    },
+    {
+      "type": "death",
+      "tick": 12243,
+      "faction": 1,
+      "cause": "terminal_cull",
+      "id": 206,
+      "birthTick": 0,
+      "age": 12243,
+      "deliveries": 0,
+      "distanceTraveled": 11018.43359375,
+      "ticksInMode": [
+        204.0276336669922,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 204.0276336669922,
+      "ticksSinceFoodPerceived": 204.0276336669922
+    },
+    {
+      "type": "death",
+      "tick": 12273,
+      "faction": 1,
+      "cause": "terminal_cull",
+      "id": 205,
+      "birthTick": 0,
+      "age": 12273,
+      "deliveries": 10,
+      "distanceTraveled": 11875.744140625,
+      "ticksInMode": [
+        98.78995513916016,
+        28.766399383544922,
+        76.98529815673828
+      ],
+      "ticksSinceLastDelivery": 1.7999989986419678,
+      "ticksSinceFoodPerceived": 0
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 12295,
+      "faction": 0,
+      "caste": 1
+    },
+    {
+      "type": "death",
+      "tick": 12304,
+      "faction": 1,
+      "cause": "terminal_cull",
+      "id": 280,
+      "birthTick": 0,
+      "age": 12304,
+      "deliveries": 13,
+      "distanceTraveled": 12318.3896484375,
+      "ticksInMode": [
+        94.37234497070312,
+        53.249359130859375,
+        57.4326286315918
+      ],
+      "ticksSinceLastDelivery": 60.13258743286133,
+      "ticksSinceFoodPerceived": 84.58692169189453
+    },
+    {
+      "type": "death",
+      "tick": 12334,
+      "faction": 1,
+      "cause": "terminal_cull",
+      "id": 202,
+      "birthTick": 0,
+      "age": 12334,
+      "deliveries": 0,
+      "distanceTraveled": 11100.3828125,
+      "ticksInMode": [
+        205.54393005371094,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 205.54393005371094,
+      "ticksSinceFoodPerceived": 205.54393005371094
+    },
+    {
+      "type": "death",
+      "tick": 12334,
+      "faction": 0,
+      "cause": "starvation",
+      "id": 392,
+      "birthTick": 7334,
+      "age": 5000,
+      "deliveries": 0,
+      "distanceTraveled": 4374.3876953125,
+      "ticksInMode": [
+        80.31934356689453,
+        3.016664505004883,
+        0
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 80.31934356689453
+    },
+    {
+      "type": "death",
+      "tick": 12365,
+      "faction": 1,
+      "cause": "terminal_cull",
+      "id": 198,
+      "birthTick": 0,
+      "age": 12365,
+      "deliveries": 0,
+      "distanceTraveled": 5563.9794921875,
+      "ticksInMode": [
+        206.0604705810547,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 206.0604705810547,
+      "ticksSinceFoodPerceived": 206.0604705810547
+    },
+    {
+      "type": "death",
+      "tick": 12395,
+      "faction": 1,
+      "cause": "terminal_cull",
+      "id": 197,
+      "birthTick": 0,
+      "age": 12395,
+      "deliveries": 0,
+      "distanceTraveled": 11155.2607421875,
+      "ticksInMode": [
+        206.5603485107422,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 206.5603485107422,
+      "ticksSinceFoodPerceived": 206.5603485107422
+    },
+    {
+      "type": "death",
+      "tick": 12426,
+      "faction": 1,
+      "cause": "terminal_cull",
+      "id": 196,
+      "birthTick": 0,
+      "age": 12426,
+      "deliveries": 0,
+      "distanceTraveled": 11183.205078125,
+      "ticksInMode": [
+        207.07688903808594,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 207.07688903808594,
+      "ticksSinceFoodPerceived": 207.07688903808594
+    },
+    {
+      "type": "death",
+      "tick": 12456,
+      "faction": 1,
+      "cause": "terminal_cull",
+      "id": 194,
+      "birthTick": 0,
+      "age": 12456,
+      "deliveries": 0,
+      "distanceTraveled": 11210.19921875,
+      "ticksInMode": [
+        207.57676696777344,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 207.57676696777344,
+      "ticksSinceFoodPerceived": 207.57676696777344
+    },
+    {
+      "type": "death",
+      "tick": 12466,
+      "faction": 0,
+      "cause": "starvation",
+      "id": 393,
+      "birthTick": 7466,
+      "age": 5000,
+      "deliveries": 0,
+      "distanceTraveled": 4375,
+      "ticksInMode": [
+        65.33280944824219,
+        17.999897003173828,
+        0
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 66.2996826171875
+    },
+    {
+      "type": "death",
+      "tick": 12487,
+      "faction": 1,
+      "cause": "terminal_cull",
+      "id": 263,
+      "birthTick": 0,
+      "age": 12487,
+      "deliveries": 10,
+      "distanceTraveled": 12145.6142578125,
+      "ticksInMode": [
+        85.62047576904297,
+        41.399539947509766,
+        81.08617401123047
+      ],
+      "ticksSinceLastDelivery": 41.666202545166016,
+      "ticksSinceFoodPerceived": 40.84954833984375
+    },
+    {
+      "type": "death",
+      "tick": 12517,
+      "faction": 1,
+      "cause": "terminal_cull",
+      "id": 269,
+      "birthTick": 0,
+      "age": 12517,
+      "deliveries": 0,
+      "distanceTraveled": 11265.1279296875,
+      "ticksInMode": [
+        208.5931854248047,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 208.5931854248047,
+      "ticksSinceFoodPerceived": 208.5931854248047
+    },
+    {
+      "type": "death",
+      "tick": 12548,
+      "faction": 1,
+      "cause": "terminal_cull",
+      "id": 273,
+      "birthTick": 0,
+      "age": 12548,
+      "deliveries": 0,
+      "distanceTraveled": 11293.0634765625,
+      "ticksInMode": [
+        209.10972595214844,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 209.10972595214844,
+      "ticksSinceFoodPerceived": 209.10972595214844
+    },
+    {
+      "type": "death",
+      "tick": 12578,
+      "faction": 1,
+      "cause": "terminal_cull",
+      "id": 258,
+      "birthTick": 0,
+      "age": 12578,
+      "deliveries": 0,
+      "distanceTraveled": 11320.08203125,
+      "ticksInMode": [
+        209.60960388183594,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 209.60960388183594,
+      "ticksSinceFoodPerceived": 209.60960388183594
+    },
+    {
+      "type": "death",
+      "tick": 12609,
+      "faction": 1,
+      "cause": "terminal_cull",
+      "id": 176,
+      "birthTick": 0,
+      "age": 12609,
+      "deliveries": 0,
+      "distanceTraveled": 11347.9716796875,
+      "ticksInMode": [
+        210.1261444091797,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 210.1261444091797,
+      "ticksSinceFoodPerceived": 210.1261444091797
+    },
+    {
+      "type": "death",
+      "tick": 12639,
+      "faction": 1,
+      "cause": "terminal_cull",
+      "id": 171,
+      "birthTick": 0,
+      "age": 12639,
+      "deliveries": 0,
+      "distanceTraveled": 11374.9697265625,
+      "ticksInMode": [
+        210.6260223388672,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 210.6260223388672,
+      "ticksSinceFoodPerceived": 210.6260223388672
+    },
+    {
+      "type": "death",
+      "tick": 12670,
+      "faction": 1,
+      "cause": "terminal_cull",
+      "id": 298,
+      "birthTick": 0,
+      "age": 12670,
+      "deliveries": 0,
+      "distanceTraveled": 5701.2529296875,
+      "ticksInMode": [
+        211.14256286621094,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 211.14256286621094,
+      "ticksSinceFoodPerceived": 211.14256286621094
+    },
+    {
+      "type": "death",
+      "tick": 12700,
+      "faction": 1,
+      "cause": "terminal_cull",
+      "id": 254,
+      "birthTick": 0,
+      "age": 12700,
+      "deliveries": 13,
+      "distanceTraveled": 12723.58984375,
+      "ticksInMode": [
+        99.52344512939453,
+        58.582611083984375,
+        53.549354553222656
+      ],
+      "ticksSinceLastDelivery": 7.38337516784668,
+      "ticksSinceFoodPerceived": 5.866688251495361
+    },
+    {
+      "type": "death",
+      "tick": 12731,
+      "faction": 1,
+      "cause": "terminal_cull",
+      "id": 163,
+      "birthTick": 0,
+      "age": 12731,
+      "deliveries": 0,
+      "distanceTraveled": 11457.822265625,
+      "ticksInMode": [
+        212.1589813232422,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 212.1589813232422,
+      "ticksSinceFoodPerceived": 212.1589813232422
+    },
+    {
+      "type": "death",
+      "tick": 12761,
+      "faction": 1,
+      "cause": "terminal_cull",
+      "id": 160,
+      "birthTick": 0,
+      "age": 12761,
+      "deliveries": 10,
+      "distanceTraveled": 12603.2861328125,
+      "ticksInMode": [
+        113.39307403564453,
+        40.832881927490234,
+        58.44927978515625
+      ],
+      "ticksSinceLastDelivery": 8.550041198730469,
+      "ticksSinceFoodPerceived": 6.8167009353637695
+    },
+    {
+      "type": "death",
+      "tick": 12792,
+      "faction": 1,
+      "cause": "terminal_cull",
+      "id": 159,
+      "birthTick": 0,
+      "age": 12792,
+      "deliveries": 0,
+      "distanceTraveled": 5756.18798828125,
+      "ticksInMode": [
+        213.17539978027344,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 213.17539978027344,
+      "ticksSinceFoodPerceived": 213.17539978027344
+    },
+    {
+      "type": "death",
+      "tick": 12822,
+      "faction": 1,
+      "cause": "terminal_cull",
+      "id": 157,
+      "birthTick": 0,
+      "age": 12822,
+      "deliveries": 6,
+      "distanceTraveled": 12467.5537109375,
+      "ticksInMode": [
+        116.56041717529297,
+        38.049591064453125,
+        59.082603454589844
+      ],
+      "ticksSinceLastDelivery": 4.0999979972839355,
+      "ticksSinceFoodPerceived": 1.1499996185302734
+    },
+    {
+      "type": "death",
+      "tick": 12852,
+      "faction": 1,
+      "cause": "starvation",
+      "id": 276,
+      "birthTick": 0,
+      "age": 12852,
+      "deliveries": 11,
+      "distanceTraveled": 12212.484375,
+      "ticksInMode": [
+        114.86005401611328,
+        47.532779693603516,
+        51.799381256103516
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 63.96586227416992
+    },
+    {
+      "type": "death",
+      "tick": 12853,
+      "faction": 1,
+      "cause": "terminal_cull",
+      "id": 156,
+      "birthTick": 0,
+      "age": 12853,
+      "deliveries": 0,
+      "distanceTraveled": 11567.630859375,
+      "ticksInMode": [
+        214.1918182373047,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 214.1918182373047,
+      "ticksSinceFoodPerceived": 214.1918182373047
+    },
+    {
+      "type": "death",
+      "tick": 12883,
+      "faction": 1,
+      "cause": "terminal_cull",
+      "id": 153,
+      "birthTick": 0,
+      "age": 12883,
+      "deliveries": 0,
+      "distanceTraveled": 5797.181640625,
+      "ticksInMode": [
+        214.6916961669922,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 214.6916961669922,
+      "ticksSinceFoodPerceived": 214.6916961669922
+    },
+    {
+      "type": "death",
+      "tick": 12914,
+      "faction": 1,
+      "cause": "terminal_cull",
+      "id": 151,
+      "birthTick": 0,
+      "age": 12914,
+      "deliveries": 0,
+      "distanceTraveled": 11622.55859375,
+      "ticksInMode": [
+        215.20823669433594,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 215.20823669433594,
+      "ticksSinceFoodPerceived": 215.20823669433594
+    },
+    {
+      "type": "brood_hatch",
+      "tick": 12937,
+      "faction": 0,
+      "caste": 0
+    },
+    {
+      "type": "death",
+      "tick": 12944,
+      "faction": 1,
+      "cause": "terminal_cull",
+      "id": 335,
+      "birthTick": 2716,
+      "age": 10228,
+      "deliveries": 11,
+      "distanceTraveled": 10046.3251953125,
+      "ticksInMode": [
+        56.96596908569336,
+        45.016151428222656,
+        68.48348236083984
+      ],
+      "ticksSinceLastDelivery": 3.9499969482421875,
+      "ticksSinceFoodPerceived": 2.58333158493042
+    },
+    {
+      "type": "death",
+      "tick": 12975,
+      "faction": 1,
+      "cause": "terminal_cull",
+      "id": 279,
+      "birthTick": 0,
+      "age": 12975,
+      "deliveries": 0,
+      "distanceTraveled": 5838.578125,
+      "ticksInMode": [
+        216.2246551513672,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 216.2246551513672,
+      "ticksSinceFoodPerceived": 216.2246551513672
+    },
+    {
+      "type": "death",
+      "tick": 13005,
+      "faction": 1,
+      "cause": "terminal_cull",
+      "id": 299,
+      "birthTick": 0,
+      "age": 13005,
+      "deliveries": 0,
+      "distanceTraveled": 5852.09326171875,
+      "ticksInMode": [
+        216.7245330810547,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 216.7245330810547,
+      "ticksSinceFoodPerceived": 216.7245330810547
+    },
+    {
+      "type": "death",
+      "tick": 13036,
+      "faction": 1,
+      "cause": "terminal_cull",
+      "id": 297,
+      "birthTick": 0,
+      "age": 13036,
+      "deliveries": 0,
+      "distanceTraveled": 11732.4208984375,
+      "ticksInMode": [
+        217.24107360839844,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 217.24107360839844,
+      "ticksSinceFoodPerceived": 217.24107360839844
+    },
+    {
+      "type": "death",
+      "tick": 13066,
+      "faction": 1,
+      "cause": "terminal_cull",
+      "id": 272,
+      "birthTick": 0,
+      "age": 13066,
+      "deliveries": 0,
+      "distanceTraveled": 11759.4443359375,
+      "ticksInMode": [
+        217.74095153808594,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 217.74095153808594,
+      "ticksSinceFoodPerceived": 217.74095153808594
+    },
+    {
+      "type": "death",
+      "tick": 13092,
+      "faction": 0,
+      "cause": "starvation",
+      "id": 144,
+      "birthTick": 0,
+      "age": 13092,
+      "deliveries": 7,
+      "distanceTraveled": 12405.423828125,
+      "ticksInMode": [
+        123.1951675415039,
+        58.882606506347656,
+        36.11628723144531
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 75.9850845336914
+    },
+    {
+      "type": "death",
+      "tick": 13097,
+      "faction": 1,
+      "cause": "terminal_cull",
+      "id": 281,
+      "birthTick": 0,
+      "age": 13097,
+      "deliveries": 0,
+      "distanceTraveled": 5893.46728515625,
+      "ticksInMode": [
+        218.2574920654297,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 218.2574920654297,
+      "ticksSinceFoodPerceived": 218.2574920654297
+    },
+    {
+      "type": "death",
+      "tick": 13127,
+      "faction": 1,
+      "cause": "terminal_cull",
+      "id": 323,
+      "birthTick": 1563,
+      "age": 11564,
+      "deliveries": 0,
+      "distanceTraveled": 10407.9814453125,
+      "ticksInMode": [
+        192.7303924560547,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 192.7303924560547,
+      "ticksSinceFoodPerceived": 192.7303924560547
+    },
+    {
+      "type": "death",
+      "tick": 13140,
+      "faction": 0,
+      "cause": "starvation",
+      "id": 367,
+      "birthTick": 4865,
+      "age": 8275,
+      "deliveries": 4,
+      "distanceTraveled": 7566.52978515625,
+      "ticksInMode": [
+        67.08318328857422,
+        45.61614227294922,
+        25.216453552246094
+      ],
+      "ticksSinceLastDelivery": 83.33665466308594,
+      "ticksSinceFoodPerceived": 67.5499496459961
+    },
+    {
+      "type": "death",
+      "tick": 13158,
+      "faction": 1,
+      "cause": "terminal_cull",
+      "id": 275,
+      "birthTick": 0,
+      "age": 13158,
+      "deliveries": 0,
+      "distanceTraveled": 11842.2841796875,
+      "ticksInMode": [
+        219.27391052246094,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 219.27391052246094,
+      "ticksSinceFoodPerceived": 219.27391052246094
+    },
+    {
+      "type": "death",
+      "tick": 13188,
+      "faction": 1,
+      "cause": "terminal_cull",
+      "id": 274,
+      "birthTick": 0,
+      "age": 13188,
+      "deliveries": 0,
+      "distanceTraveled": 5934.48486328125,
+      "ticksInMode": [
+        219.77378845214844,
+        0,
+        0
+      ],
+      "ticksSinceLastDelivery": 219.77378845214844,
+      "ticksSinceFoodPerceived": 219.77378845214844
+    },
+    {
+      "type": "terminal_end",
+      "tick": 13188,
+      "faction": 1
+    },
+    {
+      "type": "game_over",
+      "tick": 13188,
+      "faction": 1,
+      "yearsSurvived": 0
+    },
+    {
+      "type": "victory",
+      "tick": 13188,
+      "faction": 0,
+      "yearsSurvived": 0
+    }
+  ]
+}
