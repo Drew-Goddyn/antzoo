@@ -1,5 +1,5 @@
 import { type CSSProperties, useEffect, useMemo, useRef, useState } from "react";
-import { applyTool as simApplyTool, createWorld, dropCarcass as simDropCarcass, getCarcassDropCooldown, getColonyStatus, getDigCooldown, getSeasonState, getWarStatus, makeHudSnapshot, resizeWorld, stepWorld, stressSpawn as simStressSpawn } from "./sim";
+import { applyTool as simApplyTool, createWorld, dropCarcass as simDropCarcass, getCarcassDropCooldown, getColonyStatus, getDigCooldown, getSeasonState, makeHudSnapshot, resizeWorld, stepWorld, stressSpawn as simStressSpawn } from "./sim";
 import { CameraState, HudSnapshot, Renderer, Tool, World } from "./types";
 import { createRenderer, destroyRenderer, renderWorld } from "./render";
 import { DEFAULTS, TUNING } from "./tuning";
@@ -422,7 +422,6 @@ export function App() {
   const carcassDropCooldown = getCarcassDropCooldown(worldRef.current);
   const seasonState = getSeasonState(worldRef.current);
   const colonyStatus = getColonyStatus(worldRef.current);
-  const warStatus = getWarStatus(worldRef.current);
   const digCooldownRatio = digCooldown / TUNING.tools.digCooldownSec;
   const carcassCooldownRatio = carcassDropCooldown / TUNING.tools.carcassDropCooldownSec;
   const carcassDisabled = carcassDropCooldown > 0 || seasonState.isWinter;
@@ -865,7 +864,6 @@ export function App() {
         </div>
         <SeasonPanel state={seasonState} nestFood={snapshot.nestFood} />
         <CastePanel status={colonyStatus} />
-        {warStatus.toastTimer > 0 ? <div className="war-toast panel">Border clash {warStatus.playerLosses}-{warStatus.rivalLosses}</div> : null}
         {seasonState.rainToast > 0 ? <div className="rain-toast panel">{TUNING.seasons.rainToastText}</div> : null}
         <DebugOverlay snapshot={snapshot} />
         <canvas ref={minimapRef} className="minimap panel" width={TUNING.minimap.w} height={TUNING.minimap.h} aria-label="World minimap" onPointerDown={handleMinimapPointerDown} />
@@ -1109,19 +1107,6 @@ function makeStyles(): string {
       padding: 6px 10px;
       color: ${TUNING.colors.muted};
       font-size: 12px;
-      letter-spacing: 0;
-    }
-    .war-toast {
-      position: absolute;
-      right: 12px;
-      top: 250px;
-      min-width: 168px;
-      padding: 7px 10px;
-      color: ${TUNING.colors.text};
-      border-color: ${TUNING.colors.rivalTrailFood};
-      background: ${TUNING.colors.warToast};
-      font-size: 12px;
-      font-variant-numeric: tabular-nums;
       letter-spacing: 0;
     }
     .caste-panel {

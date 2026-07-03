@@ -4,13 +4,13 @@ Run: `npm run dev -- --port 5173`
 
 Default watch: http://127.0.0.1:5173/?seed=4471&speed=4
 
-War demo: http://127.0.0.1:5173/?scenario=ewogICJuYW1lIjogIndhci1kZW1vIiwKICAic2VlZCI6IDQ0NzEsCiAgInRpY2tzIjogMTA4MDAsCiAgInR1bmluZyI6IHsKICAgICJuZXN0LnN0YXJ0Rm9vZCI6IDE1MCwKICAgICJhbnQuZHJhaW5QZXJTZWMiOiAwLjcyLAogICAgImFudC5lbmVyZ3lNYXgiOiAxNjAsCiAgICAid2FyLmZyb250Rm9vZEFtb3VudCI6IDE1MDAsCiAgICAid2FyLmZyb250Rm9vZFJhZGl1cyI6IDYyLAogICAgIndhci5mcm9udEZvb2RDb3VudCI6IDUsCiAgICAid2FyLmZyb250Rm9vZE9mZnNldCI6IDIxMCwKICAgICJ3YXIuZnJvbnRTY2VudEFtb3VudCI6IDAuMjIsCiAgICAid2FyLmZyb250U2NlbnRSYWRpdXMiOiAzMiwKICAgICJ3YXIuY29ycmlkb3JTY2VudEFtb3VudCI6IDAuMSwKICAgICJ3YXIuZnJvbnRTY291dEV2ZXJ5IjogMSwKICAgICJ3YXIudmFuZ3VhcmRQZXJGYWN0aW9uIjogNzIsCiAgICAid2FyLnZhbmd1YXJkQ2xhc2hlcnNQZXJGcm9udCI6IDEwLAogICAgIndhci52YW5ndWFyZENsYXNoU3RhbmRvZmYiOiAxMCwKICAgICJ3YXIudmFuZ3VhcmRDbGFzaFNwcmVhZCI6IDQ2LAogICAgIndhci52YW5ndWFyZENsYXNoU2lkZU9mZnNldCI6IDU2LAogICAgIndhci52YW5ndWFyZFN0YW5kb2ZmIjogNzAsCiAgICAid2FyLnZhbmd1YXJkU3ByZWFkIjogMTYwLAogICAgIndhci5jb3JyaWRvclBoZXJvbW9uZSI6IDAuODIsCiAgICAid2FyLmNvcnJpZG9yUmFkaXVzIjogMTEsCiAgICAiY29uZmxpY3QucmFuZ2UiOiAyOCwKICAgICJjb25mbGljdC5wZWVyS2lsbFNlYyI6IDgsCiAgICAiY29uZmxpY3Quc29sZGllcktpbGxzV29ya2VyU2VjIjogNSwKICAgICJyaXZhbC53b3JrZXJSYXRpbyI6IDU1LAogICAgInJpdmFsLnNvbGRpZXJSYXRpbyI6IDI1LAogICAgInJpdmFsLm51cnNlUmF0aW8iOiAyMAogIH0sCiAgInRpbWVsaW5lIjogWwogICAgeyAiYXQiOiAxODAwLCAiZG8iOiAic25hcHNob3QiIH0sCiAgICB7ICJhdCI6IDU0MDAsICJkbyI6ICJzbmFwc2hvdCIgfSwKICAgIHsgImF0IjogMTA4MDAsICJkbyI6ICJzbmFwc2hvdCIgfQogIF0KfQo=&speed=4
+War demo: http://127.0.0.1:5173/?scenario=ewogICJuYW1lIjogIndhci1kZW1vIiwKICAic2VlZCI6IDQ0NzEsCiAgInRpY2tzIjogMTA4MDAsCiAgInRpbWVsaW5lIjogWwogICAgeyAiYXQiOiA5MDAsICJkbyI6ICJkcm9wQ2FyY2FzcyIsICJ4IjogMjA0OCwgInkiOiAxMTUyIH0sCiAgICB7ICJhdCI6IDM2MDAsICJkbyI6ICJzbmFwc2hvdCIgfSwKICAgIHsgImF0IjogNzIwMCwgImRvIjogInNuYXBzaG90IiB9LAogICAgeyAiYXQiOiAxMDgwMCwgImRvIjogInNuYXBzaG90IiB9CiAgXQp9Cg==&speed=4
 
 Watch for this:
-- Blue and violet ants leave opposite corners and keep feeding the contested lanes.
-- The opening center skirmish uses colored ants, sparks, and compact clash scars.
-- Food reserves hold long enough that war, not starvation, is the first story.
+- Local food thins while blue and violet trails turn toward the midline carcass.
+- The fight is visible through ants, sparks, bodies, and danger haze, with no marker rings.
+- Soldiers leave the nest patrol and converge along real trails once the front gets dangerous.
 
-Screenshots, war-demo seed 4471, tick 0:
-- Before: `docs/demo-assets/m0-before-seed4471-tick0.png`
-- After: `docs/demo-assets/m0-after-seed4471-tick0.png`
+Screenshots, war-demo seed 4471, tick 10800:
+- Before: `docs/demo-assets/m0-before-seed4471-tick10800.png`
+- After: `docs/demo-assets/m0-after-seed4471-tick10800.png`

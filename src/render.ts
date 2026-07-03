@@ -42,13 +42,6 @@ type RenderEcologyWorld = World & {
     terminalTimer: number;
     nestPulse: number;
   };
-  war?: {
-    skirmishX: number;
-    skirmishY: number;
-    skirmishTimer: number;
-    playerLosses: number;
-    rivalLosses: number;
-  };
   grid: RenderGrid;
 };
 
@@ -721,31 +714,6 @@ function factionColor(faction: number): number {
   return faction === TUNING.factions.rival ? hexNumber(TUNING.colors.warRival) : hexNumber(TUNING.colors.warPlayer);
 }
 
-function drawFactionAntMarkers(g: Graphics, world: World): void {
-  const ants = renderAnts(world.ants);
-  if (!ants.faction) return;
-  const ecology = ecologyWorld(world);
-  const minDist2 = TUNING.render.antMarkerMinNestDist * TUNING.render.antMarkerMinNestDist;
-  for (let i = 0; i < ants.count; i += 1) {
-    const faction = ants.faction[i];
-    const homeX = faction === TUNING.factions.rival && ecology.rival ? ecology.rival.nestX : world.nestX;
-    const homeY = faction === TUNING.factions.rival && ecology.rival ? ecology.rival.nestY : world.nestY;
-    const dx = ants.x[i] - homeX;
-    const dy = ants.y[i] - homeY;
-    if (dx * dx + dy * dy < minDist2) continue;
-    const color = factionColor(faction);
-    const r = TUNING.render.antMarkerRadius;
-    const line = TUNING.render.antMarkerLineLength;
-    const cos = Math.cos(ants.heading[i]);
-    const sin = Math.sin(ants.heading[i]);
-    const alpha = TUNING.render.antMarkerAlpha;
-    g.circle(ants.x[i], ants.y[i], r).stroke({ color, alpha, width: TUNING.render.antMarkerLineWidth });
-    g.moveTo(ants.x[i] - cos * line * 0.25, ants.y[i] - sin * line * 0.25)
-      .lineTo(ants.x[i] + cos * line * 0.75, ants.y[i] + sin * line * 0.75)
-      .stroke({ color, alpha: alpha * 0.92, width: TUNING.render.antMarkerLineWidth });
-  }
-}
-
 function drawLiveClashSparks(g: Graphics, world: World): void {
   const ants = renderAnts(world.ants);
   if (!ants.faction) return;
@@ -773,10 +741,10 @@ function drawLiveClashSparks(g: Graphics, world: World): void {
               const size = TUNING.render.liveClashSparkSize * (0.8 + Math.sin(world.time * 18 + i * 0.31) * 0.2);
               g.moveTo(x - size, y - size)
                 .lineTo(x + size, y + size)
-                .stroke({ color: factionColor(ants.faction[i]), alpha: TUNING.render.liveClashSparkAlpha, width: TUNING.render.warSkirmishLineWidth });
+                .stroke({ color: factionColor(ants.faction[i]), alpha: TUNING.render.liveClashSparkAlpha, width: TUNING.render.liveClashSparkLineWidth });
               g.moveTo(x - size, y + size)
                 .lineTo(x + size, y - size)
-                .stroke({ color: factionColor(ants.faction[other]), alpha: TUNING.render.liveClashSparkAlpha, width: TUNING.render.warSkirmishLineWidth });
+                .stroke({ color: factionColor(ants.faction[other]), alpha: TUNING.render.liveClashSparkAlpha, width: TUNING.render.liveClashSparkLineWidth });
               g.circle(x, y, size * 1.4).stroke({ color: danger, alpha: 0.2, width: 1 });
               sparks += 1;
             }
@@ -788,33 +756,10 @@ function drawLiveClashSparks(g: Graphics, world: World): void {
   }
 }
 
-function drawWarSignals(g: Graphics, world: World): void {
-  const war = ecologyWorld(world).war;
-  if (!war || war.skirmishTimer <= 0) return;
-  const ratio = Math.max(0, Math.min(1, war.skirmishTimer / TUNING.render.warSkirmishFxSec));
-  const pulse = 1 - ratio;
-  const radius = TUNING.render.warSkirmishRingRadius * (0.72 + pulse * 0.42);
-  const playerColor = hexNumber(TUNING.colors.warPlayer);
-  const rivalColor = hexNumber(TUNING.colors.warRival);
-  const dangerColor = hexNumber(TUNING.colors.danger);
-  const alpha = Math.max(0, ratio);
-  g.circle(war.skirmishX, war.skirmishY, radius).stroke({ color: dangerColor, alpha: 0.34 * alpha, width: TUNING.render.warSkirmishLineWidth });
-  const marker = TUNING.render.warSkirmishMarkerLength * (0.7 + pulse * 0.2);
-  const tilt = Math.sin(world.time * 12) * 0.12;
-  for (let side = -1; side <= 1; side += 2) {
-    const a = Math.PI * 0.25 * side + tilt;
-    g.moveTo(war.skirmishX - Math.cos(a) * marker * 0.45, war.skirmishY - Math.sin(a) * marker * 0.45)
-      .lineTo(war.skirmishX + Math.cos(a) * marker * 0.45, war.skirmishY + Math.sin(a) * marker * 0.45)
-      .stroke({ color: side < 0 ? playerColor : rivalColor, alpha: 0.78 * alpha, width: TUNING.render.warSkirmishLineWidth });
-  }
-}
-
 function updateCursor(renderer: Renderer, world: World): void {
   const g = renderer.cursorGraphics;
   g.clear();
-  drawFactionAntMarkers(g, world);
   drawLiveClashSparks(g, world);
-  drawWarSignals(g, world);
   drawRain(g, world);
   if (!world.cursorActive) return;
   const tool = world.activeTool;

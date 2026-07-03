@@ -34,6 +34,8 @@ export type DebugEvent =
       faction: number;
       cause: DeathCause;
       id: number;
+      x: number;
+      y: number;
       birthTick: number;
       age: number;
       deliveries: number;
@@ -385,6 +387,8 @@ export function recordDebugDeath(world: World, index: number, faction: number, c
     faction,
     cause,
     id: ants.id[index],
+    x: world.ants.x[index],
+    y: world.ants.y[index],
     birthTick: ants.birthTick[index],
     age,
     deliveries,

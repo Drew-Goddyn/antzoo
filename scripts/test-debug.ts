@@ -108,9 +108,10 @@ function testT0(): TestResult[] {
   tests.push(changesHash("T0 obstacles", base, before, (world) => { world.obstacles[0].r += 0.001; }));
   tests.push(changesHash("T0 combatMarks", base, before, (world) => { world.combatMarks[0] = 1; }));
   tests.push(changesTuningHash("T0 tuning ant.drainPerSec", base, before, "ant.drainPerSec", TUNING.ant.drainPerSec + 0.1));
-  tests.push(changesTuningHash("T0 tuning war.frontFoodAmount", base, before, "war.frontFoodAmount", TUNING.war.frontFoodAmount + 1));
-  tests.push(changesTuningHash("T0 tuning war.frontScentAmount", base, before, "war.frontScentAmount", TUNING.war.frontScentAmount + 0.01));
-  tests.push(changesTuningHash("T0 tuning war.vanguardClashersPerFront", base, before, "war.vanguardClashersPerFront", TUNING.war.vanguardClashersPerFront + 1));
+  tests.push(changesTuningHash("T0 tuning war.prizeRefreshSec", base, before, "war.prizeRefreshSec", TUNING.war.prizeRefreshSec + 1));
+  tests.push(changesTuningHash("T0 tuning war.prizeScentDeposit", base, before, "war.prizeScentDeposit", TUNING.war.prizeScentDeposit + 0.01));
+  tests.push(changesTuningHash("T0 tuning caste.soldierFrontMaxNestDist", base, before, "caste.soldierFrontMaxNestDist", TUNING.caste.soldierFrontMaxNestDist + 10));
+  tests.push(changesTuningHash("T0 tuning conflict.frontRadius", base, before, "conflict.frontRadius", TUNING.conflict.frontRadius + 10));
   tests.push(preservesTuningHash("T0 tuning ui.hudHz", base, before, "ui.hudHz", TUNING.ui.hudHz + 1));
   tests.push(preservesHash("T0 debug-only field", base, before, (world) => { world.__debugOnlyProbe = { value: 1 }; }));
   tests.push(preservesHash("T0 debug ant id", base, before, (world) => { getDebugState(world)!.ants.id[0] += 1; }));

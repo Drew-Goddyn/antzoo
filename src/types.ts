@@ -143,17 +143,6 @@ export interface CameraState {
   viewH: number;
 }
 
-export interface WarStatus {
-  skirmishX: number;
-  skirmishY: number;
-  skirmishTimer: number;
-  toastTimer: number;
-  toastCooldown: number;
-  firstClashSeen: boolean;
-  playerLosses: number;
-  rivalLosses: number;
-}
-
 export interface HudSnapshot {
   ants: number;
   nestFood: number;
@@ -169,7 +158,6 @@ export interface HudSnapshot {
   tool: Tool;
   debug: boolean;
   camera: CameraState;
-  war: WarStatus;
   chart: {
     population: number[];
     nestFood: number[];
@@ -220,7 +208,6 @@ export interface World {
   hudFlash: number;
   debug: boolean;
   camera: CameraState;
-  war: WarStatus;
 }
 
 export interface Renderer {

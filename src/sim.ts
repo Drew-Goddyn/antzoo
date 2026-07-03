@@ -288,19 +288,13 @@ function factionClusterPoint(world: World, faction: number, dist: number, angle:
   };
 }
 
-function warFrontPoint(world: World, index: number = 0, count: number = 1): { x: number; y: number } {
+function warPrizePoint(world: World): { x: number; y: number } {
   const ecology = ecologyWorld(world);
   const midX = (world.nestX + ecology.rival.nestX) * HALF;
   const midY = (world.nestY + ecology.rival.nestY) * HALF;
-  const dx = ecology.rival.nestX - world.nestX;
-  const dy = ecology.rival.nestY - world.nestY;
-  const dist = Math.sqrt(Math.max(TUNING.sim.minTurnEpsilon, dx * dx + dy * dy));
-  const tangentX = -dy / dist;
-  const tangentY = dx / dist;
-  const offset = (index - (count - 1) * HALF) * TUNING.war.frontFoodOffset;
   return {
-    x: clamp(midX + tangentX * offset, TUNING.war.frontFoodRadius, world.width - TUNING.war.frontFoodRadius),
-    y: clamp(midY + tangentY * offset, TUNING.war.frontFoodRadius, world.height - TUNING.war.frontFoodRadius),
+    x: clamp(midX, TUNING.war.prizeRadius, world.width - TUNING.war.prizeRadius),
+    y: clamp(midY, TUNING.war.prizeRadius, world.height - TUNING.war.prizeRadius),
   };
 }
 
@@ -1034,41 +1028,20 @@ function scheduleNextCarcass(world: EcologyWorld): void {
   world.carcass.age = 0;
   world.carcass.amount = 0;
   world.carcass.spoiled = false;
-  world.carcass.nextSpawn = nextCarcassDelay(world);
+  world.carcass.nextSpawn = TUNING.war.prizeRefreshSec > 0 ? TUNING.war.prizeRefreshSec : nextCarcassDelay(world);
 }
 
 function spawnCarcass(world: EcologyWorld): void {
-  const midX = (world.nestX + world.rival.nestX) * HALF;
-  const midY = (world.nestY + world.rival.nestY) * HALF;
-  const dx = world.rival.nestX - world.nestX;
-  const dy = world.rival.nestY - world.nestY;
-  const dist = Math.sqrt(Math.max(TUNING.sim.minTurnEpsilon, dx * dx + dy * dy));
-  const dirX = dx / dist;
-  const dirY = dy / dist;
-  const tangentX = -dirY;
-  const tangentY = dirX;
-  let x = midX;
-  let y = midY;
-  for (let attempt = 0; attempt < TUNING.ecology.carcassPlacementAttempts; attempt += 1) {
-    const along = (nextRand(world) - HALF) * TUNING.rival.midlineCarcassAlong;
-    const across = (nextRand(world) - HALF) * TUNING.rival.midlineCarcassJitter;
-    const cx = midX + dirX * along + tangentX * across;
-    const cy = midY + dirY * along + tangentY * across;
-    if (isPointClear(world, cx, cy, TUNING.ecology.carcassRadius)) {
-      x = cx;
-      y = cy;
-      break;
-    }
-  }
+  const prize = warPrizePoint(world);
   world.carcass.active = true;
-  world.carcass.x = clamp(x, TUNING.ecology.carcassRadius, world.width - TUNING.ecology.carcassRadius);
-  world.carcass.y = clamp(y, TUNING.ecology.carcassRadius, world.height - TUNING.ecology.carcassRadius);
+  world.carcass.x = prize.x;
+  world.carcass.y = prize.y;
   world.carcass.age = 0;
   world.carcass.amount = TUNING.ecology.carcassAmount;
   world.carcass.spoiled = false;
   world.carcass.toast = TUNING.ecology.carcassToastSec;
   world.carcass.nextSpawn = 0;
-  depositFood(world, world.carcass.x, world.carcass.y, TUNING.ecology.carcassAmount, TUNING.ecology.carcassRadius, FACTION_ALL);
+  depositFood(world, world.carcass.x, world.carcass.y, TUNING.ecology.carcassAmount, TUNING.war.prizeRadius, FACTION_ALL);
   recordDebugEvent(world, { type: "carcass_spawn", tick: world.stepCount, x: world.carcass.x, y: world.carcass.y, amount: world.carcass.amount });
   spawnParticle(world, world.carcass.x, world.carcass.y, ParticleKind.Spawn, TUNING.particles.spawn.count, TUNING.particles.spawn.speed, TUNING.particles.spawn.life, TUNING.particles.spawn.size);
 }
@@ -1152,90 +1125,7 @@ function dropRivalFood(world: EcologyWorld): void {
   depositFood(world, x, y, TUNING.rival.foundingSubsidyAmount, TUNING.rival.foundingSubsidyRadius, FACTION_RIVAL);
 }
 
-function placeWarFrontFood(world: World): void {
-  const count = Math.max(0, Math.floor(TUNING.war.frontFoodCount));
-  for (let i = 0; i < count; i += 1) {
-    const point = warFrontPoint(world, i, count);
-    depositFood(world, point.x, point.y, TUNING.war.frontFoodAmount, TUNING.war.frontFoodRadius, FACTION_ALL);
-  }
-}
-
-function paintWarCorridor(world: World, faction: number, target: { x: number; y: number }, amount: number, radius: number): void {
-  if (amount <= 0 || radius <= 0) return;
-  const hx = nestX(world, faction);
-  const hy = nestY(world, faction);
-  const field = pherFoodField(world.grid, faction);
-  const dx = target.x - hx;
-  const dy = target.y - hy;
-  const dist = Math.sqrt(Math.max(TUNING.sim.minTurnEpsilon, dx * dx + dy * dy));
-  const steps = Math.max(1, Math.floor(dist / TUNING.war.corridorStep));
-  for (let step = 1; step <= steps; step += 1) {
-    const t = step / steps;
-    splatPherRadius(world.grid, field, hx + dx * t, hy + dy * t, radius, amount);
-  }
-}
-
-function seedWarCorridors(world: World): void {
-  const frontCount = Math.max(1, Math.floor(TUNING.war.frontFoodCount));
-  for (const faction of [FACTION_PLAYER, FACTION_RIVAL]) {
-    for (let front = 0; front < frontCount; front += 1) {
-      const target = warFrontPoint(world, front, frontCount);
-      paintWarCorridor(world, faction, target, TUNING.war.corridorPheromone, TUNING.war.corridorRadius);
-    }
-  }
-}
-
-function refreshWarFrontScent(world: World): void {
-  const every = Math.max(1, Math.floor(TUNING.war.frontScentEverySec * TUNING.time.stepHz));
-  if (world.stepCount % every !== 0) return;
-  const frontCount = Math.max(1, Math.floor(TUNING.war.frontFoodCount));
-  for (let front = 0; front < frontCount; front += 1) {
-    const target = warFrontPoint(world, front, frontCount);
-    splatFoodScentRadius(world.grid, target.x, target.y, TUNING.war.frontScentRadius, TUNING.war.frontScentAmount, FACTION_ALL);
-    for (const faction of [FACTION_PLAYER, FACTION_RIVAL]) {
-      paintWarCorridor(world, faction, target, TUNING.war.corridorScentAmount, TUNING.war.corridorRadius);
-    }
-  }
-}
-
-function placeWarVanguard(world: World, faction: number): void {
-  const frontCount = Math.max(1, Math.floor(TUNING.war.frontFoodCount));
-  const perFaction = Math.max(0, Math.floor(TUNING.war.vanguardPerFaction));
-  const clashersPerFront = Math.max(0, Math.floor(TUNING.war.vanguardClashersPerFront));
-  const hx = nestX(world, faction);
-  const hy = nestY(world, faction);
-  for (let i = 0; i < perFaction; i += 1) {
-    const front = i % frontCount;
-    const closeClasher = Math.floor(i / frontCount) < clashersPerFront;
-    const target = warFrontPoint(world, front, frontCount);
-    const homeDx = hx - target.x;
-    const homeDy = hy - target.y;
-    const homeDist = Math.sqrt(Math.max(TUNING.sim.minTurnEpsilon, homeDx * homeDx + homeDy * homeDy));
-    const homeX = homeDx / homeDist;
-    const homeY = homeDy / homeDist;
-    const tangentX = -homeY;
-    const tangentY = homeX;
-    const spreadTuning = closeClasher ? TUNING.war.vanguardClashSpread : TUNING.war.vanguardSpread;
-    const standoffTuning = closeClasher ? TUNING.war.vanguardClashStandoff : TUNING.war.vanguardStandoff;
-    const clashLane = closeClasher ? (Math.floor(i / frontCount) % 2 === 0 ? -1 : 1) * (TUNING.war.frontFoodRadius + TUNING.war.vanguardClashSideOffset) : 0;
-    const spread = (nextRand(world) - HALF) * spreadTuning;
-    const standoff = standoffTuning + nextRand(world) * spreadTuning * HALF;
-    const x = clamp(target.x + homeX * standoff + tangentX * (clashLane + spread), TUNING.grid.cell, world.width - TUNING.grid.cell);
-    const y = clamp(target.y + homeY * standoff + tangentY * (clashLane + spread), TUNING.grid.cell, world.height - TUNING.grid.cell);
-    const heading = angleTo(target.x - x, target.y - y) + (nextRand(world) - HALF) * TUNING.sim.initialHeadingJitter;
-    addAnt(world, x, y, heading, TUNING.caste.worker, faction);
-  }
-}
-
 function initialForagerHeading(world: World, faction: number, index: number): number {
-  const hx = nestX(world, faction);
-  const hy = nestY(world, faction);
-  const scoutEvery = Math.max(1, Math.floor(TUNING.war.frontScoutEvery));
-  if (index % scoutEvery === 0) {
-    const count = Math.max(1, Math.floor(TUNING.war.frontFoodCount));
-    const target = warFrontPoint(world, index % count, count);
-    return angleTo(target.x - hx, target.y - hy) + (nextRand(world) - HALF) * TUNING.sim.initialHeadingJitter;
-  }
   const targetCluster = TUNING.sim.foodClusters[index % TUNING.sim.foodClusters.length];
   return forageAngleForFaction(targetCluster.angle, faction) + (nextRand(world) - HALF) * TUNING.sim.initialHeadingJitter;
 }
@@ -1271,13 +1161,10 @@ function placeInitialScene(world: World): void {
   placeRockyRegions(world, FACTION_RIVAL);
   placeBerryBushes(ecologyWorld(world), FACTION_PLAYER);
   placeBerryBushes(ecologyWorld(world), FACTION_RIVAL);
-  placeWarFrontFood(world);
-  seedWarCorridors(world);
+  spawnCarcass(ecologyWorld(world));
   placeInitialAnts(world, FACTION_PLAYER, TUNING.ants.start);
   dropRivalFood(ecologyWorld(world));
   placeInitialAnts(world, FACTION_RIVAL, TUNING.rival.start);
-  placeWarVanguard(world, FACTION_PLAYER);
-  placeWarVanguard(world, FACTION_RIVAL);
 }
 
 export function rebuildSpatial(world: World): void {
@@ -1377,16 +1264,6 @@ export function createWorld(width: number = TUNING.sim.minWidth, height: number 
       hp: TUNING.spider.hp,
     } as World["spider"] & { hp: number },
     spiderToast: 0,
-    war: {
-      skirmishX: 0,
-      skirmishY: 0,
-      skirmishTimer: 0,
-      toastTimer: 0,
-      toastCooldown: 0,
-      firstClashSeen: false,
-      playerLosses: 0,
-      rivalLosses: 0,
-    },
     bushes: [],
     digCooldown: 0,
     carcassDropCooldown: 0,
@@ -1736,6 +1613,9 @@ function refillNestCaste(world: World, index: number, maxEnergy: number): void {
 let soldierDangerX = 0;
 let soldierDangerY = 0;
 let soldierDangerValue = 0;
+let soldierTrailX = 0;
+let soldierTrailY = 0;
+let soldierTrailValue = 0;
 
 function findSoldierDanger(world: World, index: number): boolean {
   const grid = world.grid;
@@ -1768,6 +1648,33 @@ function findSoldierDanger(world: World, index: number): boolean {
   return soldierDangerValue > TUNING.caste.soldierDangerThreshold;
 }
 
+function sampleSoldierTrail(world: World, field: Float32Array, index: number, angle: number): void {
+  const ants = world.ants;
+  const x = ants.x[index] + Math.cos(angle) * TUNING.caste.soldierTrailSenseDist;
+  const y = ants.y[index] + Math.sin(angle) * TUNING.caste.soldierTrailSenseDist;
+  const value = sampleField(world, field, x, y) - sampleField(world, world.grid.pherDanger, x, y) * 0.2 - obstaclePenalty(world, x, y) * 0.1;
+  if (value > soldierTrailValue) {
+    soldierTrailValue = value;
+    soldierTrailX = x;
+    soldierTrailY = y;
+  }
+}
+
+function findSoldierTrail(world: World, index: number): boolean {
+  const ants = world.ants;
+  const faction = factionAnts(ants).faction[index];
+  const field = pherFoodField(world.grid, faction);
+  const heading = ants.heading[index];
+  const angle = (TUNING.sense.angleDeg * Math.PI) / 180;
+  soldierTrailValue = 0;
+  soldierTrailX = ants.x[index];
+  soldierTrailY = ants.y[index];
+  sampleSoldierTrail(world, field, index, heading);
+  sampleSoldierTrail(world, field, index, heading - angle);
+  sampleSoldierTrail(world, field, index, heading + angle);
+  return soldierTrailValue > TUNING.caste.soldierTrailThreshold;
+}
+
 function moveCasteAnt(world: World, index: number, dt: number, speed: number): void {
   const ants = world.ants;
   const vx = Math.cos(ants.heading[index]) * speed * dt;
@@ -1784,15 +1691,21 @@ function updateSoldierAnt(world: World, index: number, dt: number, seasonSpeedMu
   const dx = ants.x[index] - hx;
   const dy = ants.y[index] - hy;
   const dist2 = dx * dx + dy * dy;
+  const frontMax = TUNING.caste.soldierFrontMaxNestDist;
   let target = ants.heading[index] + (nextRand(world) - HALF) * TUNING.ant.wanderJitter;
+  let turnMul = 1;
   if (findSoldierDanger(world, index)) {
     target = angleTo(soldierDangerX - ants.x[index], soldierDangerY - ants.y[index]);
+    turnMul = 1.35;
+  } else if (dist2 < frontMax * frontMax && findSoldierTrail(world, index)) {
+    target = angleTo(soldierTrailX - ants.x[index], soldierTrailY - ants.y[index]);
+    turnMul = TUNING.caste.soldierTrailTurnMul;
   } else if (dist2 > TUNING.caste.soldierPatrolRadius * TUNING.caste.soldierPatrolRadius) {
     target = angleTo(hx - ants.x[index], hy - ants.y[index]);
   } else if (dist2 < (TUNING.caste.soldierPatrolRadius - TUNING.caste.soldierPatrolSlack) * (TUNING.caste.soldierPatrolRadius - TUNING.caste.soldierPatrolSlack)) {
     target = angleTo(dy, -dx) + (nextRand(world) - HALF) * TUNING.ant.wanderJitter;
   }
-  ants.heading[index] = turnToward(ants.heading[index], target, TUNING.ant.turnRate * dt);
+  ants.heading[index] = turnToward(ants.heading[index], target, TUNING.ant.turnRate * turnMul * dt);
   avoid(world, index, dt);
   refillNestCaste(world, index, energyMaxForCaste(TUNING.caste.soldier));
   moveCasteAnt(world, index, dt, TUNING.ant.speed * seasonSpeedMulValue * TUNING.caste.soldierSpeedMul);
@@ -2074,17 +1987,14 @@ function markCombatDeath(world: EcologyWorld, index: number): void {
   splatPherRadius(world.grid, world.grid.pherDanger, world.ants.x[index], world.ants.y[index], TUNING.conflict.dangerRadius, TUNING.conflict.dangerDeposit);
 }
 
-function recordWarSkirmish(world: EcologyWorld, x: number, y: number, playerLosses: number, rivalLosses: number): void {
-  world.war.skirmishX = x;
-  world.war.skirmishY = y;
-  world.war.skirmishTimer = TUNING.render.warSkirmishFxSec;
-  world.war.playerLosses = playerLosses;
-  world.war.rivalLosses = rivalLosses;
-  if (!world.war.firstClashSeen || world.war.toastCooldown <= 0) {
-    world.war.toastTimer = TUNING.render.warToastSec;
-    world.war.toastCooldown = TUNING.render.warToastCooldownSec;
-    world.war.firstClashSeen = true;
-  }
+function isContestedFront(world: EcologyWorld, x: number, y: number): boolean {
+  const prize = world.carcass.active ? world.carcass : warPrizePoint(world);
+  const dx = x - prize.x;
+  const dy = y - prize.y;
+  return dx * dx + dy * dy <= TUNING.conflict.frontRadius * TUNING.conflict.frontRadius;
+}
+
+function recordCombatShock(world: EcologyWorld, playerLosses: number, rivalLosses: number): void {
   world.trauma += TUNING.conflict.skirmishTrauma * Math.min(3, playerLosses + rivalLosses);
 }
 
@@ -2114,6 +2024,7 @@ function updateFactionCombat(world: EcologyWorld, dt: number): number {
   const faction = factionAnts(ants).faction;
   for (let i = 0; i < ants.count; i += 1) {
     if (world.combatMarks[i] !== 0) continue;
+    if (!isContestedFront(world, ants.x[i], ants.y[i])) continue;
     if (!hasOpposingFactionNear(world, ants.x[i], ants.y[i], TUNING.conflict.range, faction[i])) continue;
     combatSource = i;
     queryCircle(world, ants.x[i], ants.y[i], TUNING.conflict.range, factionCombatQuery);
@@ -2121,15 +2032,11 @@ function updateFactionCombat(world: EcologyWorld, dt: number): number {
   let removed = 0;
   let playerLosses = 0;
   let rivalLosses = 0;
-  let sumX = 0;
-  let sumY = 0;
   for (let i = ants.count - 1; i >= 0; i -= 1) {
     if (world.combatMarks[i] === 0) continue;
     const antFaction = faction[i];
     if (antFaction === FACTION_RIVAL) rivalLosses += 1;
     else playerLosses += 1;
-    sumX += ants.x[i];
-    sumY += ants.y[i];
     pushCorpse(world, ants.x[i], ants.y[i]);
     spawnParticle(world, ants.x[i], ants.y[i], ParticleKind.Death, TUNING.particles.death.count, TUNING.particles.death.speed, TUNING.particles.death.life, TUNING.particles.death.size);
     recordTraceInteraction(world, i, { kind: "combat", cause: "combat", faction: antFaction });
@@ -2138,7 +2045,7 @@ function updateFactionCombat(world: EcologyWorld, dt: number): number {
     removeAnt(world, i);
     removed += 1;
   }
-  if (removed > 0) recordWarSkirmish(world, sumX / removed, sumY / removed, playerLosses, rivalLosses);
+  if (removed > 0) recordCombatShock(world, playerLosses, rivalLosses);
   return removed;
 }
 
@@ -2226,7 +2133,7 @@ function updateCarcass(world: EcologyWorld, dt: number): void {
   const wasSpoiled = carcass.spoiled;
   carcass.spoiled = carcass.age >= TUNING.ecology.carcassDecaySec - TUNING.ecology.carcassSpoilSec;
   if (!wasSpoiled && carcass.spoiled) recordDebugEvent(world, { type: "carcass_spoiled", tick: world.stepCount, x: carcass.x, y: carcass.y, amount: carcass.amount });
-  if (carcass.amount > 0) splatFoodScentRadius(world.grid, carcass.x, carcass.y, TUNING.ecology.carcassScentRadius, TUNING.ecology.carcassScentDeposit * dt, FACTION_ALL);
+  if (carcass.amount > 0) splatFoodScentRadius(world.grid, carcass.x, carcass.y, TUNING.war.prizeScentRadius, TUNING.war.prizeScentDeposit * dt, FACTION_ALL);
   if (carcass.spoiled && carcass.amount > 0) splatPher(world.grid, world.grid.pherDanger, cellIndex(world.grid, carcass.x, carcass.y), TUNING.ecology.carcassDangerDeposit);
   if (carcass.age >= TUNING.ecology.carcassDecaySec || carcass.amount <= TUNING.sim.minTurnEpsilon) scheduleNextCarcass(world);
 }
@@ -2645,9 +2552,6 @@ export function stepWorld(world: World, dt: number = STEP_DT, fps: number = TUNI
   world.frame += 1;
   world.deathWindowTimer += dt;
   world.spiderToast = Math.max(0, world.spiderToast - dt);
-  world.war.skirmishTimer = Math.max(0, world.war.skirmishTimer - dt);
-  world.war.toastTimer = Math.max(0, world.war.toastTimer - dt);
-  world.war.toastCooldown = Math.max(0, world.war.toastCooldown - dt);
   updateSeasonEvents(ecology, dt);
   updateQueenState(ecology, dt, FACTION_PLAYER);
   if (!ecology.gameOver) updateQueenState(ecology, dt, FACTION_RIVAL);
@@ -2659,8 +2563,6 @@ export function stepWorld(world: World, dt: number = STEP_DT, fps: number = TUNI
   updateBrood(ecology, dt, FACTION_PLAYER);
   updateBrood(ecology, dt, FACTION_RIVAL);
   updateRivalPatron(ecology, dt);
-  refreshWarFrontScent(world);
-
   rebuildSpatial(world);
   updateSoldierAttacks(world, dt);
   if (updateFactionCombat(ecology, dt) > 0) rebuildSpatial(world);
@@ -2770,10 +2672,6 @@ export function getDigCooldown(world: World): number {
 
 export function getCarcassDropCooldown(world: World): number {
   return ecologyWorld(world).carcassDropCooldown;
-}
-
-export function getWarStatus(world: World) {
-  return { ...world.war };
 }
 
 export function getSeasonState(world: World): SeasonState {
@@ -2922,7 +2820,6 @@ export function makeHudSnapshot(world: World): HudSnapshot {
     tool: world.activeTool,
     debug: world.debug,
     camera: { ...world.camera },
-    war: { ...world.war },
     chart: {
       population: pop,
       nestFood: food,
