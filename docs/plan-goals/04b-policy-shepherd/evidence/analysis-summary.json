@@ -1,0 +1,627 @@
+{
+  "seeds": [
+    3005,
+    3006,
+    3007,
+    3008,
+    3009
+  ],
+  "arms": {
+    "unattended": {
+      "3005": {
+        "outcome": "victory",
+        "finalTick": 17801,
+        "finalHash": "a674e5f8f3590e6c",
+        "playerFinalPop": 50,
+        "rivalFinalPop": 0,
+        "playerFoodDelivered": 805,
+        "rivalFoodDelivered": 419,
+        "playerStarvationDeaths": 168,
+        "rivalStarvationDeaths": 155
+      },
+      "3006": {
+        "outcome": "victory",
+        "finalTick": 13910,
+        "finalHash": "816ec1f1ecc58f35",
+        "playerFinalPop": 116,
+        "rivalFinalPop": 0,
+        "playerFoodDelivered": 1029,
+        "rivalFoodDelivered": 283,
+        "playerStarvationDeaths": 122,
+        "rivalStarvationDeaths": 104
+      },
+      "3007": {
+        "outcome": "victory",
+        "finalTick": 6105,
+        "finalHash": "8bc2a90b7305a337",
+        "playerFinalPop": 160,
+        "rivalFinalPop": 0,
+        "playerFoodDelivered": 598,
+        "rivalFoodDelivered": 121,
+        "playerStarvationDeaths": 25,
+        "rivalStarvationDeaths": 64
+      },
+      "3008": {
+        "outcome": "victory",
+        "finalTick": 13347,
+        "finalHash": "e32d2a900c735a34",
+        "playerFinalPop": 87,
+        "rivalFinalPop": 0,
+        "playerFoodDelivered": 965,
+        "rivalFoodDelivered": 274,
+        "playerStarvationDeaths": 145,
+        "rivalStarvationDeaths": 101
+      },
+      "3009": {
+        "outcome": "victory",
+        "finalTick": 14432,
+        "finalHash": "a4eaa4cb2e7cf65f",
+        "playerFinalPop": 124,
+        "rivalFinalPop": 0,
+        "playerFoodDelivered": 1215,
+        "rivalFoodDelivered": 334,
+        "playerStarvationDeaths": 135,
+        "rivalStarvationDeaths": 102
+      }
+    },
+    "perturbation": {
+      "3005": {
+        "outcome": "gameOver",
+        "finalTick": 26425,
+        "finalHash": "75db395f0084b4fb",
+        "playerFinalPop": 0,
+        "rivalFinalPop": 23,
+        "playerFoodDelivered": 931,
+        "rivalFoodDelivered": 667,
+        "playerStarvationDeaths": 211,
+        "rivalStarvationDeaths": 160
+      },
+      "3006": {
+        "outcome": "victory",
+        "finalTick": 13910,
+        "finalHash": "58db7ccac9edc7b2",
+        "playerFinalPop": 115,
+        "rivalFinalPop": 0,
+        "playerFoodDelivered": 1020,
+        "rivalFoodDelivered": 283,
+        "playerStarvationDeaths": 122,
+        "rivalStarvationDeaths": 104
+      },
+      "3007": {
+        "outcome": "victory",
+        "finalTick": 6105,
+        "finalHash": "cbefcb3c536c21e4",
+        "playerFinalPop": 160,
+        "rivalFinalPop": 0,
+        "playerFoodDelivered": 598,
+        "rivalFoodDelivered": 121,
+        "playerStarvationDeaths": 25,
+        "rivalStarvationDeaths": 64
+      },
+      "3008": {
+        "outcome": "victory",
+        "finalTick": 13347,
+        "finalHash": "1b6911e4ee040f10",
+        "playerFinalPop": 87,
+        "rivalFinalPop": 0,
+        "playerFoodDelivered": 958,
+        "rivalFoodDelivered": 274,
+        "playerStarvationDeaths": 145,
+        "rivalStarvationDeaths": 101
+      },
+      "3009": {
+        "outcome": "victory",
+        "finalTick": 14432,
+        "finalHash": "ca4a0b9d61c308f9",
+        "playerFinalPop": 124,
+        "rivalFinalPop": 0,
+        "playerFoodDelivered": 1212,
+        "rivalFoodDelivered": 334,
+        "playerStarvationDeaths": 135,
+        "rivalStarvationDeaths": 102
+      }
+    },
+    "fixedPolicy": {
+      "3005": {
+        "outcome": "victory",
+        "finalTick": 15312,
+        "finalHash": "4a02f9240bee6620",
+        "playerFinalPop": 73,
+        "rivalFinalPop": 0,
+        "playerFoodDelivered": 777,
+        "rivalFoodDelivered": 488,
+        "playerStarvationDeaths": 145,
+        "rivalStarvationDeaths": 131,
+        "policyAction": {
+          "tick": 6000,
+          "optionKey": "worker-surge",
+          "optionLabel": "Worker surge",
+          "values": {
+            "worker": 90,
+            "soldier": 5,
+            "nurse": 5
+          },
+          "rationale": "same Worker surge values at tick 6000 for every seed, chosen before per-seed state inspection",
+          "observedState": "P pop 172 (down), R pop 144, P food 0.5, P/R delivered 486/327, nearest P/R 181.11/11.66, P starvation 27, R starvation 30",
+          "screenshots": [
+            "docs/plan-goals/04b-policy-shepherd/evidence/policy-placebo/seed-3005/tick-6000-policy-before.png",
+            "docs/plan-goals/04b-policy-shepherd/evidence/policy-placebo/seed-3005/tick-6000-policy-after.png"
+          ],
+          "hashBefore": "e6a198c098d7164c",
+          "hashAfterImmediate": "9f020cca986f11e2",
+          "hashAfterNextStep": "5806b48d0690a9b5"
+        }
+      },
+      "3006": {
+        "outcome": "gameOver",
+        "finalTick": 30508,
+        "finalHash": "c515f48b1bb6bdc7",
+        "playerFinalPop": 0,
+        "rivalFinalPop": 13,
+        "playerFoodDelivered": 1251,
+        "rivalFoodDelivered": 839,
+        "playerStarvationDeaths": 243,
+        "rivalStarvationDeaths": 136,
+        "policyAction": {
+          "tick": 6000,
+          "optionKey": "worker-surge",
+          "optionLabel": "Worker surge",
+          "values": {
+            "worker": 90,
+            "soldier": 5,
+            "nurse": 5
+          },
+          "rationale": "same Worker surge values at tick 6000 for every seed, chosen before per-seed state inspection",
+          "observedState": "P pop 194 (down), R pop 132, P food 1, P/R delivered 632/207, nearest P/R 170.18/146.67, P starvation 17, R starvation 34",
+          "screenshots": [
+            "docs/plan-goals/04b-policy-shepherd/evidence/policy-placebo/seed-3006/tick-6000-policy-before.png",
+            "docs/plan-goals/04b-policy-shepherd/evidence/policy-placebo/seed-3006/tick-6000-policy-after.png"
+          ],
+          "hashBefore": "a4460761bb5f9875",
+          "hashAfterImmediate": "d3b502bba99a0cb3",
+          "hashAfterNextStep": "1f5a0548ee2d9280"
+        }
+      },
+      "3007": {
+        "outcome": "victory",
+        "finalTick": 6105,
+        "finalHash": "6fd56b35b87bc5fd",
+        "playerFinalPop": 160,
+        "rivalFinalPop": 0,
+        "playerFoodDelivered": 598,
+        "rivalFoodDelivered": 121,
+        "playerStarvationDeaths": 25,
+        "rivalStarvationDeaths": 64,
+        "policyAction": {
+          "tick": 6000,
+          "optionKey": "worker-surge",
+          "optionLabel": "Worker surge",
+          "values": {
+            "worker": 90,
+            "soldier": 5,
+            "nurse": 5
+          },
+          "rationale": "same Worker surge values at tick 6000 for every seed, chosen before per-seed state inspection",
+          "observedState": "P pop 159 (down), R pop 10, P food 137, P/R delivered 594/121, nearest P/R 195.06/74.24, P starvation 25, R starvation 64",
+          "screenshots": [
+            "docs/plan-goals/04b-policy-shepherd/evidence/policy-placebo/seed-3007/tick-6000-policy-before.png",
+            "docs/plan-goals/04b-policy-shepherd/evidence/policy-placebo/seed-3007/tick-6000-policy-after.png"
+          ],
+          "hashBefore": "5261c813c76eb62f",
+          "hashAfterImmediate": "2f4dd2e992eb7e29",
+          "hashAfterNextStep": "6fd56b35b87bc5fd"
+        }
+      },
+      "3008": {
+        "outcome": "gameOver",
+        "finalTick": 27569,
+        "finalHash": "eece39e1e2b1e611",
+        "playerFinalPop": 0,
+        "rivalFinalPop": 21,
+        "playerFoodDelivered": 1310,
+        "rivalFoodDelivered": 635,
+        "playerStarvationDeaths": 245,
+        "rivalStarvationDeaths": 150,
+        "policyAction": {
+          "tick": 6000,
+          "optionKey": "worker-surge",
+          "optionLabel": "Worker surge",
+          "values": {
+            "worker": 90,
+            "soldier": 5,
+            "nurse": 5
+          },
+          "rationale": "same Worker surge values at tick 6000 for every seed, chosen before per-seed state inspection",
+          "observedState": "P pop 193 (down), R pop 99, P food 0.5, P/R delivered 700/185, nearest P/R 197.99/45.34, P starvation 23, R starvation 65",
+          "screenshots": [
+            "docs/plan-goals/04b-policy-shepherd/evidence/policy-placebo/seed-3008/tick-6000-policy-before.png",
+            "docs/plan-goals/04b-policy-shepherd/evidence/policy-placebo/seed-3008/tick-6000-policy-after.png"
+          ],
+          "hashBefore": "035af292e07a0f2a",
+          "hashAfterImmediate": "27ece6e8ad709dd4",
+          "hashAfterNextStep": "f1396a1fe6432cf7"
+        }
+      },
+      "3009": {
+        "outcome": "victory",
+        "finalTick": 23414,
+        "finalHash": "dec4f83288fa8a6e",
+        "playerFinalPop": 71,
+        "rivalFinalPop": 0,
+        "playerFoodDelivered": 1609,
+        "rivalFoodDelivered": 531,
+        "playerStarvationDeaths": 214,
+        "rivalStarvationDeaths": 149,
+        "policyAction": {
+          "tick": 6000,
+          "optionKey": "worker-surge",
+          "optionLabel": "Worker surge",
+          "values": {
+            "worker": 90,
+            "soldier": 5,
+            "nurse": 5
+          },
+          "rationale": "same Worker surge values at tick 6000 for every seed, chosen before per-seed state inspection",
+          "observedState": "P pop 204 (down), R pop 116, P food 2, P/R delivered 717/198, nearest P/R 203.1/102.96, P starvation 18, R starvation 48",
+          "screenshots": [
+            "docs/plan-goals/04b-policy-shepherd/evidence/policy-placebo/seed-3009/tick-6000-policy-before.png",
+            "docs/plan-goals/04b-policy-shepherd/evidence/policy-placebo/seed-3009/tick-6000-policy-after.png"
+          ],
+          "hashBefore": "1740e3b5e30376ad",
+          "hashAfterImmediate": "b86da64fce512c23",
+          "hashAfterNextStep": "bfb13798bf895a04"
+        }
+      }
+    },
+    "policyAware": {
+      "3005": {
+        "outcome": "victory",
+        "finalTick": 15312,
+        "finalHash": "4a02f9240bee6620",
+        "playerFinalPop": 73,
+        "rivalFinalPop": 0,
+        "playerFoodDelivered": 777,
+        "rivalFoodDelivered": 488,
+        "playerStarvationDeaths": 145,
+        "rivalStarvationDeaths": 131,
+        "policyAction": {
+          "tick": 6000,
+          "optionKey": "worker-surge",
+          "optionLabel": "Worker surge",
+          "values": {
+            "worker": 90,
+            "soldier": 5,
+            "nurse": 5
+          },
+          "rationale": "player nestFood=0.5, delivered P/R=486/327, nearest P/R=181.11/11.66",
+          "observedState": "P pop 172 (down), R pop 144, P food 0.5, P/R delivered 486/327, nearest P/R 181.11/11.66, P starvation 27, R starvation 30",
+          "screenshots": [
+            "docs/plan-goals/04b-policy-shepherd/evidence/policy-aware/seed-3005/tick-6000-policy-before.png",
+            "docs/plan-goals/04b-policy-shepherd/evidence/policy-aware/seed-3005/tick-6000-policy-after.png"
+          ],
+          "hashBefore": "e6a198c098d7164c",
+          "hashAfterImmediate": "9f020cca986f11e2",
+          "hashAfterNextStep": "5806b48d0690a9b5"
+        }
+      },
+      "3006": {
+        "outcome": "gameOver",
+        "finalTick": 30508,
+        "finalHash": "c515f48b1bb6bdc7",
+        "playerFinalPop": 0,
+        "rivalFinalPop": 13,
+        "playerFoodDelivered": 1251,
+        "rivalFoodDelivered": 839,
+        "playerStarvationDeaths": 243,
+        "rivalStarvationDeaths": 136,
+        "policyAction": {
+          "tick": 6000,
+          "optionKey": "worker-surge",
+          "optionLabel": "Worker surge",
+          "values": {
+            "worker": 90,
+            "soldier": 5,
+            "nurse": 5
+          },
+          "rationale": "player nestFood=1, delivered P/R=632/207, nearest P/R=170.18/146.67",
+          "observedState": "P pop 194 (down), R pop 132, P food 1, P/R delivered 632/207, nearest P/R 170.18/146.67, P starvation 17, R starvation 34",
+          "screenshots": [
+            "docs/plan-goals/04b-policy-shepherd/evidence/policy-aware/seed-3006/tick-6000-policy-before.png",
+            "docs/plan-goals/04b-policy-shepherd/evidence/policy-aware/seed-3006/tick-6000-policy-after.png"
+          ],
+          "hashBefore": "a4460761bb5f9875",
+          "hashAfterImmediate": "d3b502bba99a0cb3",
+          "hashAfterNextStep": "1f5a0548ee2d9280"
+        }
+      },
+      "3007": {
+        "outcome": "victory",
+        "finalTick": 6105,
+        "finalHash": "6fd56b35b87bc5fd",
+        "playerFinalPop": 160,
+        "rivalFinalPop": 0,
+        "playerFoodDelivered": 598,
+        "rivalFoodDelivered": 121,
+        "playerStarvationDeaths": 25,
+        "rivalStarvationDeaths": 64,
+        "policyAction": {
+          "tick": 6000,
+          "optionKey": "worker-surge",
+          "optionLabel": "Worker surge",
+          "values": {
+            "worker": 90,
+            "soldier": 5,
+            "nurse": 5
+          },
+          "rationale": "player nestFood=137, delivered P/R=594/121, nearest P/R=195.06/74.24",
+          "observedState": "P pop 159 (down), R pop 10, P food 137, P/R delivered 594/121, nearest P/R 195.06/74.24, P starvation 25, R starvation 64",
+          "screenshots": [
+            "docs/plan-goals/04b-policy-shepherd/evidence/policy-aware/seed-3007/tick-6000-policy-before.png",
+            "docs/plan-goals/04b-policy-shepherd/evidence/policy-aware/seed-3007/tick-6000-policy-after.png"
+          ],
+          "hashBefore": "5261c813c76eb62f",
+          "hashAfterImmediate": "2f4dd2e992eb7e29",
+          "hashAfterNextStep": "6fd56b35b87bc5fd"
+        }
+      },
+      "3008": {
+        "outcome": "gameOver",
+        "finalTick": 27569,
+        "finalHash": "eece39e1e2b1e611",
+        "playerFinalPop": 0,
+        "rivalFinalPop": 21,
+        "playerFoodDelivered": 1310,
+        "rivalFoodDelivered": 635,
+        "playerStarvationDeaths": 245,
+        "rivalStarvationDeaths": 150,
+        "policyAction": {
+          "tick": 6000,
+          "optionKey": "worker-surge",
+          "optionLabel": "Worker surge",
+          "values": {
+            "worker": 90,
+            "soldier": 5,
+            "nurse": 5
+          },
+          "rationale": "player nestFood=0.5, delivered P/R=700/185, nearest P/R=197.99/45.34",
+          "observedState": "P pop 193 (down), R pop 99, P food 0.5, P/R delivered 700/185, nearest P/R 197.99/45.34, P starvation 23, R starvation 65",
+          "screenshots": [
+            "docs/plan-goals/04b-policy-shepherd/evidence/policy-aware/seed-3008/tick-6000-policy-before.png",
+            "docs/plan-goals/04b-policy-shepherd/evidence/policy-aware/seed-3008/tick-6000-policy-after.png"
+          ],
+          "hashBefore": "035af292e07a0f2a",
+          "hashAfterImmediate": "27ece6e8ad709dd4",
+          "hashAfterNextStep": "f1396a1fe6432cf7"
+        }
+      },
+      "3009": {
+        "outcome": "victory",
+        "finalTick": 23414,
+        "finalHash": "dec4f83288fa8a6e",
+        "playerFinalPop": 71,
+        "rivalFinalPop": 0,
+        "playerFoodDelivered": 1609,
+        "rivalFoodDelivered": 531,
+        "playerStarvationDeaths": 214,
+        "rivalStarvationDeaths": 149,
+        "policyAction": {
+          "tick": 6000,
+          "optionKey": "worker-surge",
+          "optionLabel": "Worker surge",
+          "values": {
+            "worker": 90,
+            "soldier": 5,
+            "nurse": 5
+          },
+          "rationale": "player nestFood=2, delivered P/R=717/198, nearest P/R=203.1/102.96",
+          "observedState": "P pop 204 (down), R pop 116, P food 2, P/R delivered 717/198, nearest P/R 203.1/102.96, P starvation 18, R starvation 48",
+          "screenshots": [
+            "docs/plan-goals/04b-policy-shepherd/evidence/policy-aware/seed-3009/tick-6000-policy-before.png",
+            "docs/plan-goals/04b-policy-shepherd/evidence/policy-aware/seed-3009/tick-6000-policy-after.png"
+          ],
+          "hashBefore": "1740e3b5e30376ad",
+          "hashAfterImmediate": "b86da64fce512c23",
+          "hashAfterNextStep": "bfb13798bf895a04"
+        }
+      }
+    }
+  },
+  "outcomeCounts": {
+    "unattended": {
+      "victory": 5
+    },
+    "perturbation": {
+      "gameOver": 1,
+      "victory": 4
+    },
+    "fixedPolicy": {
+      "victory": 3,
+      "gameOver": 2
+    },
+    "policyAware": {
+      "victory": 3,
+      "gameOver": 2
+    }
+  },
+  "paired": {
+    "unattended": [
+      {
+        "seed": 3005,
+        "comparator": "victory",
+        "policyAware": "victory",
+        "flip": "unchanged win"
+      },
+      {
+        "seed": 3006,
+        "comparator": "victory",
+        "policyAware": "gameOver",
+        "flip": "win->loss"
+      },
+      {
+        "seed": 3007,
+        "comparator": "victory",
+        "policyAware": "victory",
+        "flip": "unchanged win"
+      },
+      {
+        "seed": 3008,
+        "comparator": "victory",
+        "policyAware": "gameOver",
+        "flip": "win->loss"
+      },
+      {
+        "seed": 3009,
+        "comparator": "victory",
+        "policyAware": "victory",
+        "flip": "unchanged win"
+      }
+    ],
+    "perturbation": [
+      {
+        "seed": 3005,
+        "comparator": "gameOver",
+        "policyAware": "victory",
+        "flip": "loss->win"
+      },
+      {
+        "seed": 3006,
+        "comparator": "victory",
+        "policyAware": "gameOver",
+        "flip": "win->loss"
+      },
+      {
+        "seed": 3007,
+        "comparator": "victory",
+        "policyAware": "victory",
+        "flip": "unchanged win"
+      },
+      {
+        "seed": 3008,
+        "comparator": "victory",
+        "policyAware": "gameOver",
+        "flip": "win->loss"
+      },
+      {
+        "seed": 3009,
+        "comparator": "victory",
+        "policyAware": "victory",
+        "flip": "unchanged win"
+      }
+    ],
+    "fixedPolicy": [
+      {
+        "seed": 3005,
+        "comparator": "victory",
+        "policyAware": "victory",
+        "flip": "unchanged win"
+      },
+      {
+        "seed": 3006,
+        "comparator": "gameOver",
+        "policyAware": "gameOver",
+        "flip": "unchanged loss"
+      },
+      {
+        "seed": 3007,
+        "comparator": "victory",
+        "policyAware": "victory",
+        "flip": "unchanged win"
+      },
+      {
+        "seed": 3008,
+        "comparator": "gameOver",
+        "policyAware": "gameOver",
+        "flip": "unchanged loss"
+      },
+      {
+        "seed": 3009,
+        "comparator": "victory",
+        "policyAware": "victory",
+        "flip": "unchanged win"
+      }
+    ]
+  },
+  "flipCounts": {
+    "unattended": {
+      "unchanged win": 3,
+      "win->loss": 2
+    },
+    "perturbation": {
+      "loss->win": 1,
+      "win->loss": 2,
+      "unchanged win": 2
+    },
+    "fixedPolicy": {
+      "unchanged win": 3,
+      "unchanged loss": 2
+    }
+  },
+  "mechanismDeltasPolicyAwareMinus": {
+    "unattended": {
+      "playerFoodDelivered": 222,
+      "rivalFoodDelivered": 197,
+      "playerFinalPop": -53,
+      "rivalFinalPop": 0,
+      "playerStarvationDeaths": 79,
+      "rivalStarvationDeaths": 32,
+      "finalTick": 8982
+    },
+    "perturbation": {
+      "playerFoodDelivered": 231,
+      "rivalFoodDelivered": 197,
+      "playerFinalPop": -53,
+      "rivalFinalPop": 0,
+      "playerStarvationDeaths": 79,
+      "rivalStarvationDeaths": 32,
+      "finalTick": 8982
+    },
+    "fixedPolicy": {
+      "playerFoodDelivered": 0,
+      "rivalFoodDelivered": 0,
+      "playerFinalPop": 0,
+      "rivalFinalPop": 0,
+      "playerStarvationDeaths": 0,
+      "rivalStarvationDeaths": 0,
+      "finalTick": 0
+    }
+  },
+  "predictionScores": {
+    "policyAware": {
+      "shepherd": {
+        "hit": 68,
+        "partial": 15,
+        "miss": 5
+      },
+      "persistence": {
+        "hit": 65,
+        "miss": 23
+      }
+    },
+    "fixedPolicy": {
+      "shepherd": {
+        "hit": 68,
+        "partial": 15,
+        "miss": 5
+      },
+      "persistence": {
+        "hit": 65,
+        "miss": 23
+      }
+    }
+  },
+  "replay": {
+    "seed": 3005,
+    "policyTick": 6000,
+    "optionKey": "worker-surge",
+    "values": {
+      "worker": 90,
+      "soldier": 5,
+      "nurse": 5
+    },
+    "firstFinalHash": "4a02f9240bee6620",
+    "replayFinalHash": "4a02f9240bee6620",
+    "firstFinalTick": 15312,
+    "replayFinalTick": 15312,
+    "match": true
+  }
+}
