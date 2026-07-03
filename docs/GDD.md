@@ -58,6 +58,10 @@ Each system is a module Drew can break off and go deep on. Each has a **depth la
 
 **The staging law:** set the table, never script the actors. The sim may shape geography, scarcity, and prizes; scenarios may apply god-level stimuli through normal replayable actions. But the engine must never pump attractants, conscript units, or paint markers standing in for events. If drama needs an annotation to be seen, it is not happening.
 
+**The theater law:** build the stage the size of the play. Drama must occur within the game's viable action radius - where trails persist, round trips are survivable, and reinforcements arrive before signals decay. Contact between forces must be structural, with overlapping viable radii, never exceptional. A fantasy that needs a bigger stage must first grow the cast, not stretch the physics.
+
+**Falsification #3:** the previous driven-war implementation failed because the theater exceeded the ants' viable action radius.
+
 ### S2 — The Chronicle *(every ant is somebody)*
 - **Fantasy:** "Your eldest forager died today: 47 deliveries, 3 winters, killed by the spider she'd escaped twice."
 - **Today:** all the data exists (per-ant id, birth tick, deliveries, distance, mode history, death cause) — displayed nowhere.
@@ -99,12 +103,14 @@ Each system is a module Drew can break off and go deep on. Each has a **depth la
 - **Today:** peak populations ~350; headless ~770 ticks/sec at that scale; typed arrays and spatial hashing already in place.
 - **Ladder:** **A.** Profile and lift the ceiling to ~2,000 ants at 60fps browser / fast headless without changing behavior (hash-parity work, agents' favorite kind). **B.** Tuning/design for genuinely larger colonies. **C.** Third and fourth colonies per map.
 - **Contract:** scale work merges only when it *shows* — bigger must look grander, not just benchmark better.
+- **M0 theater note:** orbit-scale readable front lines are deferred until density can scale with theater.
 
 ### S9 — The Shareable World *(determinism as product)*
 - **Fantasy:** "seed 4471, watch the western front at 4× — trust me." A daily colony everyone watches diverge under their own hands.
 - **Today:** `?seed=` URL works; nothing invites sharing.
 - **Ladder:** **A.** Shareable seed links with a framed "world card" (seed, year reached, epitaph from the chronicle). **B.** Daily seed ritual + replayable intervention recordings (scenario format already encodes stimuli — a replay *is* a scenario). **C.** A public gallery of notable worlds.
 - **Dependency:** worth building only once S1/S2 make worlds worth sharing.
+- **M0 seed note:** macro-similarity across seeds is expected while geometry dominates; seed variance is not the current target.
 
 ### S10 — The First Minute
 - **Fantasy:** a newcomer understands what they're seeing, and cares, inside 60 seconds — no tutorial text walls, just legible drama and one irresistible button.

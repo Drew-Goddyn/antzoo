@@ -1,0 +1,22 @@
+{
+  "name": "m0-orbit-rescue",
+  "seed": 4471,
+  "ticks": 20000,
+  "tuning": {
+    "ant.energyMax": 180,
+    "ant.drainPerSec": 0.75,
+    "sense.dist": 18,
+    "sense.angleDeg": 36,
+    "caste.soldierDangerSenseRadius": 520,
+    "caste.soldierTrailSenseDist": 40,
+    "caste.soldierFrontMaxNestDist": 2600,
+    "pher.evapDanger": 0.9996
+  },
+  "timeline": [
+    { "at": 3600, "do": "snapshot" },
+    { "at": 7200, "do": "snapshot" },
+    { "at": 10800, "do": "snapshot" },
+    { "at": 15000, "do": "snapshot" },
+    { "at": 20000, "do": "snapshot" }
+  ]
+}
