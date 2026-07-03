@@ -1160,22 +1160,40 @@ function placeWarFrontFood(world: World): void {
   }
 }
 
+function paintWarCorridor(world: World, faction: number, target: { x: number; y: number }, amount: number, radius: number): void {
+  if (amount <= 0 || radius <= 0) return;
+  const hx = nestX(world, faction);
+  const hy = nestY(world, faction);
+  const field = pherFoodField(world.grid, faction);
+  const dx = target.x - hx;
+  const dy = target.y - hy;
+  const dist = Math.sqrt(Math.max(TUNING.sim.minTurnEpsilon, dx * dx + dy * dy));
+  const steps = Math.max(1, Math.floor(dist / TUNING.war.corridorStep));
+  for (let step = 1; step <= steps; step += 1) {
+    const t = step / steps;
+    splatPherRadius(world.grid, field, hx + dx * t, hy + dy * t, radius, amount);
+  }
+}
+
 function seedWarCorridors(world: World): void {
   const frontCount = Math.max(1, Math.floor(TUNING.war.frontFoodCount));
   for (const faction of [FACTION_PLAYER, FACTION_RIVAL]) {
-    const hx = nestX(world, faction);
-    const hy = nestY(world, faction);
-    const field = pherFoodField(world.grid, faction);
     for (let front = 0; front < frontCount; front += 1) {
       const target = warFrontPoint(world, front, frontCount);
-      const dx = target.x - hx;
-      const dy = target.y - hy;
-      const dist = Math.sqrt(Math.max(TUNING.sim.minTurnEpsilon, dx * dx + dy * dy));
-      const steps = Math.max(1, Math.floor(dist / TUNING.war.corridorStep));
-      for (let step = 1; step <= steps; step += 1) {
-        const t = step / steps;
-        splatPherRadius(world.grid, field, hx + dx * t, hy + dy * t, TUNING.war.corridorRadius, TUNING.war.corridorPheromone);
-      }
+      paintWarCorridor(world, faction, target, TUNING.war.corridorPheromone, TUNING.war.corridorRadius);
+    }
+  }
+}
+
+function refreshWarFrontScent(world: World): void {
+  const every = Math.max(1, Math.floor(TUNING.war.frontScentEverySec * TUNING.time.stepHz));
+  if (world.stepCount % every !== 0) return;
+  const frontCount = Math.max(1, Math.floor(TUNING.war.frontFoodCount));
+  for (let front = 0; front < frontCount; front += 1) {
+    const target = warFrontPoint(world, front, frontCount);
+    splatFoodScentRadius(world.grid, target.x, target.y, TUNING.war.frontScentRadius, TUNING.war.frontScentAmount, FACTION_ALL);
+    for (const faction of [FACTION_PLAYER, FACTION_RIVAL]) {
+      paintWarCorridor(world, faction, target, TUNING.war.corridorScentAmount, TUNING.war.corridorRadius);
     }
   }
 }
@@ -1183,10 +1201,12 @@ function seedWarCorridors(world: World): void {
 function placeWarVanguard(world: World, faction: number): void {
   const frontCount = Math.max(1, Math.floor(TUNING.war.frontFoodCount));
   const perFaction = Math.max(0, Math.floor(TUNING.war.vanguardPerFaction));
+  const clashersPerFront = Math.max(0, Math.floor(TUNING.war.vanguardClashersPerFront));
   const hx = nestX(world, faction);
   const hy = nestY(world, faction);
   for (let i = 0; i < perFaction; i += 1) {
     const front = i % frontCount;
+    const closeClasher = Math.floor(i / frontCount) < clashersPerFront;
     const target = warFrontPoint(world, front, frontCount);
     const homeDx = hx - target.x;
     const homeDy = hy - target.y;
@@ -1195,10 +1215,13 @@ function placeWarVanguard(world: World, faction: number): void {
     const homeY = homeDy / homeDist;
     const tangentX = -homeY;
     const tangentY = homeX;
-    const spread = (nextRand(world) - HALF) * TUNING.war.vanguardSpread;
-    const standoff = TUNING.war.vanguardStandoff + nextRand(world) * TUNING.war.vanguardSpread * HALF;
-    const x = clamp(target.x + homeX * standoff + tangentX * spread, TUNING.grid.cell, world.width - TUNING.grid.cell);
-    const y = clamp(target.y + homeY * standoff + tangentY * spread, TUNING.grid.cell, world.height - TUNING.grid.cell);
+    const spreadTuning = closeClasher ? TUNING.war.vanguardClashSpread : TUNING.war.vanguardSpread;
+    const standoffTuning = closeClasher ? TUNING.war.vanguardClashStandoff : TUNING.war.vanguardStandoff;
+    const clashLane = closeClasher ? (Math.floor(i / frontCount) % 2 === 0 ? -1 : 1) * (TUNING.war.frontFoodRadius + TUNING.war.vanguardClashSideOffset) : 0;
+    const spread = (nextRand(world) - HALF) * spreadTuning;
+    const standoff = standoffTuning + nextRand(world) * spreadTuning * HALF;
+    const x = clamp(target.x + homeX * standoff + tangentX * (clashLane + spread), TUNING.grid.cell, world.width - TUNING.grid.cell);
+    const y = clamp(target.y + homeY * standoff + tangentY * (clashLane + spread), TUNING.grid.cell, world.height - TUNING.grid.cell);
     const heading = angleTo(target.x - x, target.y - y) + (nextRand(world) - HALF) * TUNING.sim.initialHeadingJitter;
     addAnt(world, x, y, heading, TUNING.caste.worker, faction);
   }
@@ -2636,6 +2659,7 @@ export function stepWorld(world: World, dt: number = STEP_DT, fps: number = TUNI
   updateBrood(ecology, dt, FACTION_PLAYER);
   updateBrood(ecology, dt, FACTION_RIVAL);
   updateRivalPatron(ecology, dt);
+  refreshWarFrontScent(world);
 
   rebuildSpatial(world);
   updateSoldierAttacks(world, dt);
