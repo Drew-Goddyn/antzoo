@@ -1,17 +1,22 @@
 # AGENTS.md
 
+## Start here
+
+**Read `docs/GDD.md` in full before doing anything else.** It is the project's working vision: the fantasy, the pillars, the systems catalog, the experience milestones, and the Agent Charter you operate under. Tasks in this repo are normally phrased against it ("execute M0", "deepen S3 to stage B") and it defines what done looks like.
+
 ## Project
 
-Antzoo is a React, TypeScript, Vite, and PixiJS ant-colony simulation. The simulation core is deterministic and seed-driven; preserve that property unless the task explicitly asks to change it.
+Antzoo is a React, TypeScript, Vite, and PixiJS ant-colony god game / living terrarium. The simulation core is deterministic and seed-driven; that property is the seatbelt that lets agents change the game aggressively — preserve it (see Working Rules), but do not mistake preserving it for the job. The job is making the world more alive on screen.
 
 ## Repo Map
 
-- `src/` contains the app, renderer, simulation, tuning, and debug surfaces.
-- `scripts/run.ts` is the headless simulation CLI used by `npm run sim`.
-- `scripts/test-debug.ts` is the debug-surface test gate used by `npm test`.
-- `scenarios/` contains JSON scenario fixtures.
-- `docs/debug-surface/DEBUG.md` is the technical reference for headless runs, snapshots, traces, hashes, and browser bridge behavior.
-- `docs/fleet/FLEET.md` is the experiment-fleet operating document and report contract.
+- `docs/GDD.md` — the game design document and Agent Charter. **The source of direction.**
+- `src/` — app (`App.tsx`), renderer (`render.ts`), simulation (`sim.ts`), tuning (`tuning.ts`), debug surfaces (`debug/`).
+- `scripts/run.ts` — headless simulation CLI (`npm run sim`).
+- `scripts/test-debug.ts` — the test gate (`npm test`).
+- `scenarios/` — JSON scenario fixtures; run identically headless and in-browser via `?scenario=<base64>`.
+- `docs/debug-surface/DEBUG.md` — technical reference for headless runs, snapshots, traces, hashes, and the `window.__antzoo` browser bridge.
+- `docs/fleet/`, `docs/plan-goals/`, `docs/roadmap.md` — **historical, read-only.** Do not follow their doctrine, write their report formats, or maintain their baselines. Their numbers are stale by design once `src/` changes.
 
 ## Commands
 
@@ -19,14 +24,18 @@ Antzoo is a React, TypeScript, Vite, and PixiJS ant-colony simulation. The simul
 - Start the app: `npm run dev -- --port 5173`
 - Run a headless sim: `npm run sim -- --seed 1337 --ticks 50000`
 - Typecheck: `npm run typecheck`
-- CI-sized debug gate: `npm test -- --fast`
-- Full debug gate: `npm test`
+- CI-sized test gate: `npm test -- --fast`
+- Full test gate: `npm test`
 - Production build: `npm run build`
 
-## Working Rules
+## Working Rules (the seatbelt — full version in GDD §6)
 
-- Keep changes scoped to the request. Do not make gameplay, balance, tuning, or visual changes unless asked.
-- Do not edit `node_modules/`, `dist/`, or other generated output by hand.
-- For behavioral claims, record the seed, config, tick, and observable.
-- When changing simulation, tuning, debug snapshots, hashing, traces, or the headless CLI, run the full `npm test` before calling the work done.
-- When working on fleet reports, follow `docs/fleet/FLEET.md` exactly and only add the requested report file unless instructed otherwise.
+1. Gameplay, balance, tuning, and visual changes are the point of this project when the task calls for them. Scope to the task, but do not shrink from the game.
+2. Never weaken a test, gate, or the state hash. New gameplay state on `World` goes into `hashWorldState` (`src/debug/snapshot.ts`) plus a T0 sensitivity line in `scripts/test-debug.ts`. If a gate fails, fix the code.
+3. All gameplay randomness flows through `nextRand(world)`. New presentation systems (visual FX, audio) must not consume gameplay RNG — use a separate presentation-only RNG. (Legacy particles draw `nextRand`; grandfathered, do not extend the pattern.)
+4. Before calling work done: full `npm test`, `npm run typecheck`, `npm run build` — all green.
+5. Any demo scenario you ship runs twice headless with identical final hashes; paste both summary lines in the PR description.
+6. Milestone work ships `DEMO.md` (≤25 lines): URLs with seeds, the `?scenario=` demo link, three "watch for this" bullets, before/after screenshots at matched seed+tick. The human accepts by watching, not by reading reports.
+7. Do not create fleet reports, findings docs, plan-goal bundles, progress ledgers, statistical sweeps, or any new document besides `DEMO.md` and factual updates to `docs/GDD.md`'s inventory section.
+8. Do not edit `node_modules/`, `dist/`, or generated output by hand.
+9. Plan your own build sequence within a milestone — research, architecture, and sequencing are yours. The GDD constrains what the experience becomes, not how you build it.
