@@ -42,6 +42,13 @@ type RenderEcologyWorld = World & {
     terminalTimer: number;
     nestPulse: number;
   };
+  war?: {
+    skirmishX: number;
+    skirmishY: number;
+    skirmishTimer: number;
+    playerLosses: number;
+    rivalLosses: number;
+  };
   grid: RenderGrid;
 };
 
@@ -708,9 +715,33 @@ function drawRain(g: Graphics, world: World): void {
   }
 }
 
+function drawWarSignals(g: Graphics, world: World): void {
+  const war = ecologyWorld(world).war;
+  if (!war || war.skirmishTimer <= 0) return;
+  const ratio = Math.max(0, Math.min(1, war.skirmishTimer / TUNING.render.warSkirmishFxSec));
+  const pulse = 1 - ratio;
+  const radius = TUNING.render.warSkirmishRingRadius * (0.72 + pulse * 0.42);
+  const playerColor = hexNumber(TUNING.colors.warPlayer);
+  const rivalColor = hexNumber(TUNING.colors.warRival);
+  const dangerColor = hexNumber(TUNING.colors.danger);
+  const alpha = Math.max(0, ratio);
+  g.circle(war.skirmishX, war.skirmishY, radius).stroke({ color: dangerColor, alpha: 0.38 * alpha, width: TUNING.render.warSkirmishLineWidth });
+  g.arc(war.skirmishX, war.skirmishY, radius * 0.72, -Math.PI * 0.85, Math.PI * 0.15).stroke({ color: playerColor, alpha: 0.56 * alpha, width: TUNING.render.warSkirmishLineWidth });
+  g.arc(war.skirmishX, war.skirmishY, radius * 0.88, Math.PI * 0.15, Math.PI * 1.15).stroke({ color: rivalColor, alpha: 0.56 * alpha, width: TUNING.render.warSkirmishLineWidth });
+  const marker = TUNING.render.warSkirmishMarkerLength * (0.7 + pulse * 0.2);
+  const tilt = Math.sin(world.time * 12) * 0.12;
+  for (let side = -1; side <= 1; side += 2) {
+    const a = Math.PI * 0.25 * side + tilt;
+    g.moveTo(war.skirmishX - Math.cos(a) * marker * 0.45, war.skirmishY - Math.sin(a) * marker * 0.45)
+      .lineTo(war.skirmishX + Math.cos(a) * marker * 0.45, war.skirmishY + Math.sin(a) * marker * 0.45)
+      .stroke({ color: side < 0 ? playerColor : rivalColor, alpha: 0.62 * alpha, width: TUNING.render.warSkirmishLineWidth });
+  }
+}
+
 function updateCursor(renderer: Renderer, world: World): void {
   const g = renderer.cursorGraphics;
   g.clear();
+  drawWarSignals(g, world);
   drawRain(g, world);
   if (!world.cursorActive) return;
   const tool = world.activeTool;

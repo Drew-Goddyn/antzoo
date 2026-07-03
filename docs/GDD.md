@@ -30,14 +30,15 @@ Every design decision, by any agent, filters through these five. When a choice i
 
 Agents: trust this section; it was verified by audit against the code. Re-verify only what you depend on.
 
-**Genuinely implemented and coupled** (`src/sim.ts`, ~2,760 lines, deterministic, one LCG via `nextRand`):
+**Genuinely implemented and coupled** (`src/sim.ts`, ~2,910 lines, deterministic, one LCG via `nextRand`):
 - Two full symmetric colonies: per-faction pheromone fields, castes (worker/soldier/nurse with real behavioral differences), brood + nurse egg-work, queen hunger → terminal cascade → game over, faction combat, spider predator with HP, carcasses with spoilage, berry bushes with seasonal regrowth, rain → moisture grid → local evaporation and trail-washing, four seasons modulating drain/speed/regrowth.
+- M0 war foundation: corner-to-corner nests, mirrored local food and bush geography, founding-only rival subsidy, front-line food, visible faction trail corridors, skirmish FX/toasts, and a staged `war-demo` scenario.
 - A playable browser shell (`src/App.tsx`): tools (food, lure, boulder, dig, wash, carcass drop), 13 live tuning sliders, speed control, HUD panels, victory/defeat screens, toasts, minimap.
 - Real rendering polish (`src/render.ts`): particle pool, per-caste/faction tints, seasonal palette, rain overlay, camera trauma, nest pulse.
 - The seatbelt (§6): state hash, determinism tests, headless CLI (`scripts/run.ts`), scenario system (identical CLI/browser semantics, `?scenario=` URL param), event log with death-cause obituaries, per-ant identity, decision traces, `window.__antzoo` bridge.
 
 **Known hollows** (verified — these are where v2's leverage lives):
-- **The rival lives in a food desert.** All food clusters, scatter regions, and bushes generate relative to the *player's* nest (`sim.ts` ~855–902, ~969–990); the rival sits in a corner (`~1269`) on a scripted food drip (`~2073`) and its foragers spawn aimed at the player's nest (`~1126`). Median rival deliveries: zero. The "rivalry" is theater.
+- **The war is stage A, not territorial yet.** The rival now has mirrored food geography and default combat, but deeper border patrols, raids against stores/carcasses, war tides, and rival personality are not implemented.
 - **The god is optional.** Unattended baseline wins ~78%; measured interventions were indistinguishable from blind placebo. There is currently no skill gradient.
 - **The spider is noise.** A predator that almost never matters to outcomes.
 - **No sound of any kind.**

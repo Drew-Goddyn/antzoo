@@ -1,0 +1,22 @@
+{
+  "name": "war-demo",
+  "seed": 4471,
+  "ticks": 10800,
+  "tuning": {
+    "war.frontFoodAmount": 760,
+    "war.frontFoodRadius": 54,
+    "war.frontFoodCount": 3,
+    "war.frontScoutEvery": 2,
+    "conflict.range": 14,
+    "conflict.peerKillSec": 0.2,
+    "conflict.soldierKillsWorkerSec": 0.5,
+    "rival.workerRatio": 55,
+    "rival.soldierRatio": 25,
+    "rival.nurseRatio": 20
+  },
+  "timeline": [
+    { "at": 1800, "do": "snapshot" },
+    { "at": 5400, "do": "snapshot" },
+    { "at": 10800, "do": "snapshot" }
+  ]
+}
