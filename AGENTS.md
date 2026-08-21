@@ -36,6 +36,20 @@ Antzoo is a React, TypeScript, Vite, and PixiJS ant-colony god game / living ter
 4. Before calling work done: full `npm test`, `npm run typecheck`, `npm run build` — all green.
 5. Any demo scenario you ship runs twice headless with identical final hashes; paste both summary lines in the PR description.
 6. Milestone work ships `DEMO.md` (≤25 lines): URLs with seeds, the `?scenario=` demo link, three "watch for this" bullets, before/after screenshots at matched seed+tick. The human accepts by watching, not by reading reports.
-7. Do not create fleet reports, findings docs, plan-goal bundles, progress ledgers, statistical sweeps, or any new document besides `DEMO.md` and factual updates to `docs/GDD.md`'s inventory section.
+7. Do not create fleet reports, findings docs, plan-goal bundles, progress ledgers, statistical sweeps, or any new document besides `DEMO.md`, factual updates to `docs/GDD.md`'s inventory section, and domain documentation created under the Agent Skills rules (`CONTEXT.md`, `CONTEXT-MAP.md`, and ADRs under `docs/adr/` or context-scoped `src/*/docs/adr/`). Domain documentation is created lazily only when terms or decisions are actually resolved, never as speculative scaffolding.
 8. Do not edit `node_modules/`, `dist/`, or generated output by hand.
 9. Plan your own build sequence within a milestone — research, architecture, and sequencing are yours. The GDD constrains what the experience becomes, not how you build it.
+
+## Agent skills
+
+### Issue tracker
+
+Issues and specs are tracked in GitHub Issues using the `gh` CLI. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Triage uses the five default canonical labels. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Domain documentation uses the single-context layout. See `docs/agents/domain.md`.
