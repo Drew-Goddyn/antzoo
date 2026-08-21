@@ -30,14 +30,15 @@ Every design decision, by any agent, filters through these five. When a choice i
 
 Agents: trust this section; it was verified by audit against the code. Re-verify only what you depend on.
 
-**Genuinely implemented and coupled** (`src/sim.ts`, ~2,760 lines, deterministic, one LCG via `nextRand`):
+**Genuinely implemented and coupled** (`src/sim.ts`, ~2,830 lines, deterministic, one LCG via `nextRand`):
 - Two full symmetric colonies: per-faction pheromone fields, castes (worker/soldier/nurse with real behavioral differences), brood + nurse egg-work, queen hunger → terminal cascade → game over, faction combat, spider predator with HP, carcasses with spoilage, berry bushes with seasonal regrowth, rain → moisture grid → local evaporation and trail-washing, four seasons modulating drain/speed/regrowth.
+- M0 war foundation: corner-to-corner nests, mirrored lean food and bush geography, founding-only rival subsidy, a recurring rich midline carcass prize, simple soldier convergence on real trail/danger signals, visible faction trails, live clash sparks, corpses/danger scars, and a staged `war-demo` scenario using normal god-level stimuli.
 - A playable browser shell (`src/App.tsx`): tools (food, lure, boulder, dig, wash, carcass drop), 13 live tuning sliders, speed control, HUD panels, victory/defeat screens, toasts, minimap.
 - Real rendering polish (`src/render.ts`): particle pool, per-caste/faction tints, seasonal palette, rain overlay, camera trauma, nest pulse.
 - The seatbelt (§6): state hash, determinism tests, headless CLI (`scripts/run.ts`), scenario system (identical CLI/browser semantics, `?scenario=` URL param), event log with death-cause obituaries, per-ant identity, decision traces, `window.__antzoo` bridge.
 
 **Known hollows** (verified — these are where v2's leverage lives):
-- **The rival lives in a food desert.** All food clusters, scatter regions, and bushes generate relative to the *player's* nest (`sim.ts` ~855–902, ~969–990); the rival sits in a corner (`~1269`) on a scripted food drip (`~2073`) and its foragers spawn aimed at the player's nest (`~1126`). Median rival deliveries: zero. The "rivalry" is theater.
+- **The war is stage A, not territorial yet.** Mirrored geography plus staged clash machinery was falsified by Drew's watch tests as a recipe; the S1-A contract remains both empires visibly foraging and clashing on screen at default settings. Deeper border patrols, raids against stores/carcasses, war tides, and rival personality are not implemented.
 - **The god is optional.** Unattended baseline wins ~78%; measured interventions were indistinguishable from blind placebo. There is currently no skill gradient.
 - **The spider is noise.** A predator that almost never matters to outcomes.
 - **No sound of any kind.**
@@ -52,8 +53,14 @@ Each system is a module Drew can break off and go deep on. Each has a **depth la
 ### S1 — The War *(the rival as a living empire)*
 - **Fantasy:** two civilizations expanding toward each other; contested ground; raids; front lines you can read from orbit.
 - **Today:** hollow (food desert, drip-fed, invisible trails at 0.72 alpha).
-- **Ladder:** **A.** Rival gets its own food geography (mirror generation around its nest), drip cut to founding subsidy, spawn headings fixed; rival trails rendered at full hostile-palette visibility; skirmish FX; war toasts; a staged `war-demo` scenario. **B.** Territorial behavior: patrol borders, raiding parties targeting player food stores/carcasses, visible war tides. **C.** Rival personality: aggression that responds to player strength; multiple rival archetypes per seed.
+- **Ladder:** **A.** Rival gets its own lean food geography (mirror generation around its nest), drip cut to founding subsidy, spawn headings fixed; scarcity pushes both colonies toward a recurring rich midline prize; soldiers converge on real trail/danger signals away from home; rival trails render at full hostile-palette visibility; live clash FX, corpses, danger haze, and a staged `war-demo` scenario using normal replayable god actions. **B.** Territorial behavior: patrol borders, raiding parties targeting player food stores/carcasses, visible war tides. **C.** Rival personality: aggression that responds to player strength; multiple rival archetypes per seed.
 - **Design space:** everything about how the war *looks and escalates*. The only contract: both empires visibly forage and clash on screen at default settings.
+
+**The staging law:** set the table, never script the actors. The sim may shape geography, scarcity, and prizes; scenarios may apply god-level stimuli through normal replayable actions. But the engine must never pump attractants, conscript units, or paint markers standing in for events. If drama needs an annotation to be seen, it is not happening.
+
+**The theater law:** build the stage the size of the play. Drama must occur within the game's viable action radius - where trails persist, round trips are survivable, and reinforcements arrive before signals decay. Contact between forces must be structural, with overlapping viable radii, never exceptional. A fantasy that needs a bigger stage must first grow the cast, not stretch the physics.
+
+**Falsification #3:** the previous driven-war implementation failed because the theater exceeded the ants' viable action radius.
 
 ### S2 — The Chronicle *(every ant is somebody)*
 - **Fantasy:** "Your eldest forager died today: 47 deliveries, 3 winters, killed by the spider she'd escaped twice."
@@ -96,12 +103,14 @@ Each system is a module Drew can break off and go deep on. Each has a **depth la
 - **Today:** peak populations ~350; headless ~770 ticks/sec at that scale; typed arrays and spatial hashing already in place.
 - **Ladder:** **A.** Profile and lift the ceiling to ~2,000 ants at 60fps browser / fast headless without changing behavior (hash-parity work, agents' favorite kind). **B.** Tuning/design for genuinely larger colonies. **C.** Third and fourth colonies per map.
 - **Contract:** scale work merges only when it *shows* — bigger must look grander, not just benchmark better.
+- **M0 theater note:** orbit-scale readable front lines are deferred until density can scale with theater.
 
 ### S9 — The Shareable World *(determinism as product)*
 - **Fantasy:** "seed 4471, watch the western front at 4× — trust me." A daily colony everyone watches diverge under their own hands.
 - **Today:** `?seed=` URL works; nothing invites sharing.
 - **Ladder:** **A.** Shareable seed links with a framed "world card" (seed, year reached, epitaph from the chronicle). **B.** Daily seed ritual + replayable intervention recordings (scenario format already encodes stimuli — a replay *is* a scenario). **C.** A public gallery of notable worlds.
 - **Dependency:** worth building only once S1/S2 make worlds worth sharing.
+- **M0 seed note:** macro-similarity across seeds is expected while geometry dominates; seed variance is not the current target.
 
 ### S10 — The First Minute
 - **Fantasy:** a newcomer understands what they're seeing, and cares, inside 60 seconds — no tutorial text walls, just legible drama and one irresistible button.

@@ -1,0 +1,18 @@
+{
+  "name": "m0-close-quarters",
+  "seed": 4471,
+  "ticks": 20000,
+  "tuning": {
+    "nest.cornerPaddingX": 1365,
+    "nest.cornerPaddingY": 768,
+    "rival.cornerPaddingX": 1365,
+    "rival.cornerPaddingY": 768
+  },
+  "timeline": [
+    { "at": 3600, "do": "snapshot" },
+    { "at": 7200, "do": "snapshot" },
+    { "at": 10800, "do": "snapshot" },
+    { "at": 15000, "do": "snapshot" },
+    { "at": 20000, "do": "snapshot" }
+  ]
+}

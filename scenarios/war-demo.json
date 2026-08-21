@@ -1,0 +1,11 @@
+{
+  "name": "war-demo",
+  "seed": 4471,
+  "ticks": 10800,
+  "timeline": [
+    { "at": 900, "do": "dropCarcass", "x": 2048, "y": 1152 },
+    { "at": 3600, "do": "snapshot" },
+    { "at": 7200, "do": "snapshot" },
+    { "at": 10800, "do": "snapshot" }
+  ]
+}

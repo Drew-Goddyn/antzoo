@@ -196,8 +196,12 @@ function clampCamera(world: World): void {
 }
 
 function centerCamera(world: World): void {
-  world.camera.x = world.nestX - world.camera.viewW / world.camera.scale * 0.5;
-  world.camera.y = world.nestY - world.camera.viewH / world.camera.scale * 0.5;
+  const rival = (world as World & { rival?: { nestX: number; nestY: number } }).rival;
+  if (world.stepCount === 0) world.camera.scale = TUNING.camera.defaultZoom;
+  const focusX = rival ? (world.nestX + rival.nestX) * 0.5 : world.nestX;
+  const focusY = rival ? (world.nestY + rival.nestY) * 0.5 : world.nestY;
+  world.camera.x = focusX - world.camera.viewW / world.camera.scale * 0.5;
+  world.camera.y = focusY - world.camera.viewH / world.camera.scale * 0.5;
   clampCamera(world);
 }
 
@@ -1099,7 +1103,7 @@ function makeStyles(): string {
     .rain-toast {
       position: absolute;
       right: 12px;
-      top: 250px;
+      top: 286px;
       padding: 6px 10px;
       color: ${TUNING.colors.muted};
       font-size: 12px;
@@ -1169,7 +1173,7 @@ function makeStyles(): string {
     .tuning-shell {
       position: absolute;
       right: 12px;
-      top: 286px;
+      top: 322px;
       display: flex;
       flex-direction: row-reverse;
       align-items: flex-start;

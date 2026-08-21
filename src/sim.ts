@@ -275,6 +275,29 @@ function seasonRainChancePerSec(season: number): number {
   return TUNING.seasons.rainWinterChancePerSec;
 }
 
+function forageAngleForFaction(angle: number, faction: number): number {
+  return faction === FACTION_RIVAL ? angle + Math.PI : angle;
+}
+
+function factionClusterPoint(world: World, faction: number, dist: number, angle: number, radius: number): { x: number; y: number } {
+  const d = Math.min(dist, Math.min(world.width, world.height) * 0.42);
+  const a = forageAngleForFaction(angle, faction);
+  return {
+    x: clamp(nestX(world, faction) + Math.cos(a) * d, radius, world.width - radius),
+    y: clamp(nestY(world, faction) + Math.sin(a) * d, radius, world.height - radius),
+  };
+}
+
+function warPrizePoint(world: World): { x: number; y: number } {
+  const ecology = ecologyWorld(world);
+  const midX = (world.nestX + ecology.rival.nestX) * HALF;
+  const midY = (world.nestY + ecology.rival.nestY) * HALF;
+  return {
+    x: clamp(midX, TUNING.war.prizeRadius, world.width - TUNING.war.prizeRadius),
+    y: clamp(midY, TUNING.war.prizeRadius, world.height - TUNING.war.prizeRadius),
+  };
+}
+
 function energyMaxForCaste(caste: number): number {
   return caste === TUNING.caste.soldier ? TUNING.ant.energyMax * TUNING.caste.soldierEnergyMaxMul : TUNING.ant.energyMax;
 }
@@ -846,30 +869,35 @@ function refreshLocalEvaporation(grid: EcologyGrid): void {
 function generateMoisture(world: World): void {
   const grid = ecologyGrid(world.grid);
   const count = TUNING.terrain.moistureBlobsMin + Math.floor(nextRand(world) * (TUNING.terrain.moistureBlobsMax - TUNING.terrain.moistureBlobsMin + 1));
-  const xs = new Float32Array(TUNING.terrain.moistureBlobsMax);
-  const ys = new Float32Array(TUNING.terrain.moistureBlobsMax);
-  const radii = new Float32Array(TUNING.terrain.moistureBlobsMax);
-  const strengths = new Float32Array(TUNING.terrain.moistureBlobsMax);
+  const xs: number[] = [];
+  const ys: number[] = [];
+  const radii: number[] = [];
+  const strengths: number[] = [];
   for (let i = 0; i < count; i += 1) {
-    radii[i] = TUNING.terrain.moistureBlobRadiusMin + nextRand(world) * (TUNING.terrain.moistureBlobRadiusMax - TUNING.terrain.moistureBlobRadiusMin);
+    const radius = TUNING.terrain.moistureBlobRadiusMin + nextRand(world) * (TUNING.terrain.moistureBlobRadiusMax - TUNING.terrain.moistureBlobRadiusMin);
     if (i < TUNING.sim.foodClusters.length) {
       const cluster = TUNING.sim.foodClusters[i];
-      const d = Math.min(cluster.dist, Math.min(world.width, world.height) * 0.42);
-      const jitter = radii[i] * TUNING.terrain.moistureBlobClusterJitter;
-      xs[i] = clamp(world.nestX + Math.cos(cluster.angle) * d + (nextRand(world) - HALF) * jitter, 0, world.width);
-      ys[i] = clamp(world.nestY + Math.sin(cluster.angle) * d + (nextRand(world) - HALF) * jitter, 0, world.height);
+      const jitter = radius * TUNING.terrain.moistureBlobClusterJitter;
+      for (const faction of [FACTION_PLAYER, FACTION_RIVAL]) {
+        const point = factionClusterPoint(world, faction, cluster.dist, cluster.angle, 0);
+        xs.push(clamp(point.x + (nextRand(world) - HALF) * jitter, 0, world.width));
+        ys.push(clamp(point.y + (nextRand(world) - HALF) * jitter, 0, world.height));
+        radii.push(radius);
+        strengths.push(HALF + nextRand(world) * HALF);
+      }
     } else {
-      xs[i] = nextRand(world) * world.width;
-      ys[i] = nextRand(world) * world.height;
+      xs.push(nextRand(world) * world.width);
+      ys.push(nextRand(world) * world.height);
+      radii.push(radius);
+      strengths.push(HALF + nextRand(world) * HALF);
     }
-    strengths[i] = HALF + nextRand(world) * HALF;
   }
   for (let gy = 0; gy < grid.rows; gy += 1) {
     const y = (gy + HALF) * grid.cell;
     for (let gx = 0; gx < grid.cols; gx += 1) {
       const x = (gx + HALF) * grid.cell;
       let value = TUNING.terrain.moistureBase + (hash01(gx * 73856093 ^ gy * 19349663 ^ TUNING.seed.value) - HALF) * TUNING.terrain.moistureNoise;
-      for (let blob = 0; blob < count; blob += 1) {
+      for (let blob = 0; blob < xs.length; blob += 1) {
         const dx = x - xs[blob];
         const dy = y - ys[blob];
         const r = radii[blob];
@@ -887,20 +915,20 @@ function generateMoisture(world: World): void {
   refreshLocalEvaporation(grid);
 }
 
-function placeRockyRegions(world: World): void {
+function placeRockyRegions(world: World, faction: number): void {
   const count = TUNING.terrain.rockyRegionsMin + Math.floor(nextRand(world) * (TUNING.terrain.rockyRegionsMax - TUNING.terrain.rockyRegionsMin + 1));
   const clusterCount = TUNING.sim.foodClusters.length;
   const radiusLimit = Math.min(world.width, world.height) * 0.44;
   for (let region = 0; region < count; region += 1) {
     const cluster = TUNING.sim.foodClusters[(region * 2 + 2) % clusterCount];
-    const angle = cluster.angle + (nextRand(world) - HALF) * TUNING.terrain.rockyRegionAngleJitter;
+    const angle = forageAngleForFaction(cluster.angle, faction) + (nextRand(world) - HALF) * TUNING.terrain.rockyRegionAngleJitter;
     const dist = Math.min(radiusLimit, TUNING.terrain.rockyRegionStartDistance + region * TUNING.terrain.rockyRegionDistanceStep);
     const dirX = Math.cos(angle);
     const dirY = Math.sin(angle);
     const tangentX = -dirY;
     const tangentY = dirX;
-    const centerX = world.nestX + dirX * dist;
-    const centerY = world.nestY + dirY * dist;
+    const centerX = nestX(world, faction) + dirX * dist;
+    const centerY = nestY(world, faction) + dirY * dist;
     const span = TUNING.terrain.rockyRegionSpanMin + nextRand(world) * (TUNING.terrain.rockyRegionSpanMax - TUNING.terrain.rockyRegionSpanMin);
     for (let offset = -span; offset <= span; offset += TUNING.terrain.rockyRegionSpacing) {
       if (Math.abs(offset) < TUNING.terrain.rockyRegionGapHalfWidth) continue;
@@ -928,10 +956,12 @@ function bushSpacingClear(world: EcologyWorld, x: number, y: number): boolean {
   return true;
 }
 
-function findBushCell(world: EcologyWorld, preferredX: number, preferredY: number): number {
+function findBushCell(world: EcologyWorld, preferredX: number, preferredY: number, faction: number): number {
   const grid = world.grid;
   let best = -1;
   let bestMoisture = -1;
+  const hx = nestX(world, faction);
+  const hy = nestY(world, faction);
   for (let attempt = 0; attempt < TUNING.ecology.bushPlacementAttempts; attempt += 1) {
     const angle = nextRand(world) * TAU;
     const dist = Math.sqrt(nextRand(world)) * TUNING.ecology.bushPreferredRadius;
@@ -941,8 +971,8 @@ function findBushCell(world: EcologyWorld, preferredX: number, preferredY: numbe
     if (grid.moisture[idx] <= TUNING.ecology.bushMoistureMin) continue;
     const x = (gx + HALF) * grid.cell;
     const y = (gy + HALF) * grid.cell;
-    const nx = x - world.nestX;
-    const ny = y - world.nestY;
+    const nx = x - hx;
+    const ny = y - hy;
     if (nx * nx + ny * ny < TUNING.ecology.bushMinNestDist * TUNING.ecology.bushMinNestDist) continue;
     if (nx * nx + ny * ny > TUNING.ecology.bushMaxNestDist * TUNING.ecology.bushMaxNestDist) continue;
     if (!isPointClear(world, x, y, TUNING.ecology.bushClearRadius) || !bushSpacingClear(world, x, y)) continue;
@@ -955,8 +985,8 @@ function findBushCell(world: EcologyWorld, preferredX: number, preferredY: numbe
     const gy = Math.floor(idx / grid.cols);
     const x = (gx + HALF) * grid.cell;
     const y = (gy + HALF) * grid.cell;
-    const nx = x - world.nestX;
-    const ny = y - world.nestY;
+    const nx = x - hx;
+    const ny = y - hy;
     if (nx * nx + ny * ny < TUNING.ecology.bushMinNestDist * TUNING.ecology.bushMinNestDist) continue;
     if (nx * nx + ny * ny > TUNING.ecology.bushMaxNestDist * TUNING.ecology.bushMaxNestDist) continue;
     if (!isPointClear(world, x, y, TUNING.ecology.bushClearRadius) || !bushSpacingClear(world, x, y)) continue;
@@ -966,19 +996,19 @@ function findBushCell(world: EcologyWorld, preferredX: number, preferredY: numbe
   return best;
 }
 
-function placeBerryBushes(world: EcologyWorld): void {
+function placeBerryBushes(world: EcologyWorld, faction: number): void {
   const count = TUNING.ecology.bushMin + Math.floor(nextRand(world) * (TUNING.ecology.bushMax - TUNING.ecology.bushMin + 1));
   for (let i = 0; i < count; i += 1) {
     const cluster = TUNING.sim.foodClusters[i % TUNING.sim.foodClusters.length];
-    const d = Math.min(cluster.dist, Math.min(world.width, world.height) * 0.42);
-    const preferredX = clamp(world.nestX + Math.cos(cluster.angle) * d, TUNING.ecology.bushClearRadius, world.width - TUNING.ecology.bushClearRadius);
-    const preferredY = clamp(world.nestY + Math.sin(cluster.angle) * d, TUNING.ecology.bushClearRadius, world.height - TUNING.ecology.bushClearRadius);
-    const idx = findBushCell(world, preferredX, preferredY);
+    const point = factionClusterPoint(world, faction, cluster.dist, cluster.angle, TUNING.ecology.bushClearRadius);
+    const preferredX = clamp(point.x, TUNING.ecology.bushClearRadius, world.width - TUNING.ecology.bushClearRadius);
+    const preferredY = clamp(point.y, TUNING.ecology.bushClearRadius, world.height - TUNING.ecology.bushClearRadius);
+    const idx = findBushCell(world, preferredX, preferredY, faction);
     if (idx < 0) break;
     const gx = idx % world.grid.cols;
     const gy = Math.floor(idx / world.grid.cols);
     const stock = Math.min(TUNING.ecology.bushCap, Math.round(TUNING.ecology.bushInitialMin + nextRand(world) * (TUNING.ecology.bushInitialMax - TUNING.ecology.bushInitialMin)));
-    addFoodNear(world, (gx + HALF) * world.grid.cell, (gy + HALF) * world.grid.cell, TUNING.ecology.bushFoodRadius, stock, FACTION_ALL);
+    addFoodNear(world, (gx + HALF) * world.grid.cell, (gy + HALF) * world.grid.cell, TUNING.ecology.bushFoodRadius, stock, faction);
     world.bushes.push({
       x: (gx + HALF) * world.grid.cell,
       y: (gy + HALF) * world.grid.cell,
@@ -998,41 +1028,20 @@ function scheduleNextCarcass(world: EcologyWorld): void {
   world.carcass.age = 0;
   world.carcass.amount = 0;
   world.carcass.spoiled = false;
-  world.carcass.nextSpawn = nextCarcassDelay(world);
+  world.carcass.nextSpawn = TUNING.war.prizeRefreshSec > 0 ? TUNING.war.prizeRefreshSec : nextCarcassDelay(world);
 }
 
 function spawnCarcass(world: EcologyWorld): void {
-  const midX = (world.nestX + world.rival.nestX) * HALF;
-  const midY = (world.nestY + world.rival.nestY) * HALF;
-  const dx = world.rival.nestX - world.nestX;
-  const dy = world.rival.nestY - world.nestY;
-  const dist = Math.sqrt(Math.max(TUNING.sim.minTurnEpsilon, dx * dx + dy * dy));
-  const dirX = dx / dist;
-  const dirY = dy / dist;
-  const tangentX = -dirY;
-  const tangentY = dirX;
-  let x = midX;
-  let y = midY;
-  for (let attempt = 0; attempt < TUNING.ecology.carcassPlacementAttempts; attempt += 1) {
-    const along = (nextRand(world) - HALF) * TUNING.rival.midlineCarcassAlong;
-    const across = (nextRand(world) - HALF) * TUNING.rival.midlineCarcassJitter;
-    const cx = midX + dirX * along + tangentX * across;
-    const cy = midY + dirY * along + tangentY * across;
-    if (isPointClear(world, cx, cy, TUNING.ecology.carcassRadius)) {
-      x = cx;
-      y = cy;
-      break;
-    }
-  }
+  const prize = warPrizePoint(world);
   world.carcass.active = true;
-  world.carcass.x = clamp(x, TUNING.ecology.carcassRadius, world.width - TUNING.ecology.carcassRadius);
-  world.carcass.y = clamp(y, TUNING.ecology.carcassRadius, world.height - TUNING.ecology.carcassRadius);
+  world.carcass.x = prize.x;
+  world.carcass.y = prize.y;
   world.carcass.age = 0;
   world.carcass.amount = TUNING.ecology.carcassAmount;
   world.carcass.spoiled = false;
   world.carcass.toast = TUNING.ecology.carcassToastSec;
   world.carcass.nextSpawn = 0;
-  depositFood(world, world.carcass.x, world.carcass.y, TUNING.ecology.carcassAmount, TUNING.ecology.carcassRadius, FACTION_ALL);
+  depositFood(world, world.carcass.x, world.carcass.y, TUNING.ecology.carcassAmount, TUNING.war.prizeRadius, FACTION_ALL);
   recordDebugEvent(world, { type: "carcass_spawn", tick: world.stepCount, x: world.carcass.x, y: world.carcass.y, amount: world.carcass.amount });
   spawnParticle(world, world.carcass.x, world.carcass.y, ParticleKind.Spawn, TUNING.particles.spawn.count, TUNING.particles.spawn.speed, TUNING.particles.spawn.life, TUNING.particles.spawn.size);
 }
@@ -1110,10 +1119,15 @@ function spawnAnt(world: World, heading: number, dist: number, casteValue: numbe
 
 function dropRivalFood(world: EcologyWorld): void {
   const angle = nextRand(world) * TAU;
-  const dist = Math.sqrt(nextRand(world)) * TUNING.rival.dripSpread;
-  const x = clamp(world.rival.nestX + Math.cos(angle) * dist, TUNING.rival.dripRadius, world.width - TUNING.rival.dripRadius);
-  const y = clamp(world.rival.nestY + Math.sin(angle) * dist, TUNING.rival.dripRadius, world.height - TUNING.rival.dripRadius);
-  depositFood(world, x, y, TUNING.rival.dripAmount, TUNING.rival.dripRadius, FACTION_RIVAL);
+  const dist = Math.sqrt(nextRand(world)) * TUNING.rival.foundingSubsidySpread;
+  const x = clamp(world.rival.nestX + Math.cos(angle) * dist, TUNING.rival.foundingSubsidyRadius, world.width - TUNING.rival.foundingSubsidyRadius);
+  const y = clamp(world.rival.nestY + Math.sin(angle) * dist, TUNING.rival.foundingSubsidyRadius, world.height - TUNING.rival.foundingSubsidyRadius);
+  depositFood(world, x, y, TUNING.rival.foundingSubsidyAmount, TUNING.rival.foundingSubsidyRadius, FACTION_RIVAL);
+}
+
+function initialForagerHeading(world: World, faction: number, index: number): number {
+  const targetCluster = TUNING.sim.foodClusters[index % TUNING.sim.foodClusters.length];
+  return forageAngleForFaction(targetCluster.angle, faction) + (nextRand(world) - HALF) * TUNING.sim.initialHeadingJitter;
 }
 
 function placeInitialAnts(world: World, faction: number, count: number): void {
@@ -1122,8 +1136,7 @@ function placeInitialAnts(world: World, faction: number, count: number): void {
   for (let i = 0; i < count; i += 1) {
     const a = nextRand(world) * TAU;
     const r = Math.sqrt(nextRand(world)) * TUNING.sim.initialScatterRadius;
-    const targetCluster = TUNING.sim.foodClusters[i % TUNING.sim.foodClusters.length];
-    const headingBase = faction === FACTION_RIVAL ? angleTo(world.nestX - hx, world.nestY - hy) + (nextRand(world) - HALF) * TUNING.sim.initialHeadingJitter : targetCluster.angle + (nextRand(world) - HALF) * TUNING.sim.initialHeadingJitter;
+    const headingBase = initialForagerHeading(world, faction, i);
     const heading = i / count < TUNING.sim.initialForagerRatio ? headingBase : a;
     const x = clamp(hx + Math.cos(a) * r, TUNING.grid.cell, world.width - TUNING.grid.cell);
     const y = clamp(hy + Math.sin(a) * r, TUNING.grid.cell, world.height - TUNING.grid.cell);
@@ -1132,19 +1145,23 @@ function placeInitialAnts(world: World, faction: number, count: number): void {
 }
 
 function placeInitialScene(world: World): void {
-  const radiusLimit = Math.min(world.width, world.height) * 0.42;
-  for (const spec of TUNING.sim.foodClusters) {
-    const d = Math.min(spec.dist, radiusLimit);
-    const x = clamp(world.nestX + Math.cos(spec.angle) * d, spec.radius, world.width - spec.radius);
-    const y = clamp(world.nestY + Math.sin(spec.angle) * d, spec.radius, world.height - spec.radius);
-    depositFood(world, x, y, spec.amount, spec.radius);
+  for (const faction of [FACTION_PLAYER, FACTION_RIVAL]) {
+    for (const spec of TUNING.sim.foodClusters) {
+      const point = factionClusterPoint(world, faction, spec.dist, spec.angle, spec.radius);
+      depositFood(world, point.x, point.y, spec.amount, spec.radius, faction);
+    }
   }
-  for (const spec of TUNING.sim.obstacles) {
-    const d = Math.min(spec.dist, radiusLimit);
-    addObstacle(world, world.nestX + Math.cos(spec.angle) * d, world.nestY + Math.sin(spec.angle) * d, spec.r);
+  for (const faction of [FACTION_PLAYER, FACTION_RIVAL]) {
+    for (const spec of TUNING.sim.obstacles) {
+      const point = factionClusterPoint(world, faction, spec.dist, spec.angle, spec.r);
+      addObstacle(world, point.x, point.y, spec.r);
+    }
   }
-  placeRockyRegions(world);
-  placeBerryBushes(ecologyWorld(world));
+  placeRockyRegions(world, FACTION_PLAYER);
+  placeRockyRegions(world, FACTION_RIVAL);
+  placeBerryBushes(ecologyWorld(world), FACTION_PLAYER);
+  placeBerryBushes(ecologyWorld(world), FACTION_RIVAL);
+  spawnCarcass(ecologyWorld(world));
   placeInitialAnts(world, FACTION_PLAYER, TUNING.ants.start);
   dropRivalFood(ecologyWorld(world));
   placeInitialAnts(world, FACTION_RIVAL, TUNING.rival.start);
@@ -1294,8 +1311,8 @@ export function createWorld(width: number = TUNING.sim.minWidth, height: number 
       toast: 0,
     },
     grid: createGrid(),
-    nestX: TUNING.world.w * HALF,
-    nestY: TUNING.world.h * HALF,
+    nestX: TUNING.nest.cornerPaddingX,
+    nestY: TUNING.nest.cornerPaddingY,
     nestFood: TUNING.nest.startFood,
     totalDeaths: 0,
     totalDelivered: 0,
@@ -1323,7 +1340,7 @@ export function createWorld(width: number = TUNING.sim.minWidth, height: number 
     camera: {
       x: 0,
       y: 0,
-      scale: 1,
+      scale: TUNING.camera.defaultZoom,
       viewW: Math.max(TUNING.sim.minWidth, width),
       viewH: Math.max(TUNING.sim.minHeight, height),
     },
@@ -1333,7 +1350,7 @@ export function createWorld(width: number = TUNING.sim.minWidth, height: number 
   world.spider.nextSpawn = nextSpiderDelay(world);
   world.carcass.nextSpawn = nextCarcassDelay(world);
   placeInitialScene(world);
-  world.rival.dripTimer = TUNING.rival.dripSec;
+  world.rival.dripTimer = 0;
   world.peakPopulation = countFactionAnts(world, FACTION_PLAYER);
   world.rival.peakPopulation = countFactionAnts(world, FACTION_RIVAL);
   rebuildSpatial(world);
@@ -1596,6 +1613,9 @@ function refillNestCaste(world: World, index: number, maxEnergy: number): void {
 let soldierDangerX = 0;
 let soldierDangerY = 0;
 let soldierDangerValue = 0;
+let soldierTrailX = 0;
+let soldierTrailY = 0;
+let soldierTrailValue = 0;
 
 function findSoldierDanger(world: World, index: number): boolean {
   const grid = world.grid;
@@ -1628,6 +1648,33 @@ function findSoldierDanger(world: World, index: number): boolean {
   return soldierDangerValue > TUNING.caste.soldierDangerThreshold;
 }
 
+function sampleSoldierTrail(world: World, field: Float32Array, index: number, angle: number): void {
+  const ants = world.ants;
+  const x = ants.x[index] + Math.cos(angle) * TUNING.caste.soldierTrailSenseDist;
+  const y = ants.y[index] + Math.sin(angle) * TUNING.caste.soldierTrailSenseDist;
+  const value = sampleField(world, field, x, y) - sampleField(world, world.grid.pherDanger, x, y) * 0.2 - obstaclePenalty(world, x, y) * 0.1;
+  if (value > soldierTrailValue) {
+    soldierTrailValue = value;
+    soldierTrailX = x;
+    soldierTrailY = y;
+  }
+}
+
+function findSoldierTrail(world: World, index: number): boolean {
+  const ants = world.ants;
+  const faction = factionAnts(ants).faction[index];
+  const field = pherFoodField(world.grid, faction);
+  const heading = ants.heading[index];
+  const angle = (TUNING.sense.angleDeg * Math.PI) / 180;
+  soldierTrailValue = 0;
+  soldierTrailX = ants.x[index];
+  soldierTrailY = ants.y[index];
+  sampleSoldierTrail(world, field, index, heading);
+  sampleSoldierTrail(world, field, index, heading - angle);
+  sampleSoldierTrail(world, field, index, heading + angle);
+  return soldierTrailValue > TUNING.caste.soldierTrailThreshold;
+}
+
 function moveCasteAnt(world: World, index: number, dt: number, speed: number): void {
   const ants = world.ants;
   const vx = Math.cos(ants.heading[index]) * speed * dt;
@@ -1644,15 +1691,21 @@ function updateSoldierAnt(world: World, index: number, dt: number, seasonSpeedMu
   const dx = ants.x[index] - hx;
   const dy = ants.y[index] - hy;
   const dist2 = dx * dx + dy * dy;
+  const frontMax = TUNING.caste.soldierFrontMaxNestDist;
   let target = ants.heading[index] + (nextRand(world) - HALF) * TUNING.ant.wanderJitter;
+  let turnMul = 1;
   if (findSoldierDanger(world, index)) {
     target = angleTo(soldierDangerX - ants.x[index], soldierDangerY - ants.y[index]);
+    turnMul = 1.35;
+  } else if (dist2 < frontMax * frontMax && findSoldierTrail(world, index)) {
+    target = angleTo(soldierTrailX - ants.x[index], soldierTrailY - ants.y[index]);
+    turnMul = TUNING.caste.soldierTrailTurnMul;
   } else if (dist2 > TUNING.caste.soldierPatrolRadius * TUNING.caste.soldierPatrolRadius) {
     target = angleTo(hx - ants.x[index], hy - ants.y[index]);
   } else if (dist2 < (TUNING.caste.soldierPatrolRadius - TUNING.caste.soldierPatrolSlack) * (TUNING.caste.soldierPatrolRadius - TUNING.caste.soldierPatrolSlack)) {
     target = angleTo(dy, -dx) + (nextRand(world) - HALF) * TUNING.ant.wanderJitter;
   }
-  ants.heading[index] = turnToward(ants.heading[index], target, TUNING.ant.turnRate * dt);
+  ants.heading[index] = turnToward(ants.heading[index], target, TUNING.ant.turnRate * turnMul * dt);
   avoid(world, index, dt);
   refillNestCaste(world, index, energyMaxForCaste(TUNING.caste.soldier));
   moveCasteAnt(world, index, dt, TUNING.ant.speed * seasonSpeedMulValue * TUNING.caste.soldierSpeedMul);
@@ -1934,6 +1987,17 @@ function markCombatDeath(world: EcologyWorld, index: number): void {
   splatPherRadius(world.grid, world.grid.pherDanger, world.ants.x[index], world.ants.y[index], TUNING.conflict.dangerRadius, TUNING.conflict.dangerDeposit);
 }
 
+function isContestedFront(world: EcologyWorld, x: number, y: number): boolean {
+  const prize = world.carcass.active ? world.carcass : warPrizePoint(world);
+  const dx = x - prize.x;
+  const dy = y - prize.y;
+  return dx * dx + dy * dy <= TUNING.conflict.frontRadius * TUNING.conflict.frontRadius;
+}
+
+function recordCombatShock(world: EcologyWorld, playerLosses: number, rivalLosses: number): void {
+  world.trauma += TUNING.conflict.skirmishTrauma * Math.min(3, playerLosses + rivalLosses);
+}
+
 function factionCombatQuery(other: number): boolean | void {
   const world = combatWorld;
   if (other <= combatSource || world.combatMarks[other] !== 0 || world.combatMarks[combatSource] !== 0) return;
@@ -1960,14 +2024,19 @@ function updateFactionCombat(world: EcologyWorld, dt: number): number {
   const faction = factionAnts(ants).faction;
   for (let i = 0; i < ants.count; i += 1) {
     if (world.combatMarks[i] !== 0) continue;
+    if (!isContestedFront(world, ants.x[i], ants.y[i])) continue;
     if (!hasOpposingFactionNear(world, ants.x[i], ants.y[i], TUNING.conflict.range, faction[i])) continue;
     combatSource = i;
     queryCircle(world, ants.x[i], ants.y[i], TUNING.conflict.range, factionCombatQuery);
   }
   let removed = 0;
+  let playerLosses = 0;
+  let rivalLosses = 0;
   for (let i = ants.count - 1; i >= 0; i -= 1) {
     if (world.combatMarks[i] === 0) continue;
     const antFaction = faction[i];
+    if (antFaction === FACTION_RIVAL) rivalLosses += 1;
+    else playerLosses += 1;
     pushCorpse(world, ants.x[i], ants.y[i]);
     spawnParticle(world, ants.x[i], ants.y[i], ParticleKind.Death, TUNING.particles.death.count, TUNING.particles.death.speed, TUNING.particles.death.life, TUNING.particles.death.size);
     recordTraceInteraction(world, i, { kind: "combat", cause: "combat", faction: antFaction });
@@ -1976,6 +2045,7 @@ function updateFactionCombat(world: EcologyWorld, dt: number): number {
     removeAnt(world, i);
     removed += 1;
   }
+  if (removed > 0) recordCombatShock(world, playerLosses, rivalLosses);
   return removed;
 }
 
@@ -2022,13 +2092,16 @@ function updateBerryBushes(world: EcologyWorld, dt: number): void {
   const regrowMul = seasonBushRegrowMul(seasonAt(world.time));
   for (let i = 0; i < world.bushes.length; i += 1) {
     const bush = world.bushes[i];
+    const playerDistance2 = (bush.x - world.nestX) * (bush.x - world.nestX) + (bush.y - world.nestY) * (bush.y - world.nestY);
+    const rivalDistance2 = (bush.x - world.rival.nestX) * (bush.x - world.rival.nestX) + (bush.y - world.rival.nestY) * (bush.y - world.rival.nestY);
+    const scentFaction = rivalDistance2 < playerDistance2 ? FACTION_RIVAL : FACTION_PLAYER;
     const current = Math.min(TUNING.ecology.bushCap, foodAmountInRadius(world, bush.x, bush.y, TUNING.ecology.bushFoodRadius));
     bush.stock = regrowMul > 0 ? current : 0;
     if (regrowMul <= 0) {
       bush.regrowTimer = 0;
       continue;
     }
-    if (current > 0) splatFoodScentRadius(world.grid, bush.x, bush.y, TUNING.ecology.bushScentRadius, TUNING.ecology.bushScentDeposit * dt, FACTION_ALL);
+    if (current > 0) splatFoodScentRadius(world.grid, bush.x, bush.y, TUNING.ecology.bushScentRadius, TUNING.ecology.bushScentDeposit * dt, scentFaction);
     if (current >= TUNING.ecology.bushCap) {
       bush.regrowTimer = 0;
       continue;
@@ -2036,7 +2109,7 @@ function updateBerryBushes(world: EcologyWorld, dt: number): void {
     const regrowSec = TUNING.ecology.bushRegrowSec / regrowMul;
     bush.regrowTimer += dt;
     while (bush.regrowTimer >= regrowSec && bush.stock < TUNING.ecology.bushCap) {
-      addFoodNear(world, bush.x, bush.y, TUNING.ecology.bushFoodRadius, 1, FACTION_ALL);
+      addFoodNear(world, bush.x, bush.y, TUNING.ecology.bushFoodRadius, 1, scentFaction);
       bush.stock = Math.min(TUNING.ecology.bushCap, bush.stock + 1);
       bush.regrowTimer -= regrowSec;
     }
@@ -2060,7 +2133,7 @@ function updateCarcass(world: EcologyWorld, dt: number): void {
   const wasSpoiled = carcass.spoiled;
   carcass.spoiled = carcass.age >= TUNING.ecology.carcassDecaySec - TUNING.ecology.carcassSpoilSec;
   if (!wasSpoiled && carcass.spoiled) recordDebugEvent(world, { type: "carcass_spoiled", tick: world.stepCount, x: carcass.x, y: carcass.y, amount: carcass.amount });
-  if (carcass.amount > 0) splatFoodScentRadius(world.grid, carcass.x, carcass.y, TUNING.ecology.carcassScentRadius, TUNING.ecology.carcassScentDeposit * dt, FACTION_ALL);
+  if (carcass.amount > 0) splatFoodScentRadius(world.grid, carcass.x, carcass.y, TUNING.war.prizeScentRadius, TUNING.war.prizeScentDeposit * dt, FACTION_ALL);
   if (carcass.spoiled && carcass.amount > 0) splatPher(world.grid, world.grid.pherDanger, cellIndex(world.grid, carcass.x, carcass.y), TUNING.ecology.carcassDangerDeposit);
   if (carcass.age >= TUNING.ecology.carcassDecaySec || carcass.amount <= TUNING.sim.minTurnEpsilon) scheduleNextCarcass(world);
 }
@@ -2072,10 +2145,7 @@ function updateToolCooldowns(world: EcologyWorld, dt: number): void {
 
 function updateRivalPatron(world: EcologyWorld, dt: number): void {
   if (world.rival.gameOver || world.victory) return;
-  world.rival.dripTimer -= dt;
-  if (world.rival.dripTimer > 0) return;
-  dropRivalFood(world);
-  world.rival.dripTimer += TUNING.rival.dripSec;
+  world.rival.dripTimer = Math.max(0, world.rival.dripTimer - dt);
 }
 
 function countFactionAnts(world: World, factionValue: number): number {
@@ -2493,7 +2563,6 @@ export function stepWorld(world: World, dt: number = STEP_DT, fps: number = TUNI
   updateBrood(ecology, dt, FACTION_PLAYER);
   updateBrood(ecology, dt, FACTION_RIVAL);
   updateRivalPatron(ecology, dt);
-
   rebuildSpatial(world);
   updateSoldierAttacks(world, dt);
   if (updateFactionCombat(ecology, dt) > 0) rebuildSpatial(world);

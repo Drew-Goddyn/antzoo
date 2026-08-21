@@ -1,0 +1,22 @@
+{
+  "name": "m0-battle-box",
+  "seed": 4471,
+  "ticks": 20000,
+  "tuning": {
+    "world.w": 2048,
+    "world.h": 1152,
+    "nest.cornerPaddingX": 474,
+    "nest.cornerPaddingY": 576,
+    "rival.cornerPaddingX": 474,
+    "rival.cornerPaddingY": 576,
+    "camera.defaultZoom": 0.62,
+    "camera.minZoom": 0.38
+  },
+  "timeline": [
+    { "at": 3600, "do": "snapshot" },
+    { "at": 7200, "do": "snapshot" },
+    { "at": 10800, "do": "snapshot" },
+    { "at": 15000, "do": "snapshot" },
+    { "at": 20000, "do": "snapshot" }
+  ]
+}
