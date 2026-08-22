@@ -100,7 +100,9 @@ function testT0(): TestResult[] {
   tests.push(changesHash("T0 nestFood.rival", base, before, (world) => { world.rival.nestFood += 0.001; }));
   tests.push(changesHash("T0 queen/brood.player", base, before, (world) => { world.queenHunger += 0.001; }));
   tests.push(changesHash("T0 queen/brood.rival", base, before, (world) => { world.rival.broodProgress += 0.001; }));
-  tests.push(changesHash("T0 rival struct", base, before, (world) => { world.rival.dripTimer += 0.001; }));
+  tests.push(changesHash("T0 contestedTimer", base, before, (world) => { world.contestedTimer += 0.001; }));
+  tests.push(preservesHash("T0 war report is presentation-only", base, before, (world) => { world.war.toast += 1; world.war.toastDeaths += 1; world.war.windowDeaths += 1; world.war.windowTimer += 1; }));
+  tests.push(changesHash("T0 rival struct", base, before, (world) => { world.rival.nestPulseVel += 0.001; }));
   tests.push(changesHash("T0 spider", base, before, (world) => { world.spider.hp += 0.001; }));
   tests.push(changesHash("T0 bushes", base, before, (world) => { world.bushes[0].stock += 0.001; }));
   tests.push(changesHash("T0 carcass", base, before, (world) => { world.carcass.nextSpawn += 0.001; }));

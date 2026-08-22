@@ -84,6 +84,7 @@ type EcologyWorld = World & {
   rainDuration: number;
   rainToast: number;
   rainCheckTimer: number;
+  contestedTimer: number;
   peakPopulation: number;
   broodProgress: number;
   broodWork: number;
@@ -106,7 +107,6 @@ type EcologyWorld = World & {
     terminalStartAnts: number;
     terminalCull: number;
     gameOver: boolean;
-    dripTimer: number;
     nestPulse: number;
     nestPulseVel: number;
     totalDelivered: number;
@@ -537,6 +537,7 @@ function shouldHashTuningLeaf(path: string[]): boolean {
   if (root === "spider" && (leaf.startsWith("draw") || leaf.startsWith("toast"))) return false;
   if (root === "seasons" && (leaf.endsWith("Tint") || leaf.startsWith("rainStreak") || leaf.startsWith("rainToast"))) return false;
   if (root === "ecology" && leaf === "carcassToastSec") return false;
+  if (root === "war" && (leaf.startsWith("skirmishToast") || leaf.startsWith("skirmishWindow"))) return false;
   if (root === "sim" && leaf === "fpsEma") return false;
   return true;
 }
@@ -752,7 +753,6 @@ function hashFactionScalars(hash: StableHasher, world: EcologyWorld): void {
   scalar(hash, "rival.terminalStartAnts", rival.terminalStartAnts);
   scalar(hash, "rival.terminalCull", rival.terminalCull);
   boolScalar(hash, "rival.gameOver", rival.gameOver);
-  scalar(hash, "rival.dripTimer", rival.dripTimer);
   scalar(hash, "rival.nestPulse", rival.nestPulse);
   scalar(hash, "rival.nestPulseVel", rival.nestPulseVel);
   scalar(hash, "rival.totalDelivered", rival.totalDelivered);
@@ -781,6 +781,7 @@ export function hashWorldState(world: World): string {
   scalar(hash, "rainTimer", ecology.rainTimer);
   scalar(hash, "rainDuration", ecology.rainDuration);
   scalar(hash, "rainCheckTimer", ecology.rainCheckTimer);
+  scalar(hash, "contestedTimer", ecology.contestedTimer);
   hashFactionScalars(hash, ecology);
   hashAnts(hash, world);
   hashSpatial(hash, world);

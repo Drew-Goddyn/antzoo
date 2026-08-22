@@ -1,5 +1,5 @@
 import { type CSSProperties, useEffect, useMemo, useRef, useState } from "react";
-import { applyTool as simApplyTool, createWorld, dropCarcass as simDropCarcass, getCarcassDropCooldown, getColonyStatus, getDigCooldown, getSeasonState, makeHudSnapshot, resizeWorld, stepWorld, stressSpawn as simStressSpawn } from "./sim";
+import { applyTool as simApplyTool, createWorld, dropCarcass as simDropCarcass, getCarcassDropCooldown, getColonyStatus, getDigCooldown, getSeasonState, getWarState, makeHudSnapshot, resizeWorld, stepWorld, stressSpawn as simStressSpawn } from "./sim";
 import { CameraState, HudSnapshot, Renderer, Tool, World } from "./types";
 import { createRenderer, destroyRenderer, renderWorld } from "./render";
 import { DEFAULTS, TUNING } from "./tuning";
@@ -195,9 +195,15 @@ function clampCamera(world: World): void {
   camera.y = Math.min(Math.max(0, world.height - visibleH), Math.max(0, camera.y));
 }
 
+/**
+ * Open on the terrarium, not on one nest. The boot framing holds both nests and
+ * the contested ground between them, so the first thing on screen is two
+ * empires rather than one colony with an empty map around it.
+ */
 function centerCamera(world: World): void {
-  world.camera.x = world.nestX - world.camera.viewW / world.camera.scale * 0.5;
-  world.camera.y = world.nestY - world.camera.viewH / world.camera.scale * 0.5;
+  world.camera.scale = Math.min(TUNING.camera.maxZoom, Math.max(TUNING.camera.minZoom, world.camera.viewW / TUNING.camera.bootSpanX));
+  world.camera.x = world.width * 0.5 - world.camera.viewW / world.camera.scale * 0.5;
+  world.camera.y = world.height * 0.5 - world.camera.viewH / world.camera.scale * 0.5;
   clampCamera(world);
 }
 
@@ -417,6 +423,7 @@ export function App() {
   const digCooldown = getDigCooldown(worldRef.current);
   const carcassDropCooldown = getCarcassDropCooldown(worldRef.current);
   const seasonState = getSeasonState(worldRef.current);
+  const warState = getWarState(worldRef.current);
   const colonyStatus = getColonyStatus(worldRef.current);
   const digCooldownRatio = digCooldown / TUNING.tools.digCooldownSec;
   const carcassCooldownRatio = carcassDropCooldown / TUNING.tools.carcassDropCooldownSec;
@@ -861,6 +868,7 @@ export function App() {
         <SeasonPanel state={seasonState} nestFood={snapshot.nestFood} />
         <CastePanel status={colonyStatus} />
         {seasonState.rainToast > 0 ? <div className="rain-toast panel">{TUNING.seasons.rainToastText}</div> : null}
+        {warState.toast > 0 ? <div className="war-toast panel">Skirmish at the front — {warState.toastDeaths} dead</div> : null}
         <DebugOverlay snapshot={snapshot} />
         <canvas ref={minimapRef} className="minimap panel" width={TUNING.minimap.w} height={TUNING.minimap.h} aria-label="World minimap" onPointerDown={handleMinimapPointerDown} />
         <div className={`tuning-shell ${drawerOpen ? "open" : "collapsed"}`}>
@@ -1095,6 +1103,19 @@ function makeStyles(): string {
     }
     .reserve-track i {
       background: ${TUNING.colors.food};
+    }
+    .war-toast {
+      position: absolute;
+      left: 50%;
+      top: 20px;
+      transform: translateX(-50%);
+      padding: 8px 14px;
+      font-size: 13px;
+      letter-spacing: 0.05em;
+      white-space: nowrap;
+      color: ${TUNING.colors.clash};
+      border-color: ${TUNING.colors.rivalTrailFood}55;
+      pointer-events: none;
     }
     .rain-toast {
       position: absolute;
@@ -1530,6 +1551,9 @@ function makeStyles(): string {
       .rain-toast {
         right: 12px;
         top: 304px;
+      }
+      .war-toast {
+        top: 96px;
       }
       .tuning-shell {
         top: 342px;

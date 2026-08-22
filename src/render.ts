@@ -3,6 +3,7 @@ import { ParticleKind, Renderer, Tool, World } from "./types";
 import { TUNING } from "./tuning";
 
 const HALF = TUNING.sim.randomTurnHalf;
+const FRONT_CONTRAST = TUNING.render.frontContrast;
 const TAU = TUNING.sim.tau;
 
 type RenderGrid = World["grid"] & {
@@ -397,13 +398,14 @@ function updatePheromoneImage(renderer: Renderer, world: World): void {
   const food2Color = parseHex(TUNING.colors.food2);
   const homeColor = parseHex(TUNING.colors.home);
   const rivalFoodColor = parseHex(TUNING.colors.rivalTrailFood);
+  const rivalFood2Color = parseHex(TUNING.colors.rivalTrailFood2);
   const rivalHomeColor = parseHex(TUNING.colors.rivalTrailHome);
   const dangerColor = parseHex(TUNING.colors.danger);
   const rivalFoodField = grid.pherFoodByFaction?.[TUNING.factions.rival];
   const rivalHomeField = grid.pherHomeByFaction?.[TUNING.factions.rival];
   for (let i = 0; i < grid.size; i += 1) {
-    const food = Math.min(1, grid.pherFood[i] / TUNING.pher.cap);
-    const home = Math.min(1, grid.pherHome[i] / TUNING.pher.cap);
+    const food = Math.min(1, (grid.pherFood[i] / TUNING.pher.cap) * TUNING.render.pherAlpha);
+    const home = Math.min(1, (grid.pherHome[i] / TUNING.pher.cap) * TUNING.render.pherAlpha);
     const rivalFood = Math.min(1, ((rivalFoodField ? rivalFoodField[i] : 0) / TUNING.pher.cap) * TUNING.render.rivalPherAlpha);
     const rivalHome = Math.min(1, ((rivalHomeField ? rivalHomeField[i] : 0) / TUNING.pher.cap) * TUNING.render.rivalPherAlpha);
     const danger = Math.min(1, grid.pherDanger[i] / TUNING.pher.cap);
@@ -412,10 +414,28 @@ function updatePheromoneImage(renderer: Renderer, world: World): void {
     if (total <= 0.001) {
       data[p + 3] = 0;
     } else {
+      // Each empire keeps its own hue on its own ground. Averaging the two
+      // palettes cell by cell turned every place they overlap into one flat
+      // in-between colour; weighting the mix toward whoever is actually
+      // stronger here leaves gold ground, violet ground, and a bright seam
+      // between them that is the front line.
       const warmMix = food * 0.65;
-      data[p] = Math.min(255, foodColor[0] * food + food2Color[0] * warmMix + homeColor[0] * home + rivalFoodColor[0] * rivalFood + rivalHomeColor[0] * rivalHome + dangerColor[0] * danger);
-      data[p + 1] = Math.min(255, foodColor[1] * food + food2Color[1] * warmMix + homeColor[1] * home + rivalFoodColor[1] * rivalFood + rivalHomeColor[1] * rivalHome + dangerColor[1] * danger);
-      data[p + 2] = Math.min(255, foodColor[2] * food + food2Color[2] * warmMix + homeColor[2] * home + rivalFoodColor[2] * rivalFood + rivalHomeColor[2] * rivalHome + dangerColor[2] * danger);
+      const coldMix = rivalFood * 0.65;
+      const ownW = food + warmMix + home;
+      const foeW = rivalFood + coldMix + rivalHome;
+      const ownNorm = ownW > 0.0001 ? 1 / ownW : 0;
+      const foeNorm = foeW > 0.0001 ? 1 / foeW : 0;
+      const share = ownW + foeW > 0.0001 ? foeW / (ownW + foeW) : 0;
+      const sharp = Math.pow(share, FRONT_CONTRAST);
+      const sharpInv = Math.pow(1 - share, FRONT_CONTRAST);
+      const t = sharp + sharpInv > 0.0001 ? sharp / (sharp + sharpInv) : 0;
+      const dangerMix = total > 0.0001 ? Math.min(1, danger / total) : 0;
+      for (let c = 0; c < 3; c += 1) {
+        const own = (foodColor[c] * food + food2Color[c] * warmMix + homeColor[c] * home) * ownNorm;
+        const foe = (rivalFoodColor[c] * rivalFood + rivalFood2Color[c] * coldMix + rivalHomeColor[c] * rivalHome) * foeNorm;
+        const blended = own * (1 - t) + foe * t;
+        data[p + c] = Math.min(255, blended * (1 - dangerMix) + dangerColor[c] * dangerMix);
+      }
       data[p + 3] = Math.min(255, total * 210);
     }
   }
@@ -674,9 +694,11 @@ function updateParticles(renderer: Renderer, world: World): void {
     sprite.visible = true;
     sprite.x = p.x;
     sprite.y = p.y;
-    sprite.alpha = alpha;
-    sprite.scale.set(Math.max(0.1, p.size * alpha * 0.25));
+    const clash = p.kind === ParticleKind.Clash;
+    sprite.alpha = clash ? Math.min(1, alpha * TUNING.render.clashAlphaBoost) : alpha;
+    sprite.scale.set(Math.max(0.1, p.size * alpha * 0.25 * (clash ? TUNING.render.clashScaleBoost : 1)));
     if (p.kind === ParticleKind.Nest) sprite.tint = hexNumber(TUNING.colors.food);
+    else if (p.kind === ParticleKind.Clash) sprite.tint = hexNumber(TUNING.colors.clash);
     else if (p.kind === ParticleKind.Death) sprite.tint = hexNumber(TUNING.colors.danger);
     else if (p.kind === ParticleKind.Wash) sprite.tint = hexNumber(TUNING.colors.home);
     else if (p.kind === ParticleKind.Dust) sprite.tint = hexNumber(TUNING.colors.stoneLight);

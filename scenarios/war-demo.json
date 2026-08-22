@@ -1,0 +1,13 @@
+{
+  "name": "war-demo",
+  "seed": 1337,
+  "ticks": 16000,
+  "timeline": [
+    { "at": 1800, "do": "dropCarcass", "x": 2048, "y": 1152 },
+    { "at": 5400, "do": "applyTool", "tool": "food", "x": 1800, "y": 1080 },
+    { "at": 7200, "do": "applyTool", "tool": "lure", "x": 2048, "y": 1152 },
+    { "at": 9000, "do": "snapshot" },
+    { "at": 12000, "do": "dropCarcass", "x": 2048, "y": 1152 },
+    { "at": 15600, "do": "snapshot" }
+  ]
+}
