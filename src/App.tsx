@@ -1,5 +1,5 @@
 import { type CSSProperties, useEffect, useMemo, useRef, useState } from "react";
-import { applyTool as simApplyTool, createWorld, dropCarcass as simDropCarcass, getCarcassDropCooldown, getColonyStatus, getDigCooldown, getSeasonState, getWarState, makeHudSnapshot, resizeWorld, stepWorld, stressSpawn as simStressSpawn } from "./sim";
+import { advancePresentation, applyTool as simApplyTool, createWorld, dropCarcass as simDropCarcass, getCarcassDropCooldown, getColonyStatus, getDigCooldown, getSeasonState, getWarState, makeHudSnapshot, resizeWorld, stepWorld, stressSpawn as simStressSpawn } from "./sim";
 import { CameraState, HudSnapshot, Renderer, Tool, World } from "./types";
 import { createRenderer, destroyRenderer, renderWorld } from "./render";
 import { DEFAULTS, TUNING } from "./tuning";
@@ -539,6 +539,9 @@ export function App() {
       } else {
         world.lastSimMs = 0;
       }
+      // Presentation advances on the frame clock even while the world is
+      // paused, which is why it is kept off hashed World state entirely.
+      advancePresentation(world, realDt);
       if (renderer) {
         const renderStart = performance.now();
         renderWorld(renderer, world, realDt);
@@ -1106,13 +1109,12 @@ function makeStyles(): string {
     }
     .war-toast {
       position: absolute;
-      left: 50%;
-      top: 20px;
-      transform: translateX(-50%);
+      left: 12px;
+      top: 84px;
+      max-width: 320px;
       padding: 8px 14px;
       font-size: 13px;
       letter-spacing: 0.05em;
-      white-space: nowrap;
       color: ${TUNING.colors.clash};
       border-color: ${TUNING.colors.rivalTrailFood}55;
       pointer-events: none;
@@ -1553,7 +1555,10 @@ function makeStyles(): string {
         top: 304px;
       }
       .war-toast {
-        top: 96px;
+        left: 12px;
+        right: 12px;
+        top: 272px;
+        max-width: none;
       }
       .tuning-shell {
         top: 342px;

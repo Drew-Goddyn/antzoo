@@ -72,8 +72,6 @@ interface WarState {
   toastDeaths: number;
   windowTimer: number;
   windowDeaths: number;
-  lastClashX: number;
-  lastClashY: number;
 }
 
 interface RivalColony {
@@ -957,20 +955,20 @@ function generateMoisture(world: World): void {
   for (const anchor of anchors) {
     const blobs = TUNING.terrain.moistureBlobsMin + Math.floor(nextRand(world) * (TUNING.terrain.moistureBlobsMax - TUNING.terrain.moistureBlobsMin + 1));
     for (let i = 0; i < blobs; i += 1) {
-      const at = count;
-      radii[at] = TUNING.terrain.moistureBlobRadiusMin + nextRand(world) * (TUNING.terrain.moistureBlobRadiusMax - TUNING.terrain.moistureBlobRadiusMin);
+      const blob = count;
+      radii[blob] = TUNING.terrain.moistureBlobRadiusMin + nextRand(world) * (TUNING.terrain.moistureBlobRadiusMax - TUNING.terrain.moistureBlobRadiusMin);
       if (i < TUNING.sim.foodClusters.length) {
         const cluster = TUNING.sim.foodClusters[i];
         const d = Math.min(cluster.dist, Math.min(world.width, world.height) * 0.42);
-        const jitter = radii[at] * TUNING.terrain.moistureBlobClusterJitter;
+        const jitter = radii[blob] * TUNING.terrain.moistureBlobClusterJitter;
         const angle = cluster.angle + anchor.rot;
-        xs[at] = clamp(anchor.x + Math.cos(angle) * d + (nextRand(world) - HALF) * jitter, 0, world.width);
-        ys[at] = clamp(anchor.y + Math.sin(angle) * d + (nextRand(world) - HALF) * jitter, 0, world.height);
+        xs[blob] = clamp(anchor.x + Math.cos(angle) * d + (nextRand(world) - HALF) * jitter, 0, world.width);
+        ys[blob] = clamp(anchor.y + Math.sin(angle) * d + (nextRand(world) - HALF) * jitter, 0, world.height);
       } else {
-        xs[at] = nextRand(world) * world.width;
-        ys[at] = nextRand(world) * world.height;
+        xs[blob] = nextRand(world) * world.width;
+        ys[blob] = nextRand(world) * world.height;
       }
-      strengths[at] = HALF + nextRand(world) * HALF;
+      strengths[blob] = HALF + nextRand(world) * HALF;
       count += 1;
     }
   }
@@ -1438,8 +1436,6 @@ export function createWorld(width: number = TUNING.sim.minWidth, height: number 
       toastDeaths: 0,
       windowTimer: 0,
       windowDeaths: 0,
-      lastClashX: 0,
-      lastClashY: 0,
     },
     grid: createGrid(),
     nestX: TUNING.world.w * HALF - TUNING.war.nestOffsetX,
@@ -2174,12 +2170,10 @@ function factionCombatQuery(other: number): boolean | void {
  * exactly like the rain and spider toasts; the trauma kick it adds is ordinary
  * gameplay state that was already hashed.
  */
-function noteSkirmishDeath(world: EcologyWorld, x: number, y: number): void {
+function noteSkirmishDeath(world: EcologyWorld): void {
   const war = world.war;
   war.windowDeaths += 1;
   war.windowTimer = TUNING.war.skirmishWindowSec;
-  war.lastClashX = x;
-  war.lastClashY = y;
   world.trauma = Math.min(TUNING.war.skirmishTraumaMax, world.trauma + TUNING.war.skirmishTrauma);
   if (war.windowDeaths >= TUNING.war.skirmishToastMin && war.windowDeaths > war.toastDeaths) {
     war.toastDeaths = war.windowDeaths;
@@ -2219,7 +2213,7 @@ function updateFactionCombat(world: EcologyWorld, dt: number): number {
     recordTraceInteraction(world, i, { kind: "combat", cause: "combat", faction: antFaction });
     recordAntDeath(world, antFaction, "combat", i);
     recordTraceTickEnd(world, i);
-    noteSkirmishDeath(world, ants.x[i], ants.y[i]);
+    noteSkirmishDeath(world);
     removeAnt(world, i);
     removed += 1;
   }
@@ -2922,6 +2916,17 @@ export function getColonyStatus(world: World): ColonyStatus {
     totalFoodGathered: world.totalDelivered,
     totalDeaths: world.totalDeaths,
   };
+}
+
+/**
+ * Advance presentation that decays in real time rather than in simulation
+ * steps: currently just camera trauma. This runs off the frame clock, so it
+ * keeps ticking while the world is paused and it must never touch hashed World
+ * state. Draining camera shake from inside the renderer used to do exactly
+ * that — a paused page changed its own world hash once per frame.
+ */
+export function advancePresentation(world: World, dt: number): void {
+  if (world.trauma > 0) world.trauma = Math.max(0, world.trauma - TUNING.fx.shakeDecay * dt);
 }
 
 export function getWarState(world: World): WarState {

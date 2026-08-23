@@ -742,7 +742,7 @@ function updateCursor(renderer: Renderer, world: World): void {
   g.circle(world.cursorX, world.cursorY, r).stroke({ color: hexNumber(TUNING.colors.preview), alpha: 0.52, width: 1 });
 }
 
-function updateCamera(renderer: Renderer, world: World, dt: number): void {
+function updateCamera(renderer: Renderer, world: World): void {
   let shakeX = 0;
   let shakeY = 0;
   if (world.trauma > 0) {
@@ -750,7 +750,6 @@ function updateCamera(renderer: Renderer, world: World, dt: number): void {
     const amount = world.trauma * world.trauma * TUNING.render.shakePixels;
     shakeX = Math.cos(a) * amount;
     shakeY = Math.sin(a) * amount;
-    world.trauma = Math.max(0, world.trauma - TUNING.fx.shakeDecay * dt);
   }
   renderer.worldContainer.scale.set(world.camera.scale);
   renderer.worldContainer.position.set(-world.camera.x * world.camera.scale + shakeX, -world.camera.y * world.camera.scale + shakeY);
@@ -802,7 +801,7 @@ export function renderWorld(renderer: Renderer, world: World, dt: number): void 
     updatePheromoneImage(renderer, world);
     world.lastTextureMs = performance.now() - textureStart;
   }
-  updateCamera(renderer, world, dt);
+  updateCamera(renderer, world);
   updateTerrainTint(renderer, world);
   updateFood(renderer, world);
   updateObstacles(renderer, world);

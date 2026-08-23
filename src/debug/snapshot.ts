@@ -773,7 +773,6 @@ export function hashWorldState(world: World): string {
   scalar(hash, "spawnTimer", world.spawnTimer);
   scalar(hash, "deathWindowTimer", world.deathWindowTimer);
   scalar(hash, "deathWindowCount", world.deathWindowCount);
-  scalar(hash, "trauma", world.trauma);
   scalar(hash, "nestPulse", world.nestPulse);
   scalar(hash, "nestPulseVel", world.nestPulseVel);
   scalar(hash, "digCooldown", ecology.digCooldown);
