@@ -525,6 +525,15 @@ function boolScalar(hash: StableHasher, name: string, value: boolean): void {
 }
 
 const PRESENTATION_TUNING_ROOTS = new Set(["ui", "controls", "camera", "minimap", "colors"]);
+const TRAUMA_ONLY_TUNING = new Set([
+  "war.skirmishTrauma",
+  "war.skirmishTraumaMax",
+  "fx.shakeDecay",
+  "sim.traumaBurst",
+  "sim.deathsBurstWindowSec",
+  "sim.deathsBurstCount",
+  "spider.squashTrauma",
+]);
 const HASHED_RENDER_TUNING = new Set(["particleCanvasPadding", "particleDrag", "particleGravity"]);
 
 function shouldTraverseTuningPath(path: string[]): boolean {
@@ -538,6 +547,10 @@ function shouldHashTuningLeaf(path: string[]): boolean {
   if (root === "seasons" && (leaf.endsWith("Tint") || leaf.startsWith("rainStreak") || leaf.startsWith("rainToast"))) return false;
   if (root === "ecology" && leaf === "carcassToastSec") return false;
   if (root === "war" && (leaf.startsWith("skirmishToast") || leaf.startsWith("skirmishWindow"))) return false;
+  // Camera trauma is Presentation, so every control whose only effect is trauma
+  // is Presentation too. Leaving these hashed let a shake-tuning tweak rewrite
+  // the World hash without changing anything the World does next.
+  if (TRAUMA_ONLY_TUNING.has(`${root}.${leaf}`)) return false;
   if (root === "sim" && leaf === "fpsEma") return false;
   return true;
 }
@@ -771,8 +784,6 @@ export function hashWorldState(world: World): string {
   scalar(hash, "rng", world.rng);
   scalar(hash, "stepCount", world.stepCount);
   scalar(hash, "spawnTimer", world.spawnTimer);
-  scalar(hash, "deathWindowTimer", world.deathWindowTimer);
-  scalar(hash, "deathWindowCount", world.deathWindowCount);
   scalar(hash, "nestPulse", world.nestPulse);
   scalar(hash, "nestPulseVel", world.nestPulseVel);
   scalar(hash, "digCooldown", ecology.digCooldown);

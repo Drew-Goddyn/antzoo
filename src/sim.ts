@@ -1815,21 +1815,25 @@ function findSoldierFront(world: World, index: number, faction: number): boolean
   return found;
 }
 
+let soldierPostX = 0;
+let soldierPostY = 0;
+
 /**
  * A soldier's beat is not a ring around its own queen — it is a picket posted
  * out along the line toward the rival nest. The two pickets overlap in the
- * middle of the world, which is where the empires meet.
+ * middle of the world, which is where the empires meet. Both axes come off one
+ * faction decision so they cannot drift apart.
  */
-function soldierPostX(world: World, faction: number): number {
-  const own = nestX(world, faction);
-  const enemy = faction === FACTION_RIVAL ? world.nestX : ecologyWorld(world).rival.nestX;
-  return own + (enemy - own) * TUNING.war.picketFraction;
-}
-
-function soldierPostY(world: World, faction: number): number {
-  const own = nestY(world, faction);
-  const enemy = faction === FACTION_RIVAL ? world.nestY : ecologyWorld(world).rival.nestY;
-  return own + (enemy - own) * TUNING.war.picketFraction;
+function updateSoldierPost(world: World, faction: number): void {
+  const rival = ecologyWorld(world).rival;
+  const isRival = faction === FACTION_RIVAL;
+  const ownX = isRival ? rival.nestX : world.nestX;
+  const ownY = isRival ? rival.nestY : world.nestY;
+  const enemyX = isRival ? world.nestX : rival.nestX;
+  const enemyY = isRival ? world.nestY : rival.nestY;
+  const fraction = TUNING.war.picketFraction;
+  soldierPostX = ownX + (enemyX - ownX) * fraction;
+  soldierPostY = ownY + (enemyY - ownY) * fraction;
 }
 
 function moveCasteAnt(world: World, index: number, dt: number, speed: number): void {
@@ -1845,8 +1849,9 @@ function updateSoldierAnt(world: World, index: number, dt: number, seasonSpeedMu
   const faction = factionAnts(ants).faction[index];
   const hx = nestX(world, faction);
   const hy = nestY(world, faction);
-  const postX = soldierPostX(world, faction);
-  const postY = soldierPostY(world, faction);
+  updateSoldierPost(world, faction);
+  const postX = soldierPostX;
+  const postY = soldierPostY;
   const dx = ants.x[index] - postX;
   const dy = ants.y[index] - postY;
   const dist2 = dx * dx + dy * dy;
