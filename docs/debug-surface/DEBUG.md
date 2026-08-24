@@ -70,7 +70,7 @@ Batch `seed_summary` and `cross_seed_rollup` records include:
 
 ## Test gates
 
-`npm test` runs the full local debug-surface gate: T0 hash sensitivity, T1 determinism at 1k/10k/50k ticks, T2 sampling purity through 50k ticks, T3 death accounting/id uniqueness through 50k ticks, and T5 trace purity.
+`npm test` runs the full local debug-surface gate: T0 hash sensitivity and purity, T1 determinism at 1k/10k/50k ticks, T2 sampling purity through 50k ticks, T3 death accounting/id uniqueness through 50k ticks, T5 trace purity, and T6 paused-presentation purity.
 
 CI uses:
 
@@ -133,16 +133,30 @@ Fast mode preserves the same invariants but caps the long T1/T2/T3 runs at 10k t
 
 `hashWorldState(world)` hashes gameplay state and gameplay-affecting tuning only. It excludes camera, HUD, telemetry/perf timing, presentation-only render settings, particles, and debug-only structures. It includes:
 
-- A deterministic digest of active tuning that can affect simulation futures or programmatic inputs, including `ant.*`, `pher.*`, `ecology.*`, `seasons.*` gameplay fields, tools/input knobs, particle/fx knobs that run inside `stepWorld`, seed, world/grid/spatial sizes, and caste/faction constants. Presentation-only tuning such as `ui.*`, `controls.*`, `camera.*`, `minimap.*`, `colors.*`, spider draw/toast fields, seasonal tint/rain-streak/toast fields, and browser render chrome is excluded.
-- `world.rng`, dimensions, `time`, `frame`, `stepCount`, spawn/death timers, trauma, nest pulse, rain and cooldown scalars.
+- A deterministic digest of active tuning that can affect simulation futures or programmatic inputs, including `ant.*`, `pher.*`, `ecology.*`, `seasons.*` gameplay fields, `war.*` geography and soldier fields, tools/input knobs, particle/fx knobs that run inside `stepWorld`, seed, world/grid/spatial sizes, and caste/faction constants. Presentation-only tuning such as `ui.*`, `controls.*`, `camera.*`, `minimap.*`, `colors.*`, spider draw/toast fields, seasonal tint/rain-streak/toast fields, skirmish toast/window fields, browser render chrome, and the camera-trauma controls listed below is excluded.
+- `world.rng`, dimensions, `time`, `frame`, `stepCount`, `spawnTimer`, nest pulse, rain and cooldown scalars, and `contestedTimer` (the contested-ground scent refresh).
 - Live ant arrays sliced to `ants.count`: `x`, `y`, `heading`, `energy`, `stepsSincePickup`, `timerA`, `timerB`, `mode`, `carrying`, `flags`, runtime `caste`, and runtime `faction`.
 - Spatial hash arrays and faction masks that can affect programmatic interactions between steps.
 - Grid dimensions plus food/home pheromones for both factions, danger pheromone, lure, moisture, food amount, evaporation fields, active/listed/diffuse bookkeeping, and food bookkeeping.
-- Player and rival nest food, brood, queen, terminal, delivery/death, peak population, and rival drip/pulse state.
+- Player and rival nest position, nest food, brood, queen, terminal, delivery/death, peak population, and rival pulse state.
 - Spider state including hp.
 - Bushes, carcass, corpses, obstacles, and combat marks.
 
 The hash intentionally includes `world.rng`; this fingerprints the entire draw history.
+
+### Camera trauma is outside the hash
+
+Camera shake is Presentation (`CONTEXT.md`), so neither it nor anything whose only
+effect is shake belongs to World state. Excluded: `world.trauma`,
+`world.deathWindowTimer`, `world.deathWindowCount`, and the tuning leaves
+`war.skirmishTrauma`, `war.skirmishTraumaMax`, `fx.shakeDecay`, `sim.traumaBurst`,
+`sim.deathsBurstWindowSec`, `sim.deathsBurstCount`, `spider.squashTrauma`.
+
+Trauma decays on the frame clock via `advancePresentation(world, dt)`, called from
+the browser frame loop — never from the renderer, and never from `stepWorld`. This
+is what keeps a paused world still: T6 in the gate holds `tick` and `simTime` fixed
+across 600 presentation frames and asserts the hash does not move. Presentation that
+advances in real time must stay out of the hash for that property to hold.
 
 ## Events
 

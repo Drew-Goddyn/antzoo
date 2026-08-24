@@ -67,6 +67,13 @@ interface CarcassWindfall {
   toast: number;
 }
 
+interface WarState {
+  toast: number;
+  toastDeaths: number;
+  windowTimer: number;
+  windowDeaths: number;
+}
+
 interface RivalColony {
   nestX: number;
   nestY: number;
@@ -78,7 +85,6 @@ interface RivalColony {
   terminalStartAnts: number;
   terminalCull: number;
   gameOver: boolean;
-  dripTimer: number;
   nestPulse: number;
   nestPulseVel: number;
   totalDelivered: number;
@@ -140,7 +146,9 @@ type EcologyWorld = World & {
   victory: boolean;
   victoryYear: number;
   combatMarks: Uint8Array;
+  contestedTimer: number;
   rival: RivalColony;
+  war: WarState;
   grid: EcologyGrid;
 };
 
@@ -154,6 +162,33 @@ function ecologyGrid(grid: Grid): EcologyGrid {
 
 function casteAnts(ants: World["ants"]): CasteAntStore {
   return ants as CasteAntStore;
+}
+
+interface ColonyAnchor {
+  x: number;
+  y: number;
+  rot: number;
+  faction: number;
+}
+
+/**
+ * Both empires are grown from the same tuning tables, each around its own nest,
+ * with the rival's tables rotated by PI. That makes the two sides matched, not
+ * mirrored: identical larder distances, bush count and food total, but rocky
+ * regions, moisture and bush placement each roll their own jitter, so the halves
+ * are not a reflection of one another. Whatever the two colonies do to each
+ * other after that is theirs, not the map's.
+ */
+function colonyAnchors(world: World): ColonyAnchor[] {
+  const rival = ecologyWorld(world).rival;
+  return [
+    { x: world.nestX, y: world.nestY, rot: 0, faction: FACTION_PLAYER },
+    { x: rival.nestX, y: rival.nestY, rot: Math.PI, faction: FACTION_RIVAL },
+  ];
+}
+
+function anchorRotation(faction: number): number {
+  return faction === FACTION_RIVAL ? Math.PI : 0;
 }
 
 function factionAnts(ants: World["ants"]): FactionAntStore {
@@ -491,6 +526,39 @@ function activateLure(grid: EcologyGrid, idx: number): void {
 function splatPher(grid: Grid, field: Float32Array, idx: number, amount: number): void {
   field[idx] = Math.min(TUNING.pher.cap, field[idx] + amount);
   activatePher(grid, field, idx);
+}
+
+/**
+ * Raise a field toward a level instead of adding to it. Repeated adds saturate a
+ * cell to the cap and then diffuse outward, which turns a scent plume into a
+ * painted region; a ceiling keeps the plume the same size all game.
+ */
+function raisePherRadius(grid: Grid, field: Float32Array, x: number, y: number, radius: number, level: number): void {
+  const minCx = clamp(Math.floor((x - radius) / grid.cell), 0, grid.cols - 1);
+  const maxCx = clamp(Math.floor((x + radius) / grid.cell), 0, grid.cols - 1);
+  const minCy = clamp(Math.floor((y - radius) / grid.cell), 0, grid.rows - 1);
+  const maxCy = clamp(Math.floor((y + radius) / grid.cell), 0, grid.rows - 1);
+  const r2 = radius * radius;
+  for (let cy = minCy; cy <= maxCy; cy += 1) {
+    const py = (cy + HALF) * grid.cell;
+    for (let cx = minCx; cx <= maxCx; cx += 1) {
+      const px = (cx + HALF) * grid.cell;
+      const dx = px - x;
+      const dy = py - y;
+      const d2 = dx * dx + dy * dy;
+      if (d2 > r2) continue;
+      const falloff = 1 - Math.sqrt(d2) / radius;
+      const target = level * falloff;
+      const idx = cy * grid.cols + cx;
+      if (field[idx] >= target) continue;
+      field[idx] = target;
+      activatePher(grid, field, idx);
+    }
+  }
+}
+
+function raiseFoodScentRadius(grid: Grid, x: number, y: number, radius: number, level: number): void {
+  for (let i = 0; i < TUNING.factions.count; i += 1) raisePherRadius(grid, pherFoodField(grid, i), x, y, radius, level);
 }
 
 function splatPherRadius(grid: Grid, field: Float32Array, x: number, y: number, radius: number, amount: number): void {
@@ -843,26 +911,75 @@ function refreshLocalEvaporation(grid: EcologyGrid): void {
   }
 }
 
+/** How far a colony's own larders reach. Beyond it is nobody's ground. */
+function homeRingLimit(world: World): number {
+  return Math.min(TUNING.war.homeRingRadius, Math.min(world.width, world.height) * 0.42);
+}
+
+/**
+ * The strip of ground halfway between the nests, running across the axis that
+ * joins them. Neither empire's home ring reaches it; the richest food in the
+ * world sits on it, and both colonies can smell it.
+ */
+function midlinePoint(world: World, offset: number): { x: number; y: number } {
+  const anchors = colonyAnchors(world);
+  const dx = anchors[1].x - anchors[0].x;
+  const dy = anchors[1].y - anchors[0].y;
+  const len = Math.sqrt(Math.max(TUNING.sim.minTurnEpsilon, dx * dx + dy * dy));
+  const perpX = -dy / len;
+  const perpY = dx / len;
+  return {
+    x: clamp(world.width * HALF + perpX * offset, 0, world.width),
+    y: clamp(world.height * HALF + perpY * offset, 0, world.height),
+  };
+}
+
+function contestedLarderOffsets(): number[] {
+  const count: number = TUNING.war.contestedLarders;
+  const offsets: number[] = [];
+  const span = Math.max(1, count - 1);
+  for (let i = 0; i < count; i += 1) {
+    offsets.push(count < 2 ? 0 : (i / span - HALF) * 2 * TUNING.war.contestedSpread);
+  }
+  return offsets;
+}
+
 function generateMoisture(world: World): void {
   const grid = ecologyGrid(world.grid);
-  const count = TUNING.terrain.moistureBlobsMin + Math.floor(nextRand(world) * (TUNING.terrain.moistureBlobsMax - TUNING.terrain.moistureBlobsMin + 1));
-  const xs = new Float32Array(TUNING.terrain.moistureBlobsMax);
-  const ys = new Float32Array(TUNING.terrain.moistureBlobsMax);
-  const radii = new Float32Array(TUNING.terrain.moistureBlobsMax);
-  const strengths = new Float32Array(TUNING.terrain.moistureBlobsMax);
-  for (let i = 0; i < count; i += 1) {
-    radii[i] = TUNING.terrain.moistureBlobRadiusMin + nextRand(world) * (TUNING.terrain.moistureBlobRadiusMax - TUNING.terrain.moistureBlobRadiusMin);
-    if (i < TUNING.sim.foodClusters.length) {
-      const cluster = TUNING.sim.foodClusters[i];
-      const d = Math.min(cluster.dist, Math.min(world.width, world.height) * 0.42);
-      const jitter = radii[i] * TUNING.terrain.moistureBlobClusterJitter;
-      xs[i] = clamp(world.nestX + Math.cos(cluster.angle) * d + (nextRand(world) - HALF) * jitter, 0, world.width);
-      ys[i] = clamp(world.nestY + Math.sin(cluster.angle) * d + (nextRand(world) - HALF) * jitter, 0, world.height);
-    } else {
-      xs[i] = nextRand(world) * world.width;
-      ys[i] = nextRand(world) * world.height;
+  const anchors = colonyAnchors(world);
+  const cap = TUNING.terrain.moistureBlobsMax * anchors.length + TUNING.war.contestedLarders;
+  const xs = new Float32Array(cap);
+  const ys = new Float32Array(cap);
+  const radii = new Float32Array(cap);
+  const strengths = new Float32Array(cap);
+  let count = 0;
+  for (const anchor of anchors) {
+    const blobs = TUNING.terrain.moistureBlobsMin + Math.floor(nextRand(world) * (TUNING.terrain.moistureBlobsMax - TUNING.terrain.moistureBlobsMin + 1));
+    for (let i = 0; i < blobs; i += 1) {
+      const blob = count;
+      radii[blob] = TUNING.terrain.moistureBlobRadiusMin + nextRand(world) * (TUNING.terrain.moistureBlobRadiusMax - TUNING.terrain.moistureBlobRadiusMin);
+      if (i < TUNING.sim.foodClusters.length) {
+        const cluster = TUNING.sim.foodClusters[i];
+        const d = Math.min(cluster.dist, Math.min(world.width, world.height) * 0.42);
+        const jitter = radii[blob] * TUNING.terrain.moistureBlobClusterJitter;
+        const angle = cluster.angle + anchor.rot;
+        xs[blob] = clamp(anchor.x + Math.cos(angle) * d + (nextRand(world) - HALF) * jitter, 0, world.width);
+        ys[blob] = clamp(anchor.y + Math.sin(angle) * d + (nextRand(world) - HALF) * jitter, 0, world.height);
+      } else {
+        xs[blob] = nextRand(world) * world.width;
+        ys[blob] = nextRand(world) * world.height;
+      }
+      strengths[blob] = HALF + nextRand(world) * HALF;
+      count += 1;
     }
-    strengths[i] = HALF + nextRand(world) * HALF;
+  }
+  for (const offset of contestedLarderOffsets()) {
+    const point = midlinePoint(world, offset);
+    xs[count] = point.x;
+    ys[count] = point.y;
+    radii[count] = TUNING.war.contestedMoistureRadius;
+    strengths[count] = TUNING.war.contestedMoistureStrength;
+    count += 1;
   }
   for (let gy = 0; gy < grid.rows; gy += 1) {
     const y = (gy + HALF) * grid.cell;
@@ -887,20 +1004,20 @@ function generateMoisture(world: World): void {
   refreshLocalEvaporation(grid);
 }
 
-function placeRockyRegions(world: World): void {
+function placeRockyRegions(world: World, anchor: ColonyAnchor): void {
   const count = TUNING.terrain.rockyRegionsMin + Math.floor(nextRand(world) * (TUNING.terrain.rockyRegionsMax - TUNING.terrain.rockyRegionsMin + 1));
   const clusterCount = TUNING.sim.foodClusters.length;
-  const radiusLimit = Math.min(world.width, world.height) * 0.44;
+  const radiusLimit = homeRingLimit(world);
   for (let region = 0; region < count; region += 1) {
     const cluster = TUNING.sim.foodClusters[(region * 2 + 2) % clusterCount];
-    const angle = cluster.angle + (nextRand(world) - HALF) * TUNING.terrain.rockyRegionAngleJitter;
+    const angle = cluster.angle + anchor.rot + (nextRand(world) - HALF) * TUNING.terrain.rockyRegionAngleJitter;
     const dist = Math.min(radiusLimit, TUNING.terrain.rockyRegionStartDistance + region * TUNING.terrain.rockyRegionDistanceStep);
     const dirX = Math.cos(angle);
     const dirY = Math.sin(angle);
     const tangentX = -dirY;
     const tangentY = dirX;
-    const centerX = world.nestX + dirX * dist;
-    const centerY = world.nestY + dirY * dist;
+    const centerX = anchor.x + dirX * dist;
+    const centerY = anchor.y + dirY * dist;
     const span = TUNING.terrain.rockyRegionSpanMin + nextRand(world) * (TUNING.terrain.rockyRegionSpanMax - TUNING.terrain.rockyRegionSpanMin);
     for (let offset = -span; offset <= span; offset += TUNING.terrain.rockyRegionSpacing) {
       if (Math.abs(offset) < TUNING.terrain.rockyRegionGapHalfWidth) continue;
@@ -928,7 +1045,7 @@ function bushSpacingClear(world: EcologyWorld, x: number, y: number): boolean {
   return true;
 }
 
-function findBushCell(world: EcologyWorld, preferredX: number, preferredY: number): number {
+function findBushCell(world: EcologyWorld, anchor: ColonyAnchor, preferredX: number, preferredY: number): number {
   const grid = world.grid;
   let best = -1;
   let bestMoisture = -1;
@@ -941,8 +1058,8 @@ function findBushCell(world: EcologyWorld, preferredX: number, preferredY: numbe
     if (grid.moisture[idx] <= TUNING.ecology.bushMoistureMin) continue;
     const x = (gx + HALF) * grid.cell;
     const y = (gy + HALF) * grid.cell;
-    const nx = x - world.nestX;
-    const ny = y - world.nestY;
+    const nx = x - anchor.x;
+    const ny = y - anchor.y;
     if (nx * nx + ny * ny < TUNING.ecology.bushMinNestDist * TUNING.ecology.bushMinNestDist) continue;
     if (nx * nx + ny * ny > TUNING.ecology.bushMaxNestDist * TUNING.ecology.bushMaxNestDist) continue;
     if (!isPointClear(world, x, y, TUNING.ecology.bushClearRadius) || !bushSpacingClear(world, x, y)) continue;
@@ -955,8 +1072,8 @@ function findBushCell(world: EcologyWorld, preferredX: number, preferredY: numbe
     const gy = Math.floor(idx / grid.cols);
     const x = (gx + HALF) * grid.cell;
     const y = (gy + HALF) * grid.cell;
-    const nx = x - world.nestX;
-    const ny = y - world.nestY;
+    const nx = x - anchor.x;
+    const ny = y - anchor.y;
     if (nx * nx + ny * ny < TUNING.ecology.bushMinNestDist * TUNING.ecology.bushMinNestDist) continue;
     if (nx * nx + ny * ny > TUNING.ecology.bushMaxNestDist * TUNING.ecology.bushMaxNestDist) continue;
     if (!isPointClear(world, x, y, TUNING.ecology.bushClearRadius) || !bushSpacingClear(world, x, y)) continue;
@@ -966,14 +1083,15 @@ function findBushCell(world: EcologyWorld, preferredX: number, preferredY: numbe
   return best;
 }
 
-function placeBerryBushes(world: EcologyWorld): void {
+function placeBerryBushes(world: EcologyWorld, anchor: ColonyAnchor): void {
   const count = TUNING.ecology.bushMin + Math.floor(nextRand(world) * (TUNING.ecology.bushMax - TUNING.ecology.bushMin + 1));
   for (let i = 0; i < count; i += 1) {
     const cluster = TUNING.sim.foodClusters[i % TUNING.sim.foodClusters.length];
-    const d = Math.min(cluster.dist, Math.min(world.width, world.height) * 0.42);
-    const preferredX = clamp(world.nestX + Math.cos(cluster.angle) * d, TUNING.ecology.bushClearRadius, world.width - TUNING.ecology.bushClearRadius);
-    const preferredY = clamp(world.nestY + Math.sin(cluster.angle) * d, TUNING.ecology.bushClearRadius, world.height - TUNING.ecology.bushClearRadius);
-    const idx = findBushCell(world, preferredX, preferredY);
+    const d = Math.min(cluster.dist, homeRingLimit(world));
+    const angle = cluster.angle + anchor.rot;
+    const preferredX = clamp(anchor.x + Math.cos(angle) * d, TUNING.ecology.bushClearRadius, world.width - TUNING.ecology.bushClearRadius);
+    const preferredY = clamp(anchor.y + Math.sin(angle) * d, TUNING.ecology.bushClearRadius, world.height - TUNING.ecology.bushClearRadius);
+    const idx = findBushCell(world, anchor, preferredX, preferredY);
     if (idx < 0) break;
     const gx = idx % world.grid.cols;
     const gy = Math.floor(idx / world.grid.cols);
@@ -1108,12 +1226,19 @@ function spawnAnt(world: World, heading: number, dist: number, casteValue: numbe
   }
 }
 
-function dropRivalFood(world: EcologyWorld): void {
+/**
+ * One cache per colony at founding, and then nothing. The rival used to be fed
+ * a fresh pile beside its nest every 45 seconds forever, which kept it alive
+ * without foraging and gave it no reason to ever leave home. Now both empires
+ * get the same founding stock and both have to go out and earn the rest.
+ */
+function dropFoundingCache(world: EcologyWorld, anchor: ColonyAnchor): void {
+  const radius = TUNING.war.foundingCacheRadius;
   const angle = nextRand(world) * TAU;
-  const dist = Math.sqrt(nextRand(world)) * TUNING.rival.dripSpread;
-  const x = clamp(world.rival.nestX + Math.cos(angle) * dist, TUNING.rival.dripRadius, world.width - TUNING.rival.dripRadius);
-  const y = clamp(world.rival.nestY + Math.sin(angle) * dist, TUNING.rival.dripRadius, world.height - TUNING.rival.dripRadius);
-  depositFood(world, x, y, TUNING.rival.dripAmount, TUNING.rival.dripRadius, FACTION_RIVAL);
+  const dist = Math.sqrt(nextRand(world)) * TUNING.war.foundingCacheSpread;
+  const x = clamp(anchor.x + Math.cos(angle) * dist, radius, world.width - radius);
+  const y = clamp(anchor.y + Math.sin(angle) * dist, radius, world.height - radius);
+  depositFood(world, x, y, TUNING.war.foundingCacheAmount, radius, anchor.faction);
 }
 
 function placeInitialAnts(world: World, faction: number, count: number): void {
@@ -1123,7 +1248,10 @@ function placeInitialAnts(world: World, faction: number, count: number): void {
     const a = nextRand(world) * TAU;
     const r = Math.sqrt(nextRand(world)) * TUNING.sim.initialScatterRadius;
     const targetCluster = TUNING.sim.foodClusters[i % TUNING.sim.foodClusters.length];
-    const headingBase = faction === FACTION_RIVAL ? angleTo(world.nestX - hx, world.nestY - hy) + (nextRand(world) - HALF) * TUNING.sim.initialHeadingJitter : targetCluster.angle + (nextRand(world) - HALF) * TUNING.sim.initialHeadingJitter;
+    // Both colonies send their first foragers at their own larders. The rival
+    // used to aim three quarters of its founding ants straight at the player's
+    // nest, which emptied its own ground before a single trail existed.
+    const headingBase = targetCluster.angle + anchorRotation(faction) + (nextRand(world) - HALF) * TUNING.sim.initialHeadingJitter;
     const heading = i / count < TUNING.sim.initialForagerRatio ? headingBase : a;
     const x = clamp(hx + Math.cos(a) * r, TUNING.grid.cell, world.width - TUNING.grid.cell);
     const y = clamp(hy + Math.sin(a) * r, TUNING.grid.cell, world.height - TUNING.grid.cell);
@@ -1132,21 +1260,32 @@ function placeInitialAnts(world: World, faction: number, count: number): void {
 }
 
 function placeInitialScene(world: World): void {
-  const radiusLimit = Math.min(world.width, world.height) * 0.42;
-  for (const spec of TUNING.sim.foodClusters) {
-    const d = Math.min(spec.dist, radiusLimit);
-    const x = clamp(world.nestX + Math.cos(spec.angle) * d, spec.radius, world.width - spec.radius);
-    const y = clamp(world.nestY + Math.sin(spec.angle) * d, spec.radius, world.height - spec.radius);
-    depositFood(world, x, y, spec.amount, spec.radius);
+  const radiusLimit = homeRingLimit(world);
+  const anchors = colonyAnchors(world);
+  for (const anchor of anchors) {
+    for (const spec of TUNING.sim.foodClusters) {
+      const d = Math.min(spec.dist, radiusLimit);
+      const angle = spec.angle + anchor.rot;
+      const x = clamp(anchor.x + Math.cos(angle) * d, spec.radius, world.width - spec.radius);
+      const y = clamp(anchor.y + Math.sin(angle) * d, spec.radius, world.height - spec.radius);
+      depositFood(world, x, y, spec.amount, spec.radius, anchor.faction);
+    }
   }
-  for (const spec of TUNING.sim.obstacles) {
-    const d = Math.min(spec.dist, radiusLimit);
-    addObstacle(world, world.nestX + Math.cos(spec.angle) * d, world.nestY + Math.sin(spec.angle) * d, spec.r);
+  for (const anchor of anchors) {
+    for (const spec of TUNING.sim.obstacles) {
+      const d = Math.min(spec.dist, radiusLimit);
+      const angle = spec.angle + anchor.rot;
+      addObstacle(world, anchor.x + Math.cos(angle) * d, anchor.y + Math.sin(angle) * d, spec.r);
+    }
   }
-  placeRockyRegions(world);
-  placeBerryBushes(ecologyWorld(world));
+  for (const offset of contestedLarderOffsets()) {
+    const point = midlinePoint(world, offset);
+    depositFood(world, point.x, point.y, TUNING.war.contestedAmount, TUNING.war.contestedRadius, FACTION_ALL);
+  }
+  for (const anchor of anchors) placeRockyRegions(world, anchor);
+  for (const anchor of anchors) placeBerryBushes(ecologyWorld(world), anchor);
+  for (const anchor of anchors) dropFoundingCache(ecologyWorld(world), anchor);
   placeInitialAnts(world, FACTION_PLAYER, TUNING.ants.start);
-  dropRivalFood(ecologyWorld(world));
   placeInitialAnts(world, FACTION_RIVAL, TUNING.rival.start);
 }
 
@@ -1265,9 +1404,10 @@ export function createWorld(width: number = TUNING.sim.minWidth, height: number 
     victory: false,
     victoryYear: 0,
     combatMarks: new Uint8Array(TUNING.caps.maxAnts),
+    contestedTimer: 0,
     rival: {
-      nestX: TUNING.world.w - TUNING.rival.cornerPaddingX,
-      nestY: TUNING.world.h - TUNING.rival.cornerPaddingY,
+      nestX: TUNING.world.w * HALF + TUNING.war.nestOffsetX,
+      nestY: TUNING.world.h * HALF + TUNING.war.nestOffsetY,
       nestFood: TUNING.nest.startFood,
       broodProgress: 0,
       broodWork: 0,
@@ -1276,7 +1416,6 @@ export function createWorld(width: number = TUNING.sim.minWidth, height: number 
       terminalStartAnts: 0,
       terminalCull: 0,
       gameOver: false,
-      dripTimer: 0,
       nestPulse: 0,
       nestPulseVel: 0,
       totalDelivered: 0,
@@ -1293,9 +1432,15 @@ export function createWorld(width: number = TUNING.sim.minWidth, height: number 
       spoiled: false,
       toast: 0,
     },
+    war: {
+      toast: 0,
+      toastDeaths: 0,
+      windowTimer: 0,
+      windowDeaths: 0,
+    },
     grid: createGrid(),
-    nestX: TUNING.world.w * HALF,
-    nestY: TUNING.world.h * HALF,
+    nestX: TUNING.world.w * HALF - TUNING.war.nestOffsetX,
+    nestY: TUNING.world.h * HALF - TUNING.war.nestOffsetY,
     nestFood: TUNING.nest.startFood,
     totalDeaths: 0,
     totalDelivered: 0,
@@ -1333,7 +1478,6 @@ export function createWorld(width: number = TUNING.sim.minWidth, height: number 
   world.spider.nextSpawn = nextSpiderDelay(world);
   world.carcass.nextSpawn = nextCarcassDelay(world);
   placeInitialScene(world);
-  world.rival.dripTimer = TUNING.rival.dripSec;
   world.peakPopulation = countFactionAnts(world, FACTION_PLAYER);
   world.rival.peakPopulation = countFactionAnts(world, FACTION_RIVAL);
   rebuildSpatial(world);
@@ -1628,6 +1772,71 @@ function findSoldierDanger(world: World, index: number): boolean {
   return soldierDangerValue > TUNING.caste.soldierDangerThreshold;
 }
 
+let soldierFrontX = 0;
+let soldierFrontY = 0;
+
+/**
+ * Soldiers smell the other colony. The strongest enemy trail inside sensing
+ * range is where the front currently is, so the front is wherever the war
+ * actually is rather than a line drawn on the map at world creation.
+ */
+function findSoldierFront(world: World, index: number, faction: number): boolean {
+  const grid = world.grid;
+  const ants = world.ants;
+  const enemy = faction === FACTION_RIVAL ? FACTION_PLAYER : FACTION_RIVAL;
+  const enemyFood = pherFoodField(grid, enemy);
+  const enemyHome = pherHomeField(grid, enemy);
+  const radius = TUNING.war.soldierFrontSenseRadius;
+  const stride = Math.max(1, TUNING.war.soldierFrontScanStrideCells);
+  const minCx = clamp(Math.floor((ants.x[index] - radius) / grid.cell), 0, grid.cols - 1);
+  const maxCx = clamp(Math.floor((ants.x[index] + radius) / grid.cell), 0, grid.cols - 1);
+  const minCy = clamp(Math.floor((ants.y[index] - radius) / grid.cell), 0, grid.rows - 1);
+  const maxCy = clamp(Math.floor((ants.y[index] + radius) / grid.cell), 0, grid.rows - 1);
+  const r2 = radius * radius;
+  const threshold = TUNING.war.soldierFrontThreshold * TUNING.pher.cap;
+  let best = threshold;
+  let found = false;
+  for (let cy = minCy; cy <= maxCy; cy += stride) {
+    const y = (cy + HALF) * grid.cell;
+    for (let cx = minCx; cx <= maxCx; cx += stride) {
+      const x = (cx + HALF) * grid.cell;
+      const dx = x - ants.x[index];
+      const dy = y - ants.y[index];
+      if (dx * dx + dy * dy > r2) continue;
+      const idx = cy * grid.cols + cx;
+      const value = enemyFood[idx] + enemyHome[idx];
+      if (value > best) {
+        best = value;
+        soldierFrontX = x;
+        soldierFrontY = y;
+        found = true;
+      }
+    }
+  }
+  return found;
+}
+
+let soldierPostX = 0;
+let soldierPostY = 0;
+
+/**
+ * A soldier's beat is not a ring around its own queen — it is a picket posted
+ * out along the line toward the rival nest. The two pickets overlap in the
+ * middle of the world, which is where the empires meet. Both axes come off one
+ * faction decision so they cannot drift apart.
+ */
+function updateSoldierPost(world: World, faction: number): void {
+  const rival = ecologyWorld(world).rival;
+  const isRival = faction === FACTION_RIVAL;
+  const ownX = isRival ? rival.nestX : world.nestX;
+  const ownY = isRival ? rival.nestY : world.nestY;
+  const enemyX = isRival ? world.nestX : rival.nestX;
+  const enemyY = isRival ? world.nestY : rival.nestY;
+  const fraction = TUNING.war.picketFraction;
+  soldierPostX = ownX + (enemyX - ownX) * fraction;
+  soldierPostY = ownY + (enemyY - ownY) * fraction;
+}
+
 function moveCasteAnt(world: World, index: number, dt: number, speed: number): void {
   const ants = world.ants;
   const vx = Math.cos(ants.heading[index]) * speed * dt;
@@ -1641,14 +1850,24 @@ function updateSoldierAnt(world: World, index: number, dt: number, seasonSpeedMu
   const faction = factionAnts(ants).faction[index];
   const hx = nestX(world, faction);
   const hy = nestY(world, faction);
-  const dx = ants.x[index] - hx;
-  const dy = ants.y[index] - hy;
+  updateSoldierPost(world, faction);
+  const postX = soldierPostX;
+  const postY = soldierPostY;
+  const dx = ants.x[index] - postX;
+  const dy = ants.y[index] - postY;
   const dist2 = dx * dx + dy * dy;
+  // A soldier can only eat inside the nest ring, so a hungry one walks home.
+  // Without this the standing army starves at its post within a few minutes.
+  const hungry = ants.energy[index] < energyMaxForCaste(TUNING.caste.soldier) * TUNING.war.soldierReturnEnergyRatio;
   let target = ants.heading[index] + (nextRand(world) - HALF) * TUNING.ant.wanderJitter;
-  if (findSoldierDanger(world, index)) {
-    target = angleTo(soldierDangerX - ants.x[index], soldierDangerY - ants.y[index]);
-  } else if (dist2 > TUNING.caste.soldierPatrolRadius * TUNING.caste.soldierPatrolRadius) {
+  if (hungry) {
     target = angleTo(hx - ants.x[index], hy - ants.y[index]);
+  } else if (findSoldierDanger(world, index)) {
+    target = angleTo(soldierDangerX - ants.x[index], soldierDangerY - ants.y[index]);
+  } else if (findSoldierFront(world, index, faction)) {
+    target = angleTo(soldierFrontX - ants.x[index], soldierFrontY - ants.y[index]);
+  } else if (dist2 > TUNING.caste.soldierPatrolRadius * TUNING.caste.soldierPatrolRadius) {
+    target = angleTo(postX - ants.x[index], postY - ants.y[index]);
   } else if (dist2 < (TUNING.caste.soldierPatrolRadius - TUNING.caste.soldierPatrolSlack) * (TUNING.caste.soldierPatrolRadius - TUNING.caste.soldierPatrolSlack)) {
     target = angleTo(dy, -dx) + (nextRand(world) - HALF) * TUNING.ant.wanderJitter;
   }
@@ -1952,6 +2171,32 @@ function factionCombatQuery(other: number): boolean | void {
   if (nextRand(world) < combatDt / TUNING.conflict.peerKillSec) markCombatDeath(world, nextRand(world) < HALF ? combatSource : other);
 }
 
+/**
+ * War reporting. `war` is presentation only and stays out of the state hash,
+ * exactly like the rain and spider toasts — and so is the trauma kick it adds,
+ * along with every control that feeds it. See the camera-trauma section of
+ * `docs/debug-surface/DEBUG.md`.
+ */
+function noteSkirmishDeath(world: EcologyWorld): void {
+  const war = world.war;
+  war.windowDeaths += 1;
+  war.windowTimer = TUNING.war.skirmishWindowSec;
+  world.trauma = Math.min(TUNING.war.skirmishTraumaMax, world.trauma + TUNING.war.skirmishTrauma);
+  if (war.windowDeaths >= TUNING.war.skirmishToastMin && war.windowDeaths > war.toastDeaths) {
+    war.toastDeaths = war.windowDeaths;
+    war.toast = TUNING.war.skirmishToastSec;
+  }
+}
+
+function updateWarReport(world: EcologyWorld, dt: number): void {
+  const war = world.war;
+  war.toast = Math.max(0, war.toast - dt);
+  if (war.toast <= 0) war.toastDeaths = 0;
+  if (war.windowTimer <= 0) return;
+  war.windowTimer -= dt;
+  if (war.windowTimer <= 0) war.windowDeaths = 0;
+}
+
 function updateFactionCombat(world: EcologyWorld, dt: number): number {
   const ants = world.ants;
   world.combatMarks.fill(0, 0, ants.count);
@@ -1969,10 +2214,13 @@ function updateFactionCombat(world: EcologyWorld, dt: number): number {
     if (world.combatMarks[i] === 0) continue;
     const antFaction = faction[i];
     pushCorpse(world, ants.x[i], ants.y[i]);
-    spawnParticle(world, ants.x[i], ants.y[i], ParticleKind.Death, TUNING.particles.death.count, TUNING.particles.death.speed, TUNING.particles.death.life, TUNING.particles.death.size);
+    // Same particle burst as before, same RNG draws, tagged so the renderer can
+    // tell a killing from a starving. A death at the front should look like one.
+    spawnParticle(world, ants.x[i], ants.y[i], ParticleKind.Clash, TUNING.particles.death.count, TUNING.particles.death.speed, TUNING.particles.death.life, TUNING.particles.death.size);
     recordTraceInteraction(world, i, { kind: "combat", cause: "combat", faction: antFaction });
     recordAntDeath(world, antFaction, "combat", i);
     recordTraceTickEnd(world, i);
+    noteSkirmishDeath(world);
     removeAnt(world, i);
     removed += 1;
   }
@@ -2065,17 +2313,32 @@ function updateCarcass(world: EcologyWorld, dt: number): void {
   if (carcass.age >= TUNING.ecology.carcassDecaySec || carcass.amount <= TUNING.sim.minTurnEpsilon) scheduleNextCarcass(world);
 }
 
+/**
+ * A larder this size carries on the air. While food is still on the contested
+ * ground both colonies keep smelling it, so the middle of the world stays worth
+ * walking to - and worth fighting over - instead of sitting there uneaten.
+ */
+function updateContestedGround(world: EcologyWorld, dt: number): void {
+  world.contestedTimer -= dt;
+  if (world.contestedTimer > 0) return;
+  world.contestedTimer += TUNING.war.contestedScentSec;
+  const radius = TUNING.war.contestedScentRadius;
+  for (const offset of contestedLarderOffsets()) {
+    const point = midlinePoint(world, offset);
+    if (foodAmountInRadius(world, point.x, point.y, TUNING.war.contestedRadius) < TUNING.war.contestedMinFood) continue;
+    raiseFoodScentRadius(world.grid, point.x, point.y, radius, TUNING.war.contestedScent);
+  }
+  // A fresh carcass lands between the nests and carries hardest of all, so every
+  // windfall in no-man's land pulls both empires out to meet over it.
+  const carcass = world.carcass;
+  if (carcass.active && !carcass.spoiled && carcass.amount > TUNING.war.contestedMinFood) {
+    raiseFoodScentRadius(world.grid, carcass.x, carcass.y, radius, TUNING.war.carcassScent);
+  }
+}
+
 function updateToolCooldowns(world: EcologyWorld, dt: number): void {
   world.digCooldown = Math.max(0, world.digCooldown - dt);
   world.carcassDropCooldown = Math.max(0, world.carcassDropCooldown - dt);
-}
-
-function updateRivalPatron(world: EcologyWorld, dt: number): void {
-  if (world.rival.gameOver || world.victory) return;
-  world.rival.dripTimer -= dt;
-  if (world.rival.dripTimer > 0) return;
-  dropRivalFood(world);
-  world.rival.dripTimer += TUNING.rival.dripSec;
 }
 
 function countFactionAnts(world: World, factionValue: number): number {
@@ -2492,7 +2755,6 @@ export function stepWorld(world: World, dt: number = STEP_DT, fps: number = TUNI
   }
   updateBrood(ecology, dt, FACTION_PLAYER);
   updateBrood(ecology, dt, FACTION_RIVAL);
-  updateRivalPatron(ecology, dt);
 
   rebuildSpatial(world);
   updateSoldierAttacks(world, dt);
@@ -2504,6 +2766,8 @@ export function stepWorld(world: World, dt: number = STEP_DT, fps: number = TUNI
   updateBerryBushes(ecology, dt);
   updateCarcass(ecology, dt);
   updateToolCooldowns(ecology, dt);
+  updateContestedGround(ecology, dt);
+  updateWarReport(ecology, dt);
   updateFields(world);
   updateCorpses(world, dt);
   updateParticles(world, dt);
@@ -2659,6 +2923,21 @@ export function getColonyStatus(world: World): ColonyStatus {
     totalFoodGathered: world.totalDelivered,
     totalDeaths: world.totalDeaths,
   };
+}
+
+/**
+ * Advance presentation that decays in real time rather than in simulation
+ * steps: currently just camera trauma. This runs off the frame clock, so it
+ * keeps ticking while the world is paused and it must never touch hashed World
+ * state. Draining camera shake from inside the renderer used to do exactly
+ * that — a paused page changed its own world hash once per frame.
+ */
+export function advancePresentation(world: World, dt: number): void {
+  if (world.trauma > 0) world.trauma = Math.max(0, world.trauma - TUNING.fx.shakeDecay * dt);
+}
+
+export function getWarState(world: World): WarState {
+  return ecologyWorld(world).war;
 }
 
 export function applyTool(world: World, tool: Tool, x: number, y: number): void {

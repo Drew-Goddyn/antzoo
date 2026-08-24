@@ -1,4 +1,4 @@
-import { createWorld, stepWorld } from "../src/sim";
+import { advancePresentation, createWorld, stepWorld } from "../src/sim";
 import { hashWorldState, snapshotWorld } from "../src/debug/snapshot";
 import { assertDebugAntIdsUnique, configureDebugTrace, getDebugState, getDebugTrace } from "../src/debug/events";
 import { applyTuningPatch, getTuningPath } from "../src/debug/scenario";
@@ -100,7 +100,18 @@ function testT0(): TestResult[] {
   tests.push(changesHash("T0 nestFood.rival", base, before, (world) => { world.rival.nestFood += 0.001; }));
   tests.push(changesHash("T0 queen/brood.player", base, before, (world) => { world.queenHunger += 0.001; }));
   tests.push(changesHash("T0 queen/brood.rival", base, before, (world) => { world.rival.broodProgress += 0.001; }));
-  tests.push(changesHash("T0 rival struct", base, before, (world) => { world.rival.dripTimer += 0.001; }));
+  tests.push(changesHash("T0 contestedTimer", base, before, (world) => { world.contestedTimer += 0.001; }));
+  tests.push(preservesHash("T0 camera trauma is presentation-only", base, before, (world) => { world.trauma += 0.25; }));
+  tests.push(preservesHash("T0 death-burst window is presentation-only", base, before, (world) => { world.deathWindowTimer += 0.001; world.deathWindowCount += 1; }));
+  tests.push(preservesTuningHash("T0 tuning war.skirmishTrauma", base, before, "war.skirmishTrauma", TUNING.war.skirmishTrauma + 0.1));
+  tests.push(preservesTuningHash("T0 tuning war.skirmishTraumaMax", base, before, "war.skirmishTraumaMax", TUNING.war.skirmishTraumaMax + 0.1));
+  tests.push(preservesTuningHash("T0 tuning fx.shakeDecay", base, before, "fx.shakeDecay", TUNING.fx.shakeDecay + 0.1));
+  tests.push(preservesTuningHash("T0 tuning sim.traumaBurst", base, before, "sim.traumaBurst", TUNING.sim.traumaBurst + 0.1));
+  tests.push(preservesTuningHash("T0 tuning sim.deathsBurstWindowSec", base, before, "sim.deathsBurstWindowSec", TUNING.sim.deathsBurstWindowSec + 1));
+  tests.push(preservesTuningHash("T0 tuning sim.deathsBurstCount", base, before, "sim.deathsBurstCount", TUNING.sim.deathsBurstCount + 1));
+  tests.push(preservesTuningHash("T0 tuning spider.squashTrauma", base, before, "spider.squashTrauma", TUNING.spider.squashTrauma + 0.1));
+  tests.push(preservesHash("T0 war report is presentation-only", base, before, (world) => { world.war.toast += 1; world.war.toastDeaths += 1; world.war.windowDeaths += 1; world.war.windowTimer += 1; }));
+  tests.push(changesHash("T0 rival struct", base, before, (world) => { world.rival.nestPulseVel += 0.001; }));
   tests.push(changesHash("T0 spider", base, before, (world) => { world.spider.hp += 0.001; }));
   tests.push(changesHash("T0 bushes", base, before, (world) => { world.bushes[0].stock += 0.001; }));
   tests.push(changesHash("T0 carcass", base, before, (world) => { world.carcass.nextSpawn += 0.001; }));
@@ -236,6 +247,31 @@ function testT5TracePurity(): TestResult[] {
   ];
 }
 
+/**
+ * A paused world is a still world. Presentation advances on the frame clock,
+ * so it keeps running while the simulation does not; if any of it reaches
+ * hashed World state, a page left open on a paused world rewrites its own
+ * history. Camera shake did exactly that until it was moved off the hash.
+ */
+function testT6PausedPresentationPurity(): TestResult[] {
+  const world = atTick(1337, 3000);
+  world.trauma = TUNING.war.skirmishTraumaMax;
+  const tickBefore = world.stepCount;
+  const timeBefore = world.time;
+  const hashBefore = hashWorldState(world);
+  world.paused = true;
+  for (let frame = 0; frame < 600; frame += 1) {
+    stepWorld(world, 1 / TUNING.time.stepHz);
+    advancePresentation(world, 1 / TUNING.time.stepHz);
+  }
+  const held = world.stepCount === tickBefore && world.time === timeBefore;
+  const hashAfter = hashWorldState(world);
+  return [
+    { name: "T6 paused world holds tick and simTime across render frames", pass: held, detail: `tick ${tickBefore}->${world.stepCount}, simTime ${timeBefore}->${world.time}` },
+    { name: "T6 paused world hash survives 600 presentation frames", pass: hashBefore === hashAfter, detail: `${hashBefore} vs ${hashAfter}` },
+  ];
+}
+
 function printResult(result: TestResult): void {
   const detail = result.detail && (!result.pass || result.showDetailOnPass) ? ` - ${result.detail}` : "";
   console.log(`${result.pass ? "PASS" : "FAIL"} ${result.name}${detail}`);
@@ -259,6 +295,10 @@ for (const result of testT3AndIds()) {
   if (!result.pass) failed = true;
 }
 for (const result of testT5TracePurity()) {
+  printResult(result);
+  if (!result.pass) failed = true;
+}
+for (const result of testT6PausedPresentationPurity()) {
   printResult(result);
   if (!result.pass) failed = true;
 }

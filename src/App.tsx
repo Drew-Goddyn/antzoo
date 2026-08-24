@@ -1,5 +1,5 @@
 import { type CSSProperties, useEffect, useMemo, useRef, useState } from "react";
-import { applyTool as simApplyTool, createWorld, dropCarcass as simDropCarcass, getCarcassDropCooldown, getColonyStatus, getDigCooldown, getSeasonState, makeHudSnapshot, resizeWorld, stepWorld, stressSpawn as simStressSpawn } from "./sim";
+import { advancePresentation, applyTool as simApplyTool, createWorld, dropCarcass as simDropCarcass, getCarcassDropCooldown, getColonyStatus, getDigCooldown, getSeasonState, getWarState, makeHudSnapshot, resizeWorld, stepWorld, stressSpawn as simStressSpawn } from "./sim";
 import { CameraState, HudSnapshot, Renderer, Tool, World } from "./types";
 import { createRenderer, destroyRenderer, renderWorld } from "./render";
 import { DEFAULTS, TUNING } from "./tuning";
@@ -186,18 +186,34 @@ function isTypingTarget(target: EventTarget | null): boolean {
   return target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement || target instanceof HTMLSelectElement;
 }
 
+/**
+ * The zoom floor is never tighter than "the whole terrarium fits". A fixed floor
+ * was tuned for a desktop viewport, so on a phone it stopped the boot framing
+ * reaching the span it asks for and left both nests off screen.
+ */
+function minZoomFor(world: World): number {
+  const fitWorld = Math.min(world.camera.viewW / world.width, world.camera.viewH / world.height);
+  return Math.min(TUNING.camera.minZoom, fitWorld);
+}
+
 function clampCamera(world: World): void {
   const camera = world.camera;
-  camera.scale = Math.min(TUNING.camera.maxZoom, Math.max(TUNING.camera.minZoom, camera.scale));
+  camera.scale = Math.min(TUNING.camera.maxZoom, Math.max(minZoomFor(world), camera.scale));
   const visibleW = camera.viewW / camera.scale;
   const visibleH = camera.viewH / camera.scale;
   camera.x = Math.min(Math.max(0, world.width - visibleW), Math.max(0, camera.x));
   camera.y = Math.min(Math.max(0, world.height - visibleH), Math.max(0, camera.y));
 }
 
+/**
+ * Open on the terrarium, not on one nest. The boot framing holds both nests and
+ * the contested ground between them, so the first thing on screen is two
+ * empires rather than one colony with an empty map around it.
+ */
 function centerCamera(world: World): void {
-  world.camera.x = world.nestX - world.camera.viewW / world.camera.scale * 0.5;
-  world.camera.y = world.nestY - world.camera.viewH / world.camera.scale * 0.5;
+  world.camera.scale = Math.min(TUNING.camera.maxZoom, Math.max(minZoomFor(world), world.camera.viewW / TUNING.camera.bootSpanX));
+  world.camera.x = world.width * 0.5 - world.camera.viewW / world.camera.scale * 0.5;
+  world.camera.y = world.height * 0.5 - world.camera.viewH / world.camera.scale * 0.5;
   clampCamera(world);
 }
 
@@ -215,7 +231,7 @@ function zoomAt(world: World, element: HTMLElement, clientX: number, clientY: nu
   const sy = clientY - rect.top;
   const wx = world.camera.x + sx / world.camera.scale;
   const wy = world.camera.y + sy / world.camera.scale;
-  world.camera.scale = Math.min(TUNING.camera.maxZoom, Math.max(TUNING.camera.minZoom, world.camera.scale * factor));
+  world.camera.scale = Math.min(TUNING.camera.maxZoom, Math.max(minZoomFor(world), world.camera.scale * factor));
   world.camera.x = wx - sx / world.camera.scale;
   world.camera.y = wy - sy / world.camera.scale;
   clampCamera(world);
@@ -417,6 +433,7 @@ export function App() {
   const digCooldown = getDigCooldown(worldRef.current);
   const carcassDropCooldown = getCarcassDropCooldown(worldRef.current);
   const seasonState = getSeasonState(worldRef.current);
+  const warState = getWarState(worldRef.current);
   const colonyStatus = getColonyStatus(worldRef.current);
   const digCooldownRatio = digCooldown / TUNING.tools.digCooldownSec;
   const carcassCooldownRatio = carcassDropCooldown / TUNING.tools.carcassDropCooldownSec;
@@ -532,6 +549,9 @@ export function App() {
       } else {
         world.lastSimMs = 0;
       }
+      // Presentation advances on the frame clock even while the world is
+      // paused, which is why it is kept off hashed World state entirely.
+      advancePresentation(world, realDt);
       if (renderer) {
         const renderStart = performance.now();
         renderWorld(renderer, world, realDt);
@@ -861,6 +881,7 @@ export function App() {
         <SeasonPanel state={seasonState} nestFood={snapshot.nestFood} />
         <CastePanel status={colonyStatus} />
         {seasonState.rainToast > 0 ? <div className="rain-toast panel">{TUNING.seasons.rainToastText}</div> : null}
+        {warState.toast > 0 ? <div className="war-toast panel">Skirmish at the front — {warState.toastDeaths} dead</div> : null}
         <DebugOverlay snapshot={snapshot} />
         <canvas ref={minimapRef} className="minimap panel" width={TUNING.minimap.w} height={TUNING.minimap.h} aria-label="World minimap" onPointerDown={handleMinimapPointerDown} />
         <div className={`tuning-shell ${drawerOpen ? "open" : "collapsed"}`}>
@@ -1095,6 +1116,18 @@ function makeStyles(): string {
     }
     .reserve-track i {
       background: ${TUNING.colors.food};
+    }
+    .war-toast {
+      position: absolute;
+      left: 12px;
+      top: 84px;
+      max-width: 320px;
+      padding: 8px 14px;
+      font-size: 13px;
+      letter-spacing: 0.05em;
+      color: ${TUNING.colors.clash};
+      border-color: ${TUNING.colors.rivalTrailFood}55;
+      pointer-events: none;
     }
     .rain-toast {
       position: absolute;
@@ -1530,6 +1563,12 @@ function makeStyles(): string {
       .rain-toast {
         right: 12px;
         top: 304px;
+      }
+      .war-toast {
+        left: 12px;
+        right: 12px;
+        top: 272px;
+        max-width: none;
       }
       .tuning-shell {
         top: 342px;

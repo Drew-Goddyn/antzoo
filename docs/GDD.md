@@ -32,18 +32,19 @@ Agents: trust this section; it was verified by audit against the code. Re-verify
 
 **Genuinely implemented and coupled** (`src/sim.ts`, ~2,760 lines, deterministic, one LCG via `nextRand`):
 - Two full symmetric colonies: per-faction pheromone fields, castes (worker/soldier/nurse with real behavioral differences), brood + nurse egg-work, queen hunger → terminal cascade → game over, faction combat, spider predator with HP, carcasses with spoilage, berry bushes with seasonal regrowth, rain → moisture grid → local evaporation and trail-washing, four seasons modulating drain/speed/regrowth.
+- **A matched war map (M0).** The nests sit at equal offsets either side of the world centre and every generator — food clusters, moisture, rocky regions, berry bushes — runs once per colony around its own nest, rotated by π. Each side gets the same larders, the same 14 bushes and the same 3050 food; per-object jitter is rolled separately, so it is matched rather than a pixel-exact reflection (at 8px tolerance only 23/57 obstacles and 6/28 bushes have a reflected partner). Contested larders and every carcass land on the midline and are smellable by both. Soldiers hold a picket posted toward the enemy instead of orbiting their own queen, walk home when hungry, and steer toward the strongest enemy trail in range.
 - A playable browser shell (`src/App.tsx`): tools (food, lure, boulder, dig, wash, carcass drop), 13 live tuning sliders, speed control, HUD panels, victory/defeat screens, toasts, minimap.
 - Real rendering polish (`src/render.ts`): particle pool, per-caste/faction tints, seasonal palette, rain overlay, camera trauma, nest pulse.
 - The seatbelt (§6): state hash, determinism tests, headless CLI (`scripts/run.ts`), scenario system (identical CLI/browser semantics, `?scenario=` URL param), event log with death-cause obituaries, per-ant identity, decision traces, `window.__antzoo` bridge.
 
 **Known hollows** (verified — these are where v2's leverage lives):
-- **The rival lives in a food desert.** All food clusters, scatter regions, and bushes generate relative to the *player's* nest (`sim.ts` ~855–902, ~969–990); the rival sits in a corner (`~1269`) on a scripted food drip (`~2073`) and its foragers spawn aimed at the player's nest (`~1126`). Median rival deliveries: zero. The "rivalry" is theater.
+- **The war is one battle, not a campaign.** M0 landed the antagonist: over five seeds at 40k ticks the rival now wins one run in five (it won none before), median combat deaths are 24 player / 20 rival (they were 0 / 1), and rival deliveries roughly doubled. But the whole fight is the opening minute — first blood at 0:09–0:11, and seed 1337 spends 43 of its 44 combat deaths before 1:00, after which the front goes quiet. Recurring raids and war tides are S1-B and unbuilt.
 - **The god is optional.** Unattended baseline wins ~78%; measured interventions were indistinguishable from blind placebo. There is currently no skill gradient.
 - **The spider is noise.** A predator that almost never matters to outcomes.
 - **No sound of any kind.**
 - **No nest interior.** The nest is a point with scalar state (brood progress, food, queen hunger).
 - **No onboarding.** The first minute teaches nothing.
-- **Win/lose is a race against self-collapse**, not a contest.
+- **Win/lose is still mostly a race against self-collapse.** Both colonies run their nest food at zero and die of starvation far more often than of each other; combat is now a real cost on the way there, not the cause of the ending.
 
 ## 4. The Systems Catalog
 
@@ -51,8 +52,8 @@ Each system is a module Drew can break off and go deep on. Each has a **depth la
 
 ### S1 — The War *(the rival as a living empire)*
 - **Fantasy:** two civilizations expanding toward each other; contested ground; raids; front lines you can read from orbit.
-- **Today:** hollow (food desert, drip-fed, invisible trails at 0.72 alpha).
-- **Ladder:** **A.** Rival gets its own food geography (mirror generation around its nest), drip cut to founding subsidy, spawn headings fixed; rival trails rendered at full hostile-palette visibility; skirmish FX; war toasts; a staged `war-demo` scenario. **B.** Territorial behavior: patrol borders, raiding parties targeting player food stores/carcasses, visible war tides. **C.** Rival personality: aggression that responds to player strength; multiple rival archetypes per seed.
+- **Today:** stage A shipped (M0). Matched geography, no drip, both empires forage and clash on screen at full palette parity; first blood at 0:09–0:11. The remaining gap is that the war is a single opening battle — the front goes quiet after the first sim-minute — so recurring campaigns are what stage B has to deliver.
+- **Ladder:** **A.** Rival gets its own food geography (matched generation around its nest — same tables rotated 180°, jitter rolled per colony, so the sides are equal in larders, bush count and food total but are not a literal reflection; accepted by Drew on #55), drip cut to founding subsidy, spawn headings fixed; rival trails rendered at full hostile-palette visibility; skirmish FX; war toasts; a staged `war-demo` scenario. **B.** Territorial behavior: patrol borders, raiding parties targeting player food stores/carcasses, visible war tides. **C.** Rival personality: aggression that responds to player strength; multiple rival archetypes per seed.
 - **Design space:** everything about how the war *looks and escalates*. The only contract: both empires visibly forage and clash on screen at default settings.
 
 ### S2 — The Chronicle *(every ant is somebody)*

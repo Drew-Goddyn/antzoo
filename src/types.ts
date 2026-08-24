@@ -18,6 +18,7 @@ export enum ParticleKind {
   Death = 2,
   Wash = 3,
   Spawn = 4,
+  Clash = 5,
 }
 
 export const AntFlag = {
