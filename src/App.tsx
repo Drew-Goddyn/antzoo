@@ -186,9 +186,19 @@ function isTypingTarget(target: EventTarget | null): boolean {
   return target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement || target instanceof HTMLSelectElement;
 }
 
+/**
+ * The zoom floor is never tighter than "the whole terrarium fits". A fixed floor
+ * was tuned for a desktop viewport, so on a phone it stopped the boot framing
+ * reaching the span it asks for and left both nests off screen.
+ */
+function minZoomFor(world: World): number {
+  const fitWorld = Math.min(world.camera.viewW / world.width, world.camera.viewH / world.height);
+  return Math.min(TUNING.camera.minZoom, fitWorld);
+}
+
 function clampCamera(world: World): void {
   const camera = world.camera;
-  camera.scale = Math.min(TUNING.camera.maxZoom, Math.max(TUNING.camera.minZoom, camera.scale));
+  camera.scale = Math.min(TUNING.camera.maxZoom, Math.max(minZoomFor(world), camera.scale));
   const visibleW = camera.viewW / camera.scale;
   const visibleH = camera.viewH / camera.scale;
   camera.x = Math.min(Math.max(0, world.width - visibleW), Math.max(0, camera.x));
@@ -201,7 +211,7 @@ function clampCamera(world: World): void {
  * empires rather than one colony with an empty map around it.
  */
 function centerCamera(world: World): void {
-  world.camera.scale = Math.min(TUNING.camera.maxZoom, Math.max(TUNING.camera.minZoom, world.camera.viewW / TUNING.camera.bootSpanX));
+  world.camera.scale = Math.min(TUNING.camera.maxZoom, Math.max(minZoomFor(world), world.camera.viewW / TUNING.camera.bootSpanX));
   world.camera.x = world.width * 0.5 - world.camera.viewW / world.camera.scale * 0.5;
   world.camera.y = world.height * 0.5 - world.camera.viewH / world.camera.scale * 0.5;
   clampCamera(world);
@@ -221,7 +231,7 @@ function zoomAt(world: World, element: HTMLElement, clientX: number, clientY: nu
   const sy = clientY - rect.top;
   const wx = world.camera.x + sx / world.camera.scale;
   const wy = world.camera.y + sy / world.camera.scale;
-  world.camera.scale = Math.min(TUNING.camera.maxZoom, Math.max(TUNING.camera.minZoom, world.camera.scale * factor));
+  world.camera.scale = Math.min(TUNING.camera.maxZoom, Math.max(minZoomFor(world), world.camera.scale * factor));
   world.camera.x = wx - sx / world.camera.scale;
   world.camera.y = wy - sy / world.camera.scale;
   clampCamera(world);

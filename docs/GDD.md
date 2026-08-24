@@ -52,7 +52,7 @@ Each system is a module Drew can break off and go deep on. Each has a **depth la
 
 ### S1 — The War *(the rival as a living empire)*
 - **Fantasy:** two civilizations expanding toward each other; contested ground; raids; front lines you can read from orbit.
-- **Today:** hollow (food desert, drip-fed, invisible trails at 0.72 alpha).
+- **Today:** stage A shipped (M0). Matched geography, no drip, both empires forage and clash on screen at full palette parity; first blood at 0:09–0:11. The remaining gap is that the war is a single opening battle — the front goes quiet after the first sim-minute — so recurring campaigns are what stage B has to deliver.
 - **Ladder:** **A.** Rival gets its own food geography (matched generation around its nest — same tables rotated 180°, jitter rolled per colony, so the sides are equal in larders, bush count and food total but are not a literal reflection; accepted by Drew on #55), drip cut to founding subsidy, spawn headings fixed; rival trails rendered at full hostile-palette visibility; skirmish FX; war toasts; a staged `war-demo` scenario. **B.** Territorial behavior: patrol borders, raiding parties targeting player food stores/carcasses, visible war tides. **C.** Rival personality: aggression that responds to player strength; multiple rival archetypes per seed.
 - **Design space:** everything about how the war *looks and escalates*. The only contract: both empires visibly forage and clash on screen at default settings.
 

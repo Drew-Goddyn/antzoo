@@ -172,11 +172,12 @@ interface ColonyAnchor {
 }
 
 /**
- * Both empires are grown from the same tuning tables, each around its own nest.
- * The rival's tables are rotated by PI, so its geography is the player's
- * reflected through the centre of the world: same larders, same rock walls, same
- * distances, pointing the other way. Whatever the two colonies do to each other
- * after that is theirs, not the map's.
+ * Both empires are grown from the same tuning tables, each around its own nest,
+ * with the rival's tables rotated by PI. That makes the two sides matched, not
+ * mirrored: identical larder distances, bush count and food total, but rocky
+ * regions, moisture and bush placement each roll their own jitter, so the halves
+ * are not a reflection of one another. Whatever the two colonies do to each
+ * other after that is theirs, not the map's.
  */
 function colonyAnchors(world: World): ColonyAnchor[] {
   const rival = ecologyWorld(world).rival;
@@ -2172,8 +2173,9 @@ function factionCombatQuery(other: number): boolean | void {
 
 /**
  * War reporting. `war` is presentation only and stays out of the state hash,
- * exactly like the rain and spider toasts; the trauma kick it adds is ordinary
- * gameplay state that was already hashed.
+ * exactly like the rain and spider toasts — and so is the trauma kick it adds,
+ * along with every control that feeds it. See the camera-trauma section of
+ * `docs/debug-surface/DEBUG.md`.
  */
 function noteSkirmishDeath(world: EcologyWorld): void {
   const war = world.war;
